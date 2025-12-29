@@ -45,6 +45,7 @@ const wordsToTag = new Map<string, VibeTag> ([
   ["history", "historic"],
   ["heritage", "historic"],
   ["old", "historic"],
+  ["authentic", "historic"],
   ["museum", "historic"],
   ["monument", "historic"],
 

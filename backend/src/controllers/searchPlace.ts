@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { parseVibe } from "../services/vibetag.js";
+import { filterPlacesbyTag } from "../services/places.js";
 
 export const searchPlace = async(req : Request, res: Response) => {
     const vibe = req.query.vibe;
@@ -9,6 +10,7 @@ export const searchPlace = async(req : Request, res: Response) => {
     }
 
     const tag = parseVibe(vibe);
+    const place = await filterPlacesbyTag(tag);
 
-    res.json({query:vibe,tags:tag,places:["places"]});
+    res.json({query:vibe,tags:tag,places:place});
 }
