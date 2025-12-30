@@ -6,25 +6,26 @@ function App() {
   const [places, setPlaces] = useState([]);
 
   const handleSearch = async () => {
-  try {
-    const res = await fetch("http://localhost:3000/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        query: query,
+    try {
+      const params = new URLSearchParams({
+        vibe: query,          // MUST be 'vibe'
         lat: 26.9124,
         lon: 75.7873,
-      }),
-    });
+        radius: 2000,
+      });
 
-    const data = await res.json();
-    setPlaces(data);
-  } catch (err) {
-    alert("Search failed");
-    console.error(err);
-  }
+      const res = await fetch(
+        `http://localhost:3000/api/v1/search?${params}`
+      );
+
+      const data = await res.json();
+
+      // IMPORTANT: backend returns `places`
+      setPlaces(data.places);
+    } catch (err) {
+      alert("Search failed");
+      console.error(err);
+    }
 };
 
 
