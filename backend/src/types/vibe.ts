@@ -3,7 +3,7 @@ export const VIBE_TAG = [
     "quiet",
     "cafe",
     "crowded",
-    "streetfood",
+    "StreetFood",
     "nature",
     "historic",
     "budget"

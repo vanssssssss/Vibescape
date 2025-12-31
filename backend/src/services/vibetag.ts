@@ -22,16 +22,16 @@ const wordsToTag = new Map<string, VibeTag> ([
   ["noisy", "crowded"],
 
   // streetfood (AUTHENTIC / LOCAL)
-  ["streetfood", "streetfood"],
-  ["street", "streetfood"],
-  ["vendor", "streetfood"],
-  ["stall", "streetfood"],
-  ["local", "streetfood"],
-  ["authentic", "streetfood"],
-  ["chaat", "streetfood"],
-  ["samosa", "streetfood"],
-  ["golgappa", "streetfood"],
-  ["momos", "streetfood"],
+  ["streetfood", "StreetFood"],
+  ["street", "StreetFood"],
+  ["vendor", "StreetFood"],
+  ["stall", "StreetFood"],
+  ["local", "StreetFood"],
+  ["authentic", "StreetFood"],
+  ["chaat", "StreetFood"],
+  ["samosa", "StreetFood"],
+  ["golgappa", "StreetFood"],
+  ["momos", "StreetFood"],
 
   // nature
   ["nature", "nature"],
