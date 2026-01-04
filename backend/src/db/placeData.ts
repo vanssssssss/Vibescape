@@ -55,14 +55,14 @@ const places : Place[] = [
     name: "Bapu Bazaar",
     latitude: 26.9176,
     longitude: 75.8302,
-    tags: ["streetfood", "budget", "crowded"]
+    tags: ["StreetFood", "budget", "crowded"]
   },
   {
     id: "jp-09",
     name: "Masala Chowk",
     latitude: 26.9129,
     longitude: 75.7890,
-    tags: ["streetfood", "budget", "crowded"]
+    tags: ["StreetFood", "budget", "crowded"]
   },
   {
     id: "jp-10",
