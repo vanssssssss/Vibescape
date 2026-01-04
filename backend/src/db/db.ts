@@ -5,6 +5,7 @@ export const pool = new Pool({
   host: "localhost",
   port: 5432,
   user: "postgres",
-  password: "281105@Chrysalis",
+  password: "DATABASE_PASSWORD",
   database: "vibescape",
 });
+
