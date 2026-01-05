@@ -81,3 +81,103 @@ button {
 input {
   font-family: 'Roboto', sans-serif;
 } 
+/* ========================
+   AUTH SCREEN
+======================== */
+
+.auth-screen {
+  background: linear-gradient(145deg, #2c2b2b, #1f1e1e);
+  min-height: 100vh;
+  padding: 48px;
+  color: #fff;
+}
+
+.auth-title {
+  font-size: 2.6rem;
+  font-weight: 800;
+  margin-bottom: 18px;
+}
+
+.intro-card {
+  background: #e6e2b6;
+  border-radius: 16px;
+  padding: 16px 18px;
+  color: #222;
+  max-width: 900px;
+  margin-bottom: 28px;
+}
+
+/* Tabs */
+.auth-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.auth-tab {
+  padding: 8px 14px;
+  border-radius: 30px;
+  border: 1px solid #aaa;
+  background: transparent;
+  color: #fff;
+}
+
+.auth-tab.active {
+  background: #fff;
+  color: #000;
+}
+
+/* Forms */
+.auth-card {
+  background: #111;
+  border-radius: 14px;
+  padding: 18px;
+  width: 340px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #777;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #fff;
+  color: #000;
+  font-weight: 700;
+}
+
+.skip-btn {
+  margin-top: 14px;
+  background: transparent;
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* ========================
+   NUDE BLACK APP THEME
+======================== */
+
+.app-container {
+  background: #1a1919;
+}
+
+.search-section {
+  background: #111;
+  color: #fff;
+}
+
+.location-badge {
+  background: #222;
+}
+
+.vibe-input {
+  background: #fff;
+  color: #000;
+}
