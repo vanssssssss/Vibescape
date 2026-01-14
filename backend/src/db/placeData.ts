@@ -1,78 +1,21 @@
 import type { Place } from "../types/place.js";
-
-const places : Place[] = [
-    {
-    id: "jp-01",
-    name: "Hawa Mahal",
-    latitude: 26.9239,
-    longitude: 75.8267,
-    tags: ["historic", "crowded"]
-  },
-  {
-    id: "jp-02",
-    name: "Amer Fort",
-    latitude: 26.9855,
-    longitude: 75.8513,
-    tags: ["historic", "crowded"]
-  },
-  {
-    id: "jp-03",
-    name: "Jal Mahal",
-    latitude: 26.9535,
-    longitude: 75.8460,
-    tags: ["historic", "nature", "quiet"]
-  },
-  {
-    id: "jp-04",
-    name: "Albert Hall Museum",
-    latitude: 26.9124,
-    longitude: 75.7873,
-    tags: ["historic"]
-  },
-  {
-    id: "jp-05",
-    name: "Central Park Jaipur",
-    latitude: 26.9120,
-    longitude: 75.7871,
-    tags: ["nature", "quiet", "budget"]
-  },
-  {
-    id: "jp-06",
-    name: "Tapri Central",
-    latitude: 26.9124,
-    longitude: 75.7873,
-    tags: ["cafe", "budget", "crowded"]
-  },
-  {
-    id: "jp-07",
-    name: "Curious Life Coffee Roasters",
-    latitude: 26.8926,
-    longitude: 75.8124,
-    tags: ["cafe", "quiet"]
-  },
-  {
-    id: "jp-08",
-    name: "Bapu Bazaar",
-    latitude: 26.9176,
-    longitude: 75.8302,
-    tags: ["streetfood", "budget", "crowded"]
-  },
-  {
-    id: "jp-09",
-    name: "Masala Chowk",
-    latitude: 26.9129,
-    longitude: 75.7890,
-    tags: ["streetfood", "budget", "crowded"]
-  },
-  {
-    id: "jp-10",
-    name: "Nahargarh Fort",
-    latitude: 26.9544,
-    longitude: 75.8236,
-    tags: ["historic", "nature", "quiet"]
-  }
-]
+import { pool } from "./db.js";
 
 export async function getAllPlaces() : Promise<Place[]> {
-    return places;
+    const result = await pool.query(`
+        SELECT
+        p.place_id                  AS id,
+        p.place_name                AS name,
+        ST_Y(p.location::geometry)  AS latitude,
+        ST_X(p.location::geometry)  AS longitude,
+        COALESCE(
+          array_agg(t.tag_name) FILTER (WHERE t.tag_name IS NOT NULL),
+          '{}'
+        ) AS tags
+      FROM places p
+      LEFT JOIN place_tag pt ON pt.place_id = p.place_id
+      LEFT JOIN interest_tag t ON t.tag_id = pt.tag_id
+      GROUP BY p.place_id  
+    `);
+    return result.rows;
 }
