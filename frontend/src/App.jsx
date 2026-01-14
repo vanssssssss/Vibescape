@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "./App.css";
+import MemoriesPage from "./pages/MemoriesPage";
+import Favorites from "./pages/Favorites";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -159,12 +161,6 @@ function App() {
           </svg>
         </div>
 
-        {/* PIN */}
-        <div className="sidebar-icon" onClick={() => setActivePage("places")}>
-          <svg width="22" height="22" stroke="#fff" fill="none" strokeWidth="2">
-            <path d="M12 21s6-5.5 6-10a6 6 0 10-12 0c0 4.5 6 10 6 10z" />
-          </svg>
-        </div>
 
         {/* USER */}
         <div
@@ -257,11 +253,11 @@ function App() {
           </div>
         )}
 
-        {activePage !== "map" && (
-          <div className="blank-page">
-            <h2>Coming Soon</h2>
-          </div>
-        )}
+        {activePage === "photos" && <MemoriesPage />}
+
+        {activePage === "favorites" && <Favorites />}
+
+
       </div>
     </div>
   );
