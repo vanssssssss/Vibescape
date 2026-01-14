@@ -14,3 +14,13 @@ export async function findUserByEmail(email:string){
     
     return result.rows[0] || null;
 }
+
+export async function updateUserPassword(
+  userId: string,
+  hashedPassword: string
+) {
+  await pool.query(
+    `UPDATE users SET password = $1 WHERE user_id  = $2`,
+    [hashedPassword, userId]
+  );
+}
