@@ -8,6 +8,8 @@ export const searchPlace = async(req : Request, res: Response) => {
     const lon = Number(req.query.lon);
     const radius = Number(req.query.radius);
 
+    console.log("search places");
+
     if(typeof vibe !== "string" || Number.isNaN(lat) || Number.isNaN(lon) || Number.isNaN(radius)){
         return res.status(400).json({error:"vibe is required"});
     }

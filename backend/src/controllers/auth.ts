@@ -11,6 +11,8 @@ export const register = async(req : Request,res : Response) =>{
     const email = req.body.email?.toLowerCase().trim();
     const password = req.body.password;
 
+    console.log("register");
+
     if(!name || !email || !password){
         return res.status(400).json({errors:"Missing fields!"});
     }
@@ -41,6 +43,8 @@ export const login = async(req : Request,res : Response) =>{
     const email = req.body.email?.toLowerCase().trim();
     const password = req.body.password;
 
+    console.log("login");
+
     if(!email || !password){
         return res.status(400).json({errors:"Missing fields!"});
     }
@@ -65,6 +69,7 @@ export const login = async(req : Request,res : Response) =>{
 export const forgotPassword = async(req : Request, res : Response) => {
     const email = req.body.email?.toLowerCase().trim();
 
+    console.log("forgot password");
     if(!email){
         return res.status(400).json({errors:"Missing fields!"});
     }
@@ -97,6 +102,7 @@ export const forgotPassword = async(req : Request, res : Response) => {
 export const resetPassword = async(req : Request, res : Response) => {
     const { token, newPassword } = req.body;
 
+    console.log("reset password");
     if (!token || !newPassword) {
         return res.status(400).json({ error: "Missing fields" });
    }
