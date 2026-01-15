@@ -26,6 +26,9 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const params = new URLSearchParams(location.search);
+  const resetToken = params.get("token");
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState("login");
   const [authStep, setAuthStep] = useState("auth");
@@ -124,6 +127,32 @@ function App() {
     }
   };
 
+  const handleResetPassword = async (token) => {
+    try {
+      const res = await fetch(
+        "http://localhost:3000/api/v1/auth/reset-password",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token,
+            newPassword: password,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message);
+
+      alert("Password reset successful. Please login.");
+      setAuthStep("auth");
+      navigate("/");
+    } catch (err) {
+      alert(err.message || "Password reset failed");
+    }
+  };
+
   /* ---------- AUTH GUARD ---------- */
   if (!isAuthenticated) {
     return (
@@ -136,7 +165,7 @@ function App() {
 
               <div className="auth-wrapper">
                 <div className="auth-card-glass">
-                  {authStep === "auth" && (
+                  {authStep === "auth" && !resetToken && (
                     <>
                       <h2 className="auth-title">
                         {authMode === "login"
@@ -227,7 +256,6 @@ function App() {
                         </>
                       )}
 
-                      {/* ✅ SKIP FOR NOW (UNCHANGED) */}
                       <button
                         className="skip-link"
                         onClick={() => {
@@ -264,6 +292,25 @@ function App() {
                       </p>
                     </>
                   )}
+
+                  {resetToken && (
+                    <>
+                      <h2 className="auth-title">Set New Password</h2>
+                      <input
+                        className="auth-input"
+                        type="password"
+                        placeholder="New password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <button
+                        className="auth-btn"
+                        onClick={() => handleResetPassword(resetToken)}
+                      >
+                        Reset Password
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -272,7 +319,6 @@ function App() {
       </Routes>
     );
   }
-
   /* ---------- MAIN APP (UNCHANGED) ---------- */
    return (
     <div className="app-container">
