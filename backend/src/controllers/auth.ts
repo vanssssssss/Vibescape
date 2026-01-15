@@ -52,7 +52,7 @@ export const login = async(req : Request,res : Response) =>{
     try{
         const userId = await loginUser(email,password);
 
-        return res.status(200).json({message:"User logged in successfully!",user_id:userId});
+        return res.status(200).json({message:"User logged in successfully!",user_id:userId, token:null});
     }catch(err:any){
         if(err.message == "INVALID_CREDENTIALS"){
             return res.status(401).json({msg:"wrong username or password. Try again!!!"});
