@@ -12,6 +12,9 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "./App.css";
 
+import Favourites from "./Favourites";
+import MemoriesPage from "./MemoriesPage";
+
 /* ---------- PURPLE MARKER ---------- */
 const purpleMarker = new L.Icon({
   iconUrl:
@@ -897,9 +900,11 @@ function App() {
             }
           />
 
-          <Route path="/photos" element={<div className="blank-page" />} />
-          <Route path="/favorites" element={<div className="blank-page" />} />
-          <Route path="/places" element={<Navigate to="/" />} />
+
+         <Route path="/favorites" element={<Favourites />} />
+
+        <Route path="/photos" element={<MemoriesPage />} />
+
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
