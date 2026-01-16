@@ -1,12 +1,24 @@
-.favorites-page {
-  padding: 32px;
+/* PAGE BACKGROUND */
+.favourites-page {
+  padding: 0 32px 32px;
+  background: #eef0f4; /* same as Memories page */
 }
 
+.favourites-wrapper {
+  padding: 28px;
+  max-width: 1100px;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* TITLE */
 .fav-title {
   font-size: 28px;
   margin-bottom: 4px;
 }
 
+/* SUBTITLE */
 .fav-subtitle {
   color: #666;
   margin-bottom: 20px;
@@ -41,6 +53,7 @@
   gap: 14px;
 }
 
+/* CARD */
 .fav-card {
   background: white;
   padding: 16px 20px;
@@ -53,6 +66,13 @@
 
 .fav-card.visited {
   opacity: 0.7;
+}
+
+/* LEFT CONTENT */
+.fav-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .fav-card h3 {
@@ -68,7 +88,6 @@
 .fav-date {
   font-size: 12px;
   color: #999;
-  margin-top: 2px;
 }
 
 /* BUTTON */
@@ -86,13 +105,9 @@
   background: #2ecc71;
 }
 
+/* EMPTY STATE */
 .empty-text {
   color: #888;
   text-align: center;
   margin-top: 40px;
-}
-.fav-card > div {
-  display: flex;
-  flex-direction: column;
-  gap: 6px; 
 }
