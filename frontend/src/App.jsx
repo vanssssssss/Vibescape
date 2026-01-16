@@ -1,3 +1,5 @@
+import logo from "./assets/logo.png";
+
 import { useState } from "react";
 import {
   Routes,
@@ -36,6 +38,8 @@ function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [nickname, setNickname] = useState("");
+
 
   const [query, setQuery] = useState("");
   const [places, setPlaces] = useState([]);
@@ -373,7 +377,8 @@ function App() {
           className={`sidebar-icon sidebar-bottom ${
             showProfile ? "active purple" : ""
           }`}
-          onClick={() => setShowProfile(!showProfile)}
+          onClick={() => navigate("/settings")}
+
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="8" r="4" stroke="white" strokeWidth="2"/>
@@ -382,38 +387,322 @@ function App() {
         </div>
       </div>
 
-      {/* PROFILE PANEL */}
-      {showProfile && (
-        <div className="profile-panel">
-          <div className="profile-header">
-            <h3>User Profile</h3>
-            <button className="close-btn" onClick={() => setShowProfile(false)}>✕</button>
-          </div>
-
-          {user ? (
-            <>
-              <p><strong>Name:</strong> {user.name}</p>
-              <p><strong>Email:</strong> {user.email}</p>
-              <button
-                className="logout-btn"
-                onClick={() => {
-                  setUser(null);
-                  setIsAuthenticated(false);
-                }}
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <p>No user logged in</p>
-          )}
-        </div>
-      )}
-
+     
       <div className="main-content">
-        <h1 className="logo">VibeScape</h1>
+{/* TOP BROWSER-LIKE RIBBON */}
+<div
+  style={{
+    height: "44px",
+    width: "100%",
+    background: "#E5E7EB", /* same as vibe input */
+    display: "flex",
+    alignItems: "center",
+    padding: "0 6px",
+    //boxShadow: "0 10px 24px rgba(0,0,0,0.10)",
+    marginBottom: "12px",
+    marginTop: "-10px",      // ✅ shifted slightly upwards
+  }}
+><div style={{ marginRight: "2px" }}>
+  <svg
+    width="58"
+    height="58"
+    viewBox="0 0 64 64"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    {/* Globe Outer */}
+    <circle cx="32" cy="32" r="18" fill="#7C3AED" opacity="0.95" />
+
+    {/* Globe Highlight */}
+    <circle cx="26" cy="26" r="12" fill="white" opacity="0.12" />
+
+    {/* Latitude Line */}
+    <path
+      d="M14 32H50"
+      stroke="white"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      opacity="0.85"
+    />
+
+    {/* Longitude Curves */}
+    <path
+      d="M32 14C26 20 26 44 32 50"
+      stroke="white"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      opacity="0.7"
+    />
+    <path
+      d="M32 14C38 20 38 44 32 50"
+      stroke="white"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      opacity="0.7"
+    />
+
+    {/* Top Curve */}
+    <path
+      d="M20 22C24 25 40 25 44 22"
+      stroke="white"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      opacity="0.6"
+    />
+
+    {/* Bottom Curve */}
+    <path
+      d="M20 42C24 39 40 39 44 42"
+      stroke="white"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      opacity="0.6"
+    />
+  </svg>
+</div>
+
+  {/* App Name */}
+  <span
+    style={{
+      fontSize: "28px",
+      fontWeight: "900",
+      color: "#111827",
+      letterSpacing: "-0.5px",
+    }}
+  >
+    VibeScape
+  </span>
+</div>
 
         <Routes>
+      <Route
+  path="/settings"
+  element={
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        padding: "26px",
+        borderRadius: "22px",
+        background: "rgba(255,255,255,0.75)",
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
+        boxShadow: "0 22px 60px rgba(0,0,0,0.16)",
+        border: "1px solid rgba(0,0,0,0.06)",
+      }}
+    >
+      {/* HEADER */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "22px",
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              fontSize: "26px",
+              fontWeight: "900",
+              color: "#111827",
+              margin: 0,
+            }}
+          >
+            Account Settings
+          </h2>
+          <p
+            style={{
+              margin: "6px 0 0",
+              fontSize: "14px",
+              fontWeight: "600",
+              color: "#6B7280",
+            }}
+          >
+            Manage your account information and preferences
+          </p>
+        </div>
+
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            width: "42px",
+            height: "42px",
+            borderRadius: "14px",
+            border: "1px solid rgba(0,0,0,0.08)",
+            background: "rgba(255,255,255,0.85)",
+            cursor: "pointer",
+            fontSize: "18px",
+            fontWeight: "900",
+            color: "#111827",
+            boxShadow: "0 10px 24px rgba(0,0,0,0.08)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0px)";
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* BASIC INFO CARD */}
+      <div
+        style={{
+          padding: "18px",
+          borderRadius: "22px",
+          background: "rgba(243,244,246,0.65)",
+          border: "1px solid rgba(0,0,0,0.06)",
+          boxShadow: "0 14px 32px rgba(0,0,0,0.10)",
+        }}
+      >
+        {/* SECTION HEADER */}
+        <div style={{ marginBottom: "14px" }}>
+          <h3
+            style={{
+              fontSize: "16px",
+              fontWeight: "900",
+              color: "#111827",
+              margin: 0,
+            }}
+          >
+            Basic Info
+          </h3>
+          <p
+            style={{
+              margin: "6px 0 0",
+              fontSize: "13px",
+              fontWeight: "600",
+              color: "#6B7280",
+            }}
+          >
+            Update your personal information
+          </p>
+        </div>
+
+        {/* INFO ROWS */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {/* User Logged In */}
+<div
+  style={{
+    padding: "14px 16px",
+    borderRadius: "18px",
+    background: "rgba(255,255,255,0.85)",
+    border: "1px solid rgba(0,0,0,0.06)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  }}
+>
+  <span style={{ fontWeight: "900", color: "#111827", fontSize: "15px" }}>
+    User logged in
+  </span>
+  <span style={{ fontWeight: "700", color: "#6B7280", fontSize: "14px" }}>
+  {user?.email || ""}
+
+  </span>
+</div>
+
+
+         <div
+  style={{
+    padding: "14px 16px",
+    borderRadius: "18px",
+    background: "rgba(255,255,255,0.85)",
+    border: "1px solid rgba(0,0,0,0.06)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  }}
+>
+  <span style={{ fontWeight: "900", color: "#111827", fontSize: "15px" }}>
+    Email
+  </span>
+  <span style={{ fontWeight: "700", color: "#6B7280", fontSize: "14px" }}>
+    {user?.email || ""}
+
+  </span>
+</div>
+
+          {/* Nickname */}
+          <div
+            style={{
+              padding: "14px 16px",
+              borderRadius: "18px",
+              background: "rgba(255,255,255,0.85)",
+              border: "1px solid rgba(0,0,0,0.06)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "14px",
+            }}
+          >
+            <span style={{ fontWeight: "900", color: "#111827" }}>
+              Nickname
+            </span>
+
+            <input
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="Add nickname"
+              style={{
+                flex: 1,
+                maxWidth: "280px",
+                padding: "10px 12px",
+                borderRadius: "14px",
+                border: "1px solid rgba(0,0,0,0.10)",
+                outline: "none",
+                fontSize: "14px",
+                fontWeight: "700",
+                background: "white",
+                color: "#111827",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.border = "1px solid rgba(124,58,237,0.65)";
+                e.currentTarget.style.boxShadow =
+                  "0 0 0 4px rgba(124,58,237,0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.border = "1px solid rgba(0,0,0,0.10)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            />
+          </div>
+        </div>
+
+       <button
+  onClick={() => {
+    setUser(null);
+    setIsAuthenticated(false);
+    navigate("/");
+  }}
+  style={{
+    margin: "18px auto 0",   // ✅ center
+    display: "block",        // ✅ center
+    width: "220px",
+    padding: "14px",
+    borderRadius: "18px",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "900",
+    fontSize: "15px",
+    background: "#7C3AED",
+    color: "white",
+    boxShadow: "0 18px 40px rgba(124,58,237,0.30)",
+    transition: "0.2s",
+  }}
+>
+  Logout
+</button>
+
+      </div>
+    </div>
+  }
+/>
+
+
           <Route
             path="/"
             element={
@@ -426,7 +715,168 @@ function App() {
                       position={[p.latitude, p.longitude]}
                       icon={purpleMarker}
                     >
-                      <Popup>{p.name}</Popup>
+                     <Popup autoPan={true} keepInView={true} maxWidth={220} closeButton={true}>
+  <div
+    style={{
+      minWidth: "165px",
+      padding: "8px 10px",
+      borderRadius: "14px",
+      background: "rgba(255, 255, 255, 0.70)",
+      backdropFilter: "blur(14px)",
+      WebkitBackdropFilter: "blur(14px)",
+      border: "1px solid rgba(255, 255, 255, 0.6)",
+      boxShadow: "0 18px 45px rgba(0,0,0,0.18)",
+      color: "#111",
+      fontFamily: "Roboto, sans-serif",
+    }}
+  >
+    {/* PLACE NAME */}
+    <div
+      style={{
+        fontWeight: 800,
+        fontSize: "14px",
+        marginBottom: "6px",
+        color: "#1f1f1f",
+      }}
+    >
+      {p.name}
+    </div>
+
+    {/* OPTIONS DROPDOWN */}
+    <details>
+      <summary
+        style={{
+          cursor: "pointer",
+          fontSize: "13px",
+          fontWeight: 700,
+          color: "#4c1d95",
+          listStyle: "none",
+          userSelect: "none",
+        }}
+      >
+        ▼ Options
+      </summary>
+
+      <div
+        style={{
+          marginTop: "10px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "6px",
+          fontSize: "13px",
+        }}
+      >
+        {/* ADD TO MEMORIES */}
+        <div
+          style={{
+            padding: "8px 10px",
+            borderRadius: "12px",
+            background: "rgba(255,255,255,0.55)",
+            border: "1px solid rgba(0,0,0,0.06)",
+          }}
+        >
+          <div style={{ fontWeight: 800, marginBottom: "6px" }}>
+            Add to Memories
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "5px",
+            }}
+          >
+            <div
+              style={{
+                padding: "6px 8px",
+                borderRadius: "10px",
+                cursor: "pointer",
+                transition: "0.2s",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = "rgba(124,58,237,0.12)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "transparent")
+              }
+            >
+              📝 Add Notes
+            </div>
+
+            <div
+              style={{
+                padding: "6px 8px",
+                borderRadius: "10px",
+                cursor: "pointer",
+                transition: "0.2s",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = "rgba(124,58,237,0.12)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "transparent")
+              }
+            >
+              📷 Add Photos
+            </div>
+          </div>
+        </div>
+
+        {/* ADD TO FAVOURITES */}
+        <div
+          style={{
+            padding: "10px",
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontWeight: 700,
+            background: "rgba(255,255,255,0.55)",
+            border: "1px solid rgba(0,0,0,0.06)",
+            transition: "0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-1px)";
+            e.currentTarget.style.boxShadow = "0 10px 22px rgba(0,0,0,0.10)";
+            e.currentTarget.style.background = "rgba(124,58,237,0.10)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0px)";
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.background = "rgba(255,255,255,0.55)";
+          }}
+        >
+          ⭐ Add to Favourites
+        </div>
+
+        {/* MARK AS VISITED */}
+        <div
+          style={{
+            padding: "10px",
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontWeight: 700,
+            background: "rgba(255,255,255,0.55)",
+            border: "1px solid rgba(0,0,0,0.06)",
+            transition: "0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-1px)";
+            e.currentTarget.style.boxShadow = "0 10px 22px rgba(0,0,0,0.10)";
+            e.currentTarget.style.background = "rgba(16,185,129,0.12)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0px)";
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.background = "rgba(255,255,255,0.55)";
+          }}
+        >
+          ✅ Mark as Visited
+        </div>
+      </div>
+    </details>
+  </div>
+</Popup>
+
+
                     </Marker>
                   ))}
                 </MapContainer>
