@@ -16,6 +16,7 @@ export const searchPlace = async(req : Request, res: Response) => {
 
     const tag = parseVibe(vibe);
     const place = await filterPlacesbyTag(tag, lat,lon, radius);
+    console.log(place);
 
     res.json({query:vibe,tags:tag,places:place});
 }
