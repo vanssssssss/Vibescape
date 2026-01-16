@@ -1,5 +1,7 @@
 import {hashPassword,comparePassword} from "../utils/password.js";
-import { createUser,findUserByEmail } from "../db/queries/user.js";
+import { createUser,findUserByEmail,updateUserPassword } from "../db/queries/user.js";
+import { findValidResetToken, markResetTokenUsed } from "../db/queries/passwordReset.js";
+import { hashToken } from "../utils/token.js";
 
 export async function registerUser(name: string,
  email: string,password: string){
@@ -31,4 +33,18 @@ export async function loginUser(email: string,password: string){
     }
 
     return user.user_id;
+}
+
+export async function resetPasswordWithToken(rawToken: string, newPassword: string): Promise<boolean>{
+    const tokenHash = hashToken(rawToken);
+    const resetToken = await findValidResetToken(tokenHash);
+
+    if (!resetToken) {
+        return false;
+    }
+    
+    const hashedPassword = await hashPassword(newPassword);
+    await updateUserPassword(resetToken.user_id,hashedPassword );
+    await markResetTokenUsed(resetToken.id);
+    return true;
 }
