@@ -46,7 +46,6 @@ export default function Favourites() {
   return (
     <div className="favourites-page">
       <h2 className="fav-title">Saved Places</h2>
-      <p className="fav-subtitle">Places you saved to visit later</p>
 
       {/* FILTER TABS */}
       <div className="fav-filters">
