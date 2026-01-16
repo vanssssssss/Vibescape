@@ -58,7 +58,7 @@ function App() {
     setLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/search?vibe=${query}&lat=26.9124&lon=75.7873&radius=50000000`
+        `http://localhost:3000/api/v1/search?vibe=${query}&lat=26.9124&lon=75.7873&radius=5000`
       );
       const data = await res.json();
       setPlaces(

@@ -25,6 +25,6 @@ export async function getAllPlaces(lat: Number, lon: Number, radius: Number) : P
       )
       GROUP BY p.place_id
       ORDER BY distance ASC
-    `,[lat, lon, radius]);
+    `,[lon, lat, radius]);
     return result.rows;
 }
