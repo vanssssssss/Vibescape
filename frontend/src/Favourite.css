@@ -1,0 +1,146 @@
+/* PAGE BACKGROUND */
+.favourites-page {
+  padding: 0 32px 32px;
+}
+
+.favourites-wrapper {
+  padding: 28px;
+  max-width: 1100px;
+  background: #f3f4f6;   /* ✅ grey box */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border-radius: 18px;
+}
+
+/* TITLE */
+.fav-title {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+/* SUBTITLE */
+.fav-subtitle {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+/* FILTER BUTTONS */
+.fav-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.fav-filters button {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.fav-filters button.active {
+  background: #6c5ce7;
+  color: white;
+  border-color: #6c5ce7;
+}
+
+/* LIST */
+.fav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* CARD */
+.fav-card {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.fav-card.visited {
+  opacity: 0.7;
+}
+
+/* LEFT CONTENT */
+.fav-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fav-card h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.fav-city {
+  font-size: 13px;
+  color: #777;
+}
+
+.fav-date {
+  font-size: 12px;
+  color: #999;
+}
+
+/* BUTTON */
+.visit-btn {
+  background: #6c5ce7;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.fav-card.visited .visit-btn {
+  background: #2ecc71;
+}
+
+.visited-btn {
+  background: #2ecc71 !important;
+  cursor: default !important;
+}
+
+/* ACTIONS ROW */
+.fav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* REMOVE BUTTON */
+.remove-btn {
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  color: #999;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.remove-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #ef4444;
+}
+
+/* EMPTY STATE */
+.empty-text {
+  color: #888;
+  text-align: center;
+  margin-top: 40px;
+}

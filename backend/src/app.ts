@@ -1,12 +1,26 @@
 import express from "express";
+<<<<<<< Updated upstream
 import cors from "cors"; // import cors middleware
+=======
+import searchPlaceRouter from "./routes/searchPlace.js";
+import authRouter from "./routes/auth.js";
+import favoritesRouter from "./routes/favorites.js";
+import cors from "cors";
+import "dotenv/config";
+>>>>>>> Stashed changes
 
 const app = express();
 
 app.use(cors());          // added CORS middleware
 app.use(express.json());
 
+<<<<<<< Updated upstream
 export default app;
+=======
+app.use('/api/v1/search',searchPlaceRouter);
+app.use('/api/v1/auth',authRouter);
+app.use('/api/v1/favorites',favoritesRouter);
+>>>>>>> Stashed changes
 
 //temporary
 /*app.get("/api/v1/search", (req, res) => {
