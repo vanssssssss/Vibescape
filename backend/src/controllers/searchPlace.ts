@@ -11,7 +11,7 @@ export const searchPlace = async(req : Request, res: Response) => {
     console.log("search places");
 
     if(typeof vibe !== "string" || Number.isNaN(lat) || Number.isNaN(lon) || Number.isNaN(radius)){
-        return res.status(400).json({error:"vibe is required"});
+        return res.status(400).json({message:"vibe is required"});
     }
 
     const tag = parseVibe(vibe);
