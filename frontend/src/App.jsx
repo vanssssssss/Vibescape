@@ -90,6 +90,7 @@ function App() {
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.message);
+      localStorage.setItem("token", data.token);
 
       setUser({ email, id: data.user_id });
       setIsAuthenticated(true);
@@ -110,7 +111,8 @@ function App() {
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.message);
-
+      localStorage.setItem("token", data.token);
+      
       setUser({ email: data.email, id: data.user_id });
       setIsAuthenticated(true);
       navigate("/");
