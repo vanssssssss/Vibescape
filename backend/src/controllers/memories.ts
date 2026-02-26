@@ -11,7 +11,11 @@ interface AuthRequest extends Request {
 export const createMemory = async(req : AuthRequest,res : Response) =>{
     try {
     const { place_id, title, notes } = req.body;
-    const userId = req.user!.id;
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    } 
+
+    const userId = req.user.id;
 
     if (!place_id) {
       return res.status(400).json({
@@ -45,7 +49,11 @@ export const createMemory = async(req : AuthRequest,res : Response) =>{
 
 export const getAllMemories = async(req : AuthRequest,res : Response) =>{
     try {
-    const userId = req.user!.id;
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    } 
+
+    const userId = req.user.id;
 
     const result = await pool.query(
       `
@@ -71,7 +79,11 @@ export const addImage = async(req : AuthRequest,res : Response) =>{
     try {
     const { memoryId } = req.params;
     const { image_url } = req.body;
-    const userId = req.user!.id;
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    } 
+
+    const userId = req.user.id;
 
     if (!image_url) {
       return res.status(400).json({
@@ -131,7 +143,11 @@ export const addNotes = async(req : AuthRequest,res : Response) => {
     try {
     const { memoryId } = req.params;
     const { notes, title } = req.body;
-    const userId = req.user!.id;
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    } 
+
+    const userId = req.user.id;
 
     const memory = await pool.query(
       `
@@ -153,6 +169,8 @@ export const addNotes = async(req : AuthRequest,res : Response) => {
         message: "Forbidden"
       });
     }
+
+    
 
     const result = await pool.query(
       `
