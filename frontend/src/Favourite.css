@@ -104,6 +104,40 @@
   background: #2ecc71;
 }
 
+.visited-btn {
+  background: #2ecc71 !important;
+  cursor: default !important;
+}
+
+/* ACTIONS ROW */
+.fav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* REMOVE BUTTON */
+.remove-btn {
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  color: #999;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.remove-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #ef4444;
+}
+
 /* EMPTY STATE */
 .empty-text {
   color: #888;
