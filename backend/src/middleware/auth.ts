@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import type { JwtPayload } from "jsonwebtoken";
+import type { JwtPayload } from "../interfaces/jwt.js";
 
 interface AuthRequest extends Request {
   user?: {
@@ -19,14 +19,18 @@ export const verifyToken = (req: AuthRequest,res: Response,next: NextFunction) =
 
   if (!process.env.JWT_SECRET_KEY) {
     throw new Error("JWT secret not defined");
-  }
+    }
 
   try {
+    
     const decoded = jwt.verify(
       token as string,
       process.env.JWT_SECRET_KEY
     ) as JwtPayload;
 
+    if(!decoded.id){
+      throw new Error("id is not decoded");
+    }
     req.user = {
       id: decoded.id
     };
