@@ -1,5 +1,5 @@
 import {Router} from "express";
-import { createMemory } from "../controllers/memories.js";
+import { createMemory, getAllMemories } from "../controllers/memories.js";
 const router = Router();
 
 router.route('/').post(createMemory);
