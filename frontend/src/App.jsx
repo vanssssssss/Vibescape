@@ -1,6 +1,6 @@
 import logo from "./assets/logo.png";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Routes,
   Route,
@@ -51,6 +51,9 @@ function App() {
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
 
+  const fileInputRef = useRef(null);
+  const [selectedPlace, setSelectedPlace] = useState(null);
+
   /* ---------- SEARCH (UNCHANGED) ---------- */
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -76,6 +79,160 @@ function App() {
   };
 
   const handleKey = (e) => e.key === "Enter" && handleSearch();
+
+  /*----------handleAddPhoto------------*/
+  const handleAddPhoto = (place) => {
+  setSelectedPlace(place);
+  fileInputRef.current.click();
+  };
+
+  const handleFileUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const authRes = await fetch(
+      "http://localhost:3000/api/v1/memories/imagekit-auth"
+    );
+    const authData = await authRes.json();
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", file.name);
+    formData.append("token", authData.token);
+    formData.append("expire", authData.expire);
+    formData.append("signature", authData.signature);
+    formData.append("publicKey", "public_qUoQau8hBOj4JWLVStDXyCgbNIY=");
+
+    const uploadRes = await fetch(
+      "https://upload.imagekit.io/api/v1/files/upload",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const uploadData = await uploadRes.json();
+    const imageUrl = uploadData.url;
+
+    const memRes = await fetch(
+      "http://localhost:3000/api/v1/memories",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const memories = await memRes.json();
+
+    let memory = memories.find(
+      (m) => m.place_id === selectedPlace.id
+    );
+
+    if (!memory) {
+      const createRes = await fetch(
+        "http://localhost:3000/api/v1/memories",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            place_id: selectedPlace.id,
+            title: selectedPlace.name,
+          }),
+        }
+      );
+
+      memory = await createRes.json();
+    }
+
+    await fetch(
+      `http://localhost:3000/api/v1/memories/${memory.memory_id}/images`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          image_url: imageUrl,
+        }),
+      }
+    );
+
+    alert("Photo added to memory!");
+  } catch (err) {
+    console.error(err);
+    alert("Image upload failed");
+  }
+};
+
+  /*-----------handleAddNotes----------*/
+  const handleAddNotes = async (place) => {
+    const note = prompt("Write your memory notes:");
+
+      if (!note) return;
+
+      try {
+      const token = localStorage.getItem("token");
+
+      const memRes = await fetch(
+        "http://localhost:3000/api/v1/memories",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const memories = await memRes.json();
+
+      let memory = memories.find(
+        (m) => m.place_id === place.id
+      );
+
+      if (!memory) {
+        const createRes = await fetch(
+          "http://localhost:3000/api/v1/memories",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              place_id: place.id,
+              title: place.name,
+            }),
+          }
+        );
+
+        memory = await createRes.json();
+      }
+
+      await fetch(
+        `http://localhost:3000/api/v1/memories/${memory.memory_id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            notes: note,
+          }),
+        }
+      );
+
+      alert("Notes saved!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save notes");
+    }
+  };
 
   /* ---------- AUTH HANDLERS ---------- */
 
@@ -331,6 +488,13 @@ function App() {
   /* ---------- MAIN APP (UNCHANGED) ---------- */
    return (
     <div className="app-container">
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        accept="image/*"
+        onChange={handleFileUpload}
+      />
       {/* SIDEBAR */}
       <div className="sidebar">
         <div
@@ -798,6 +962,7 @@ function App() {
                 cursor: "pointer",
                 transition: "0.2s",
               }}
+              onClick={() => handleAddNotes(p)}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.background = "rgba(124,58,237,0.12)")
               }
@@ -815,6 +980,7 @@ function App() {
                 cursor: "pointer",
                 transition: "0.2s",
               }}
+              onClick={() => handleAddPhoto(p)}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.background = "rgba(124,58,237,0.12)")
               }
