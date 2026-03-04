@@ -1,6 +1,6 @@
 import logo from "./assets/logo.png";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Routes,
   Route,
@@ -14,6 +14,7 @@ import "./App.css";
 
 import Favourites from "./Favourites";
 import MemoriesPage from "./MemoriesPage";
+import MapPanHandler from "./MapPanHandler";
 
 /* ---------- PURPLE MARKER ---------- */
 const purpleMarker = new L.Icon({
@@ -48,19 +49,57 @@ function App() {
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(false);
   const [popupStatus, setPopupStatus] = useState({}); // track per-place action state
+  const [currentBBox, setCurrentBBox] = useState(null); // current map viewport bbox
 
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
 
-  /* ---------- SEARCH (UNCHANGED) ---------- */
+  /* ---------- MAP PAN HANDLER (new dynamic DB fetch) ---------- */
+  // Called every time the user pans or zooms the map.
+  // Sends bbox to backend → backend checks bbox_cache → fetches OSM if needed.
+  const handleBBoxChange = useCallback(async (bbox) => {
+    setCurrentBBox(bbox);
+    // Only auto-fetch if no vibe search is active (i.e. user hasn't typed a query)
+    // If a query is active, we keep showing those results until they clear it.
+    if (query.trim()) return;
+
+    try {
+      const res = await fetch("http://localhost:3000/api/v1/search/map", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bbox }),
+      });
+      const data = await res.json();
+      setPlaces(
+        (data.places || []).map((p) => ({
+          ...p,
+          latitude: p.latitude ?? p.lat,
+          longitude: p.longitude ?? p.lng,
+        }))
+      );
+    } catch (err) {
+      console.error("Map pan fetch failed:", err);
+    }
+  }, [query]);
+
+  /* ---------- VIBE SEARCH (now also sends bbox) ---------- */
+  // When user types a vibe query, search within the current visible bbox.
   const handleSearch = async () => {
     if (!query.trim()) return;
 
     setLoading(true);
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/v1/search?vibe=${query}&lat=26.9124&lon=75.7873&radius=5000`
-      );
+      const res = await fetch("http://localhost:3000/api/v1/search/map", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bbox: currentBBox ?? {
+            // fallback to Jaipur center if map hasn't moved yet
+            south: 26.85, west: 75.75, north: 26.97, east: 75.90,
+          },
+          vibe: query,
+        }),
+      });
       const data = await res.json();
       setPlaces(
         (data.places || []).map((p) => ({
@@ -764,6 +803,7 @@ function App() {
               <div className="search-section">
                 <MapContainer center={[26.9124, 75.7873]} zoom={13}>
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <MapPanHandler onBBoxChange={handleBBoxChange} />
                   {places.map((p) => (
                     <Marker
                       key={p.id}
