@@ -3,7 +3,11 @@ import searchPlaceRouter from "./routes/searchPlace.js";
 import authRouter from "./routes/auth.js";
 import favoritesRouter from "./routes/favorites.js";
 import memoriesRouter from "./routes/memories.js";
+<<<<<<< HEAD
 import locationRouter from "./routes/locationRoutes.js";   // ← NEW — for geocoding and nearby search
+=======
+import favoritesRouter from "./routes/favorites.js";
+>>>>>>> c617b4f (favorites page backend api)
 import cors from "cors";
 import "dotenv/config";
 
@@ -34,7 +38,10 @@ app.use('/api/v1/search',searchPlaceRouter);
 app.use('/api/v1/auth',authRouter);
 app.use('/api/v1/memories',memoriesRouter);
 app.use('/api/v1/favorites',favoritesRouter);
+<<<<<<< HEAD
 app.get('/',(req, res) => { res.send("API running")});
+=======
+>>>>>>> c617b4f (favorites page backend api)
 
 >>>>>>> df7c7cc (Update app.ts)
 export default app;
