@@ -24,4 +24,8 @@ app.use("/api/v1/favorites", favoritesRouter);
 app.use("/api/location", locationRouter);        // ← NEW: POST /api/location/geocode
                                                  //        GET  /api/location/nearby
 
+app.get("/", (req, res) => {
+  res.send("API running");
+});
+
 export default app;
