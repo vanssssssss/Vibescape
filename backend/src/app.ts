@@ -17,6 +17,7 @@ if (!frontend_url) {
 app.use(cors({ origin: frontend_url }));
 app.use(express.json());
 
+<<<<<<< HEAD
 app.use("/api/v1/search", searchPlaceRouter);   // GET  /api/v1/search?vibe=...
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/memories", memoriesRouter);
@@ -28,4 +29,12 @@ app.get("/", (req, res) => {
   res.send("API running");
 });
 
+=======
+app.use('/api/v1/search',searchPlaceRouter);
+app.use('/api/v1/auth',authRouter);
+app.use('/api/v1/memories',memoriesRouter);
+app.use('/api/v1/favorites',favoritesRouter);
+app.get('/',(req, res) => { res.send("API running")});
+
+>>>>>>> df7c7cc (Update app.ts)
 export default app;
