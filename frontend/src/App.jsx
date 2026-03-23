@@ -1,6 +1,6 @@
 import logo from "./assets/logo.png";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Routes,
   Route,
@@ -47,9 +47,13 @@ function App() {
   const [query, setQuery] = useState("");
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [popupStatus, setPopupStatus] = useState({}); // track per-place action state
 
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
+
+  const fileInputRef = useRef(null);
+  const [selectedPlace, setSelectedPlace] = useState(null);
 
   /* ---------- SEARCH (UNCHANGED) ---------- */
   const handleSearch = async () => {
@@ -76,6 +80,210 @@ function App() {
   };
 
   const handleKey = (e) => e.key === "Enter" && handleSearch();
+
+  /*----------handleAddPhoto------------*/
+  const handleAddPhoto = (place) => {
+  setSelectedPlace(place);
+  fileInputRef.current.click();
+  };
+
+  const handleFileUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const authRes = await fetch(
+      "http://localhost:3000/api/v1/memories/imagekit-auth"
+    );
+    const authData = await authRes.json();
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", file.name);
+    formData.append("token", authData.token);
+    formData.append("expire", authData.expire);
+    formData.append("signature", authData.signature);
+    formData.append("publicKey", "public_qUoQau8hBOj4JWLVStDXyCgbNIY=");
+
+    const uploadRes = await fetch(
+      "https://upload.imagekit.io/api/v1/files/upload",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const uploadData = await uploadRes.json();
+    const imageUrl = uploadData.url;
+
+    const memRes = await fetch(
+      "http://localhost:3000/api/v1/memories",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const memories = await memRes.json();
+
+    let memory = memories.find(
+      (m) => m.place_id === selectedPlace.id
+    );
+
+    if (!memory) {
+      const createRes = await fetch(
+        "http://localhost:3000/api/v1/memories",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            place_id: selectedPlace.id,
+            title: selectedPlace.name,
+          }),
+        }
+      );
+
+      memory = await createRes.json();
+    }
+
+    await fetch(
+      `http://localhost:3000/api/v1/memories/${memory.memory_id}/images`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          image_url: imageUrl,
+        }),
+      }
+    );
+
+    alert("Photo added to memory!");
+  } catch (err) {
+    console.error(err);
+    alert("Image upload failed");
+  }
+};
+
+  /*-----------handleAddNotes----------*/
+  const handleAddNotes = async (place) => {
+    const note = prompt("Write your memory notes:");
+
+      if (!note) return;
+
+      try {
+      const token = localStorage.getItem("token");
+
+      const memRes = await fetch(
+        "http://localhost:3000/api/v1/memories",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const memories = await memRes.json();
+
+      let memory = memories.find(
+        (m) => m.place_id === place.id
+      );
+
+      if (!memory) {
+        const createRes = await fetch(
+          "http://localhost:3000/api/v1/memories",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              place_id: place.id,
+              title: place.name,
+            }),
+          }
+        );
+
+        memory = await createRes.json();
+      }
+
+      await fetch(
+        `http://localhost:3000/api/v1/memories/${memory.memory_id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            notes: note,
+          }),
+        }
+      );
+
+      alert("Notes saved!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save notes");
+    }
+  }
+  /* ---------- FAVOURITES HELPERS ---------- */
+  const handleAddToFavourites = async (p) => {
+    if (!user?.id) return alert("Please log in to save places.");
+    setPopupStatus((prev) => ({ ...prev, [p.id]: "saving" }));
+    try {
+      const res = await fetch("http://localhost:3000/api/v1/favorites/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user.id,
+          place_id: String(p.id),
+          place_name: p.name,
+          city: "Jaipur",
+        }),
+      });
+      if (res.status === 409) {
+        setPopupStatus((prev) => ({ ...prev, [p.id]: "already_saved" }));
+      } else if (res.ok) {
+        setPopupStatus((prev) => ({ ...prev, [p.id]: "saved" }));
+      } else {
+        throw new Error();
+      }
+    } catch {
+      setPopupStatus((prev) => ({ ...prev, [p.id]: "error" }));
+    }
+  };
+
+  const handleMarkVisited = async (p) => {
+    if (!user?.id) return alert("Please log in to save places.");
+    setPopupStatus((prev) => ({ ...prev, [p.id]: "marking" }));
+    try {
+      const res = await fetch("http://localhost:3000/api/v1/favorites/visited", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user.id,
+          place_id: String(p.id),
+          place_name: p.name,
+          city: "Jaipur",
+        }),
+      });
+      if (res.ok) {
+        setPopupStatus((prev) => ({ ...prev, [p.id]: "visited" }));
+      } else {
+        throw new Error();
+      }
+    } catch {
+      setPopupStatus((prev) => ({ ...prev, [p.id]: "error" }));
+    }
+  };
 
   /* ---------- AUTH HANDLERS ---------- */
 
@@ -331,6 +539,13 @@ function App() {
   /* ---------- MAIN APP (UNCHANGED) ---------- */
    return (
     <div className="app-container">
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        accept="image/*"
+        onChange={handleFileUpload}
+      />
       {/* SIDEBAR */}
       <div className="sidebar">
         <div
@@ -798,6 +1013,7 @@ function App() {
                 cursor: "pointer",
                 transition: "0.2s",
               }}
+              onClick={() => handleAddNotes(p)}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.background = "rgba(124,58,237,0.12)")
               }
@@ -815,6 +1031,7 @@ function App() {
                 cursor: "pointer",
                 transition: "0.2s",
               }}
+              onClick={() => handleAddPhoto(p)}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.background = "rgba(124,58,237,0.12)")
               }
@@ -834,10 +1051,12 @@ function App() {
             borderRadius: "12px",
             cursor: "pointer",
             fontWeight: 700,
-            background: "rgba(255,255,255,0.55)",
+            background: popupStatus[p.id] === "saved" || popupStatus[p.id] === "already_saved"
+              ? "rgba(124,58,237,0.15)" : "rgba(255,255,255,0.55)",
             border: "1px solid rgba(0,0,0,0.06)",
             transition: "0.2s",
           }}
+          onClick={() => handleAddToFavourites(p)}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = "translateY(-1px)";
             e.currentTarget.style.boxShadow = "0 10px 22px rgba(0,0,0,0.10)";
@@ -846,10 +1065,15 @@ function App() {
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = "translateY(0px)";
             e.currentTarget.style.boxShadow = "none";
-            e.currentTarget.style.background = "rgba(255,255,255,0.55)";
+            e.currentTarget.style.background =
+              popupStatus[p.id] === "saved" || popupStatus[p.id] === "already_saved"
+                ? "rgba(124,58,237,0.15)" : "rgba(255,255,255,0.55)";
           }}
         >
-          ⭐ Add to Favourites
+          {popupStatus[p.id] === "saving" && "⭐ Saving…"}
+          {popupStatus[p.id] === "saved" && "⭐ Saved to To Visit!"}
+          {popupStatus[p.id] === "already_saved" && "⭐ Already saved"}
+          {!popupStatus[p.id] && "⭐ Add to Favourites"}
         </div>
 
         {/* MARK AS VISITED */}
@@ -859,10 +1083,12 @@ function App() {
             borderRadius: "12px",
             cursor: "pointer",
             fontWeight: 700,
-            background: "rgba(255,255,255,0.55)",
+            background: popupStatus[p.id] === "visited"
+              ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.55)",
             border: "1px solid rgba(0,0,0,0.06)",
             transition: "0.2s",
           }}
+          onClick={() => handleMarkVisited(p)}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = "translateY(-1px)";
             e.currentTarget.style.boxShadow = "0 10px 22px rgba(0,0,0,0.10)";
@@ -871,10 +1097,14 @@ function App() {
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = "translateY(0px)";
             e.currentTarget.style.boxShadow = "none";
-            e.currentTarget.style.background = "rgba(255,255,255,0.55)";
+            e.currentTarget.style.background =
+              popupStatus[p.id] === "visited"
+                ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.55)";
           }}
         >
-          ✅ Mark as Visited
+          {popupStatus[p.id] === "marking" && "✅ Saving…"}
+          {popupStatus[p.id] === "visited" && "✅ Marked as Visited!"}
+          {(!popupStatus[p.id] || popupStatus[p.id] === "saved" || popupStatus[p.id] === "already_saved") && "✅ Mark as Visited"}
         </div>
       </div>
     </details>
@@ -903,7 +1133,7 @@ function App() {
           />
 
 
-         <Route path="/favorites" element={<Favourites />} />
+         <Route path="/favorites" element={<Favourites user={user} />} />
 
         <Route path="/photos" element={<MemoriesPage />} />
 
