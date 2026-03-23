@@ -3,7 +3,6 @@ import searchPlaceRouter from "./routes/searchPlace.js";
 import authRouter from "./routes/auth.js";
 import favoritesRouter from "./routes/favorites.js";
 import memoriesRouter from "./routes/memories.js";
-import favoritesRouter from "./routes/favorites.js";
 import cors from "cors";
 import "dotenv/config";
 import { initTagVectors } from "./nlp/tagVectors.js";
