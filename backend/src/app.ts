@@ -4,10 +4,13 @@ import authRouter from "./routes/auth.js";
 import favoritesRouter from "./routes/favorites.js";
 import memoriesRouter from "./routes/memories.js";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import locationRouter from "./routes/locationRoutes.js";   // ← NEW — for geocoding and nearby search
 =======
 import favoritesRouter from "./routes/favorites.js";
 >>>>>>> c617b4f (favorites page backend api)
+=======
+>>>>>>> e2d9263 (..)
 import cors from "cors";
 import "dotenv/config";
 import { initTagVectors } from "./nlp/tagVectors.js";
