@@ -14,9 +14,9 @@ export const searchPlace = async(req : Request, res: Response) => {
         return res.status(400).json({message:"vibe is required"});
     }
 
-    const tag = parseVibe(vibe);
+    const tag = await parseVibe(vibe);
     const place = await filterPlacesbyTag(tag, lat,lon, radius);
-    console.log(place);
+    // console.log(place);
 
     res.json({query:vibe,tags:tag,places:place});
 }

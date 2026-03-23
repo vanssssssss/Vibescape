@@ -1,4 +1,29 @@
-import type { VibeTag } from "../types/vibe.js";
+import { VIBE_TAG, type VibeTag } from "../types/vibe.js";
+import levenshtein from "fast-levenshtein";
+import { mapUnknownWord } from "../nlp/mapUnknown.js";
+
+export function findClosest(word: string,keys: string[]): string | null {
+  let bestMatch: string | null = null;
+  let bestScore = Infinity;
+
+  for (const key of keys) {
+    const distance = levenshtein.get(word, key);
+
+    if (distance < bestScore) {
+      bestScore = distance;
+      bestMatch = key;
+    }
+  }
+
+  // normalize score (important)
+  const similarity = 1 - bestScore / Math.max(word.length, bestMatch?.length || 1);
+
+  if (similarity >= 0.7) {
+    return bestMatch;
+  }
+
+  return null;
+} 
 
 const wordsToTag = new Map<string, VibeTag> ([
     // quiet
@@ -13,7 +38,6 @@ const wordsToTag = new Map<string, VibeTag> ([
   // cafe
   ["cafe", "cafe"],
   ["coffee", "cafe"],
-  ["coffe", "cafe"], // common typo tolerance
 
   // crowded
   ["crowded", "crowded"],
@@ -56,16 +80,37 @@ const wordsToTag = new Map<string, VibeTag> ([
   ["lowcost", "budget"],
 ])
 
-export function parseVibe(sentence : string) : VibeTag[] {
-    const words = sentence.toLowerCase().replace(/[^\w\s]/g, "").split(/\s+/);
+const STOPWORDS = new Set([
+  "the", "is", "at", "which", "on", "a", "an", "to", "for", "with", "and", "near", "me", "i"
+]);
 
-    const tags: VibeTag[] = [];
+export async function parseVibe(sentence : string) : Promise<VibeTag[]> {
+    const words = sentence.toLowerCase().split(/\s+/).map(w => w.replace(/[^a-z]/g, "")).filter(Boolean);
+
+    const tagSet = new Set<VibeTag>();
+    const keys = Array.from(wordsToTag.keys());
+
     for(const w of words){
-        const tag = wordsToTag.get(w);
-        if(tag && !tags.includes(tag)){
-            tags.push(tag);
+        if (STOPWORDS.has(w)) continue;
+        if (w.length < 3) continue;
+
+        let tag = wordsToTag.get(w) ?? null;
+
+        if (!tag) {
+            const closest = findClosest(w,keys);
+            if (closest) {
+                tag = wordsToTag.get(closest)??null;
+            }
+        }
+
+        if (!tag) {
+            tag = await mapUnknownWord(w);
+        }
+
+        if(tag){
+            tagSet.add(tag);
         }
     }
 
-    return tags;
+    return Array.from(tagSet);
 }

@@ -10,6 +10,7 @@ import favoritesRouter from "./routes/favorites.js";
 >>>>>>> c617b4f (favorites page backend api)
 import cors from "cors";
 import "dotenv/config";
+import { initTagVectors } from "./nlp/tagVectors.js";
 
 const app = express();
 const frontend_url = process.env.FRONTEND_URL;
@@ -20,6 +21,7 @@ if (!frontend_url) {
 
 app.use(cors({ origin: frontend_url }));
 app.use(express.json());
+await initTagVectors();
 
 <<<<<<< HEAD
 app.use("/api/v1/search", searchPlaceRouter);   // GET  /api/v1/search?vibe=...
