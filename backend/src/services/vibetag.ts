@@ -84,10 +84,11 @@ const STOPWORDS = new Set([
   "the", "is", "at", "which", "on", "a", "an", "to", "for", "with", "and", "near", "me", "i"
 ]);
 
-export async function parseVibe(sentence : string) : Promise<VibeTag[]> {
+export async function parseVibe(sentence : string) : Promise<{ tag: VibeTag; score: number }[]> {
     const words = sentence.toLowerCase().split(/\s+/).map(w => w.replace(/[^a-z]/g, "")).filter(Boolean);
 
     const tagSet = new Set<VibeTag>();
+    const scores = new Map<VibeTag, number>();
     const keys = Array.from(wordsToTag.keys());
 
     for(const w of words){
@@ -103,14 +104,17 @@ export async function parseVibe(sentence : string) : Promise<VibeTag[]> {
             }
         }
 
-        if (!tag) {
-            tag = await mapUnknownWord(w);
+        if (tag){
+          scores.set(tag,(scores.get(tag) || 0) + 1);
+          continue;
         }
-
+        tag = await mapUnknownWord(w);
+        
         if(tag){
-            tagSet.add(tag);
+          scores.set(tag,(scores.get(tag) || 0) + 0.7);
+          continue;
         }
     }
 
-    return Array.from(tagSet);
+    return Array.from(scores.entries()).map(([tag,score]) => ({ tag,score }));
 }
