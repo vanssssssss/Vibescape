@@ -9,9 +9,7 @@ if (!smtpUser || !smtpPassword) {
 
 //connecting SMTP server
 const transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false, // Use true for port 465, false for port 587
+        service: "gmail",
         auth: {
             user: smtpUser,
             pass: smtpPassword,
@@ -31,5 +29,24 @@ export async function sendResetMail(
 
         This link expires in 15 minutes.`,
     });
-    console.log(nodemailer.getTestMessageUrl(info));
+    // console.log(nodemailer.getTestMessageUrl(info));
 }
+
+export async function sendMailVerification(
+    email: string,
+    Url: string
+){
+    const info = await transporter.sendMail({
+        from: `"Vibescape" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: "Verify your email address",
+        text: `:
+        Hi explorers,
+        Click on link below to verify your email:
+            ${Url}
+        This code will expire in 15 minutes.
+        If you did not request this, ignore this email.
+        Vibescape`,
+    });
+}
+
