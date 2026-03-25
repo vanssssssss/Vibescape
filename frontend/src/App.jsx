@@ -54,33 +54,12 @@ function App() {
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
 
-  /* ---------- MAP PAN HANDLER (new dynamic DB fetch) ---------- */
-  // Called every time the user pans or zooms the map.
-  // Sends bbox to backend → backend checks bbox_cache → fetches OSM if needed.
-  const handleBBoxChange = useCallback(async (bbox) => {
+  /* ---------- MAP PAN HANDLER ---------- */
+  // Only tracks the current viewport bbox so handleSearch can use it.
+  // Does NOT fetch places — pins should only appear after an explicit search.
+  const handleBBoxChange = useCallback((bbox) => {
     setCurrentBBox(bbox);
-    // Only auto-fetch if no vibe search is active (i.e. user hasn't typed a query)
-    // If a query is active, we keep showing those results until they clear it.
-    if (query.trim()) return;
-
-    try {
-      const res = await fetch("http://localhost:3000/api/v1/search/map", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bbox }),
-      });
-      const data = await res.json();
-      setPlaces(
-        (data.places || []).map((p) => ({
-          ...p,
-          latitude: p.latitude ?? p.lat,
-          longitude: p.longitude ?? p.lng,
-        }))
-      );
-    } catch (err) {
-      console.error("Map pan fetch failed:", err);
-    }
-  }, [query]);
+  }, []);
 
   /* ---------- VIBE SEARCH (now also sends bbox) ---------- */
   // When user types a vibe query, search within the current visible bbox.

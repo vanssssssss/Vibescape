@@ -32,54 +32,43 @@ export interface MapPlace {
   source: string;
 }
 
-/**
- * Returns all places whose location falls within the bbox.
- * If `tags` is non-empty, further filters to places that have
- * at least one of those vibe tags (OR logic, not AND).
- */
 export async function getPlacesInBBox(
   bbox: BBox,
   tags: VibeTag[] = []
 ): Promise<MapPlace[]> {
   const { south, west, north, east } = bbox;
 
-  // Build the PostGIS bbox polygon for the ST_Within check.
-  // ST_MakeEnvelope(minX, minY, maxX, maxY, srid)
-  //   minX = west longitude, minY = south latitude
-  const bboxPolygon = `ST_MakeEnvelope($1, $2, $3, $4, 4326)::geography`;
-
+  // FIX: use ST_MakeEnvelope purely as geometry (no geography cast on the envelope)
+  // and cast location to geometry for comparison - consistent types throughout
   let query: string;
   let params: unknown[];
 
   if (tags.length === 0) {
-    // ── No tag filter: return everything in bbox ─────────────
     query = `
       SELECT
-        place_id                        AS id,
-        place_name                      AS name,
-        ST_Y(location::geometry)        AS latitude,
-        ST_X(location::geometry)        AS longitude,
-        COALESCE(vibes, '{}')           AS vibes,
-        COALESCE(source, 'db')          AS source
+        place_id                          AS id,
+        place_name                        AS name,
+        ST_Y(location::geometry)          AS latitude,
+        ST_X(location::geometry)          AS longitude,
+        COALESCE(vibes, '{}')             AS vibes,
+        COALESCE(source, 'db')            AS source
       FROM places
-      WHERE ST_Within(location::geometry, ${bboxPolygon}::geometry)
+      WHERE location::geometry && ST_MakeEnvelope($1, $2, $3, $4, 4326)
       ORDER BY place_name
       LIMIT 500
     `;
     params = [west, south, east, north];
   } else {
-    // ── Tag filter: vibes column must overlap with tags array ─
-    // The && operator on arrays = "has any element in common"
     query = `
       SELECT
-        place_id                        AS id,
-        place_name                      AS name,
-        ST_Y(location::geometry)        AS latitude,
-        ST_X(location::geometry)        AS longitude,
-        COALESCE(vibes, '{}')           AS vibes,
-        COALESCE(source, 'db')          AS source
+        place_id                          AS id,
+        place_name                        AS name,
+        ST_Y(location::geometry)          AS latitude,
+        ST_X(location::geometry)          AS longitude,
+        COALESCE(vibes, '{}')             AS vibes,
+        COALESCE(source, 'db')            AS source
       FROM places
-      WHERE ST_Within(location::geometry, ${bboxPolygon}::geometry)
+      WHERE location::geometry && ST_MakeEnvelope($1, $2, $3, $4, 4326)
         AND vibes && $5::text[]
       ORDER BY place_name
       LIMIT 500
