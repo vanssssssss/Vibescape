@@ -19,6 +19,8 @@ app.use(cors({origin:frontend_url}));
 app.use(express.json());
 await initTagVectors();
 
+
+
 app.use('/api/v1/search',searchPlaceRouter);
 app.use('/api/v1/auth',authRouter);
 app.use('/api/v1/memories',memoriesRouter);
