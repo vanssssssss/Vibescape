@@ -41,7 +41,7 @@ export async function sendMailVerification(
         to: email,
         subject: "Verify your email address",
         text: `:
-        Hi explorers,
+        Hi explorer,
         Click on link below to verify your email:
             ${Url}
         This code will expire in 15 minutes.
