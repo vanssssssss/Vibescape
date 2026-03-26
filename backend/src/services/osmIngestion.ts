@@ -1,14 +1,23 @@
 /**
  * ───────────────────────────────────────────────────────────────
  * Fetches raw POIs from the Overpass API (OpenStreetMap) for a
- * given bounding box, then upserts them into the `places` table
- * in Supabase.
+ * given bounding box, then upserts them into the `places` table.
  *
  * WHY THIS FILE EXISTS:
  *   When a user pans the map to an area we haven't seen before,
  *   the backend calls fetchAndStoreOSMPlaces(bbox).
  *   This pulls ALL relevant OSM nodes/ways in that box and
  *   writes them to the DB so future requests are instant.
+ *
+ * ALL FIXES APPLIED:
+ *   1. Multiple Overpass mirror endpoints with automatic fallback.
+ *   2. Per-endpoint AbortSignal timeout reduced to 30s (was 50s).
+ *   3. Overpass QL timeout reduced from 45 → 25s.
+ *   4. Added [maxsize:33554432] (32MB) cap to prevent instant 504s.
+ *   5. Batch INSERT (50 rows per statement) instead of one-per-row.
+ *   6. ON CONFLICT uses plain (osm_id) — no WHERE clause — to match
+ *      the plain unique index `places_osm_id_unique` in your DB.
+ *   7. Clean helper functions: fetchFromOverpass + batchUpsertPlaces.
  * ───────────────────────────────────────────────────────────────
  */
 
@@ -16,29 +25,39 @@ import { pool } from "../db/db.js";
 import { assignVibesFromOSMTags } from "./vibeEnricher.js";
 import type { BBox } from "../types/bbox.js";
 
+// ── 1. Overpass endpoints (tried in order) ───────────────────
+//   overpass-api.de   — official, sometimes busy / rate-limited
+//   kumi.systems      — community mirror, usually fast
+//   maps.mail.ru      — another reliable public mirror
+const OVERPASS_ENDPOINTS: string[] = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+];
+
+// ── 2. Overpass QL query builder ─────────────────────────────
+//   timeout:25  — Overpass server-side limit (seconds)
+//   maxsize:…   — cap response at 32MB to avoid instant 504s
 function buildOverpassQuery(bbox: BBox): string {
   const { south, west, north, east } = bbox;
-  const boxStr = `${south},${west},${north},${east}`;
-
-  // includes way + relation types so parks/forts mapped as polygons also return coords
-  return `
-    [out:json][timeout:45];
-    (
-      node["amenity"~"cafe|restaurant|fast_food|bar|food_court|marketplace"](${boxStr});
-      way["amenity"~"cafe|restaurant|fast_food|bar|food_court|marketplace"](${boxStr});
-      node["tourism"~"attraction|museum|viewpoint|artwork|hotel|guest_house"](${boxStr});
-      way["tourism"~"attraction|museum|viewpoint|artwork|hotel|guest_house"](${boxStr});
-      node["leisure"~"park|garden|nature_reserve|sports_centre"](${boxStr});
-      way["leisure"~"park|garden|nature_reserve|sports_centre"](${boxStr});
-      node["historic"~"monument|memorial|fort|palace|ruins|temple|shrine"](${boxStr});
-      way["historic"~"monument|memorial|fort|palace|ruins|temple|shrine"](${boxStr});
-      node["shop"~"bakery|confectionery|mall|supermarket"](${boxStr});
-      way["shop"~"mall|supermarket"](${boxStr});
-    );
-    out center body;
-  `.trim();
+  const b = `${south},${west},${north},${east}`;
+  return (
+    `[out:json][timeout:25][maxsize:33554432];` +
+    `(` +
+    `node["amenity"~"cafe|restaurant|fast_food|bar|food_court|marketplace"](${b});` +
+    `way["amenity"~"cafe|restaurant|fast_food|bar|food_court|marketplace"](${b});` +
+    `node["tourism"~"attraction|museum|viewpoint|artwork"](${b});` +
+    `way["tourism"~"attraction|museum|viewpoint|artwork"](${b});` +
+    `node["leisure"~"park|garden|nature_reserve"](${b});` +
+    `way["leisure"~"park|garden|nature_reserve"](${b});` +
+    `node["historic"~"monument|memorial|fort|palace|ruins|temple|shrine"](${b});` +
+    `way["historic"~"monument|memorial|fort|palace|ruins|temple|shrine"](${b});` +
+    `node["shop"~"bakery|confectionery|mall|supermarket"](${b});` +
+    `);out center body;`
+  );
 }
 
+// ── 3. OSM element shape ──────────────────────────────────────
 interface OSMElement {
   type: "node" | "way" | "relation";
   id: number;
@@ -48,32 +67,183 @@ interface OSMElement {
   tags?: Record<string, string>;
 }
 
-interface OverpassResponse {
-  elements: OSMElement[];
-}
+// ── 4. Fetch with endpoint fallback ──────────────────────────
+/**
+ * Tries each Overpass mirror in turn.
+ * Returns parsed JSON on the first success.
+ * Throws only when every endpoint has failed.
+ */
+async function fetchFromOverpass(
+  query: string
+): Promise<{ elements: OSMElement[] }> {
+  const errors: string[] = [];
 
-export async function fetchAndStoreOSMPlaces(bbox: BBox): Promise<number> {
-  const query = buildOverpassQuery(bbox);
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      console.log(`[OSM] Trying endpoint: ${endpoint}`);
 
-  console.log(`[OSM] Fetching bbox: S=${bbox.south} W=${bbox.west} N=${bbox.north} E=${bbox.east}`);
+      // 30s wall-clock timeout per attempt (Overpass QL timeout is 25s)
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `data=${encodeURIComponent(query)}`,
+        signal: AbortSignal.timeout(30_000),
+      });
 
-  const response = await fetch("https://overpass-api.de/api/interpreter", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `data=${encodeURIComponent(query)}`,
-    signal: AbortSignal.timeout(50_000),
-  });
+      if (!response.ok) {
+        const snippet = (await response.text()).slice(0, 200);
+        const msg = `HTTP ${response.status} from ${endpoint}: ${snippet}`;
+        console.warn(`[OSM] ${msg}`);
+        errors.push(msg);
+        continue; // try next mirror
+      }
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Overpass API ${response.status}: ${text.slice(0, 300)}`);
+      const data = (await response.json()) as { elements: OSMElement[] };
+      console.log(`[OSM] Success from ${endpoint}`);
+      return data;
+
+    } catch (err: any) {
+      const msg = `${endpoint} — ${err.message}`;
+      console.warn(`[OSM] Request failed: ${msg}`);
+      errors.push(msg);
+      // continue to next mirror
+    }
   }
 
-  const data = (await response.json()) as OverpassResponse;
-  const elements = data.elements ?? [];
-  console.log(`[OSM] Raw elements: ${elements.length}`);
+  // All endpoints exhausted
+  throw new Error(
+    `[OSM] All Overpass endpoints failed:\n  ${errors.join("\n  ")}`
+  );
+}
 
-  // accept both node (direct lat/lon) and way/relation (center coords)
+// ── 5. Batch INSERT helper ────────────────────────────────────
+//   Each row uses 6 params → 50 rows = 300 params (well under 65535 limit).
+const BATCH_SIZE = 50;
+
+interface PlaceRow {
+  osmId: number;
+  name: string;
+  tags: Record<string, string>;
+  vibes: string[];
+  lon: number;
+  lat: number;
+}
+
+async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
+  let inserted = 0;
+
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    const chunk = rows.slice(i, i + BATCH_SIZE);
+
+    // Build: ($1,$2,$3,$4,$5,$6), ($7,$8,...), ...
+    const valuePlaceholders = chunk
+      .map((_, j) => {
+        const base = j * 6;
+        return (
+          `($${base + 1}, $${base + 2}, $${base + 3}::jsonb,` +
+          ` $${base + 4}::text[], ST_MakePoint($${base + 5}, $${base + 6})::geography,` +
+          ` NOW(), 'osm')`
+        );
+      })
+      .join(", ");
+
+    const params: unknown[] = [];
+    for (const row of chunk) {
+      params.push(
+        row.osmId,
+        row.name,
+        JSON.stringify(row.tags),
+        row.vibes,
+        row.lon,
+        row.lat
+      );
+    }
+
+    // NOTE: ON CONFLICT (osm_id) with NO WHERE clause — matches the
+    // plain unique index `places_osm_id_unique` in your DB exactly.
+    // A partial index (with WHERE) would require the WHERE clause to
+    // match here too — since yours is plain, we omit it entirely.
+    const sql = `
+      INSERT INTO places
+        (osm_id, place_name, osm_tags, vibes, location, last_updated, source)
+      VALUES ${valuePlaceholders}
+      ON CONFLICT (osm_id)
+      DO UPDATE SET
+        place_name   = EXCLUDED.place_name,
+        osm_tags     = EXCLUDED.osm_tags,
+        vibes        = EXCLUDED.vibes,
+        last_updated = NOW()
+    `;
+
+    try {
+      await pool.query(sql, params);
+      inserted += chunk.length;
+    } catch (err: any) {
+      // Batch failed — retry this chunk row by row so one bad row
+      // doesn't block the rest from being inserted.
+      console.warn(
+        `[OSM] Batch of ${chunk.length} failed (${err.message}), ` +
+          `retrying row-by-row...`
+      );
+
+      for (const row of chunk) {
+        try {
+          await pool.query(
+            `INSERT INTO places
+               (osm_id, place_name, osm_tags, vibes, location, last_updated, source)
+             VALUES ($1, $2, $3::jsonb, $4::text[],
+                     ST_MakePoint($5, $6)::geography, NOW(), 'osm')
+             ON CONFLICT (osm_id)
+             DO UPDATE SET
+               place_name   = EXCLUDED.place_name,
+               osm_tags     = EXCLUDED.osm_tags,
+               vibes        = EXCLUDED.vibes,
+               last_updated = NOW()`,
+            [
+              row.osmId,
+              row.name,
+              JSON.stringify(row.tags),
+              row.vibes,
+              row.lon,
+              row.lat,
+            ]
+          );
+          inserted++;
+        } catch (rowErr: any) {
+          console.error(
+            `[OSM] Insert FAILED for osm_id=${row.osmId} ` +
+              `name="${row.name}": ${rowErr.message}`
+          );
+        }
+      }
+    }
+  }
+
+  return inserted;
+}
+
+// ── 6. Main export ────────────────────────────────────────────
+/**
+ * Fetches OSM POIs for the given bounding box from Overpass
+ * (with mirror fallback) and upserts them into the places table.
+ *
+ * Returns the number of rows inserted/updated.
+ * Throws only if every Overpass mirror is unreachable — the
+ * mapSearch controller catches this and falls back to the DB.
+ */
+export async function fetchAndStoreOSMPlaces(bbox: BBox): Promise<number> {
+  const query = buildOverpassQuery(bbox);
+  console.log(
+    `[OSM] Querying bbox S=${bbox.south} W=${bbox.west} ` +
+      `N=${bbox.north} E=${bbox.east}`
+  );
+
+  // ── Fetch from Overpass (throws if all mirrors fail) ─────
+  const data = await fetchFromOverpass(query);
+  const elements = data.elements ?? [];
+  console.log(`[OSM] Total elements from Overpass: ${elements.length}`);
+
+  // ── Filter to named elements that have coordinates ───────
   const named = elements.filter((el) => {
     const hasName = !!el.tags?.name;
     const hasCoords =
@@ -82,63 +252,23 @@ export async function fetchAndStoreOSMPlaces(bbox: BBox): Promise<number> {
     return hasName && hasCoords;
   });
 
-  console.log(`[OSM] Named with coords: ${named.length}`);
+  console.log(`[OSM] Named elements with coords: ${named.length}`);
   if (named.length === 0) return 0;
 
-  let inserted = 0;
-  const CHUNK = 50;
+  // ── Build rows for batch insert ──────────────────────────
+  const rows: PlaceRow[] = named.map((el) => ({
+    osmId: el.id,
+    name: el.tags?.name ?? "",
+    tags: el.tags ?? {},
+    vibes: assignVibesFromOSMTags(el.tags ?? {}),
+    lon: el.lon ?? el.center!.lon,
+    lat: el.lat ?? el.center!.lat,
+  }));
 
-  for (let i = 0; i < named.length; i += CHUNK) {
-    const chunk = named.slice(i, i + CHUNK);
-    const values: unknown[] = [];
-
-    const placeholders = chunk
-      .map((el, idx) => {
-        const base = idx * 6;
-        const vibes = assignVibesFromOSMTags(el.tags ?? {});
-        const lat = el.lat ?? el.center!.lat;
-        const lon = el.lon ?? el.center!.lon;
-        values.push(el.id, el.tags?.name ?? null, JSON.stringify(el.tags ?? {}), vibes, lon, lat);
-        return `($${base+1}, $${base+2}, $${base+3}::jsonb, $${base+4}::text[], ST_MakePoint($${base+5}, $${base+6})::geography, NOW(), 'osm')`;
-      })
-      .join(",\n");
-
-    const sql = `
-      INSERT INTO places (osm_id, place_name, osm_tags, vibes, location, last_updated, source)
-      VALUES ${placeholders}
-      ON CONFLICT (osm_id) DO UPDATE SET
-        place_name   = EXCLUDED.place_name,
-        osm_tags     = EXCLUDED.osm_tags,
-        vibes        = EXCLUDED.vibes,
-        last_updated = NOW()
-    `;
-
-    try {
-      await pool.query(sql, values);
-      inserted += chunk.length;
-    } catch (err: any) {
-      console.error(`[OSM] Batch failed (chunk ${i}): ${err.message}`);
-      // fallback: insert one by one
-      for (const el of chunk) {
-        try {
-          const lat = el.lat ?? el.center!.lat;
-          const lon = el.lon ?? el.center!.lon;
-          const vibes = assignVibesFromOSMTags(el.tags ?? {});
-          await pool.query(
-            `INSERT INTO places (osm_id, place_name, osm_tags, vibes, location, last_updated, source)
-             VALUES ($1,$2,$3::jsonb,$4::text[],ST_MakePoint($5,$6)::geography,NOW(),'osm')
-             ON CONFLICT (osm_id) DO UPDATE SET
-               place_name=EXCLUDED.place_name, vibes=EXCLUDED.vibes, last_updated=NOW()`,
-            [el.id, el.tags?.name, JSON.stringify(el.tags ?? {}), vibes, lon, lat]
-          );
-          inserted++;
-        } catch (e2: any) {
-          console.error(`[OSM] Single insert failed osm_id=${el.id}: ${e2.message}`);
-        }
-      }
-    }
-  }
-
-  console.log(`[OSM] Upserted total: ${inserted}`);
+  // ── Batch upsert into DB ─────────────────────────────────
+  const inserted = await batchUpsertPlaces(rows);
+  console.log(
+    `[OSM] Done — inserted/updated: ${inserted} of ${named.length}`
+  );
   return inserted;
 }

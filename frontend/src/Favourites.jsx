@@ -89,7 +89,7 @@ export default function Favourites({ user }) {
       <div className="favourites-page">
         <div className="favourites-wrapper">
           <h2 className="fav-title">Saved Places</h2>
-          <p className="empty-text">Please log in to see your saved places ✨</p>
+          <p className="empty-text">Please log in to see your saved places </p>
         </div>
       </div>
     );

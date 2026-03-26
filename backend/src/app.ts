@@ -4,6 +4,7 @@ import mapSearchRouter from "./routes/mapSearch.js";
 import authRouter from "./routes/auth.js";
 import favoritesRouter from "./routes/favorites.js";
 import memoriesRouter from "./routes/memories.js";
+import locationRouter from "./routes/locationRoutes.js";   // ← NEW
 import cors from "cors";
 import "dotenv/config";
 
@@ -14,14 +15,15 @@ if (!frontend_url) {
   throw new Error("frontend url is not set");
 }
 
-app.use(cors({origin:frontend_url}));
-
+app.use(cors({ origin: frontend_url }));
 app.use(express.json());
 
-app.use('/api/v1/search', searchPlaceRouter);   // existing: GET /api/v1/search?vibe=...
-app.use('/api/v1/search', mapSearchRouter);      // new:      POST /api/v1/search/map
-app.use('/api/v1/auth', authRouter);
-app.use('/api/v1/memories', memoriesRouter);
-app.use('/api/v1/favorites', favoritesRouter);
+app.use("/api/v1/search", searchPlaceRouter);   // GET  /api/v1/search?vibe=...
+app.use("/api/v1/search", mapSearchRouter);      // POST /api/v1/search/map
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/memories", memoriesRouter);
+app.use("/api/v1/favorites", favoritesRouter);
+app.use("/api/location", locationRouter);        // ← NEW: POST /api/location/geocode
+                                                 //        GET  /api/location/nearby
 
 export default app;
