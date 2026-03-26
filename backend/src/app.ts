@@ -3,17 +3,9 @@ import searchPlaceRouter from "./routes/searchPlace.js";
 import authRouter from "./routes/auth.js";
 import favoritesRouter from "./routes/favorites.js";
 import memoriesRouter from "./routes/memories.js";
-<<<<<<< HEAD
-<<<<<<< HEAD
 import locationRouter from "./routes/locationRoutes.js";   // ← NEW — for geocoding and nearby search
-=======
-import favoritesRouter from "./routes/favorites.js";
->>>>>>> c617b4f (favorites page backend api)
-=======
->>>>>>> e2d9263 (..)
 import cors from "cors";
 import "dotenv/config";
-import { initTagVectors } from "./nlp/tagVectors.js";
 
 const app = express();
 const frontend_url = process.env.FRONTEND_URL;
@@ -24,9 +16,7 @@ if (!frontend_url) {
 
 app.use(cors({ origin: frontend_url }));
 app.use(express.json());
-await initTagVectors();
 
-<<<<<<< HEAD
 app.use("/api/v1/search", searchPlaceRouter);   // GET  /api/v1/search?vibe=...
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/memories", memoriesRouter);
@@ -38,15 +28,4 @@ app.get("/", (req, res) => {
   res.send("API running");
 });
 
-=======
-app.use('/api/v1/search',searchPlaceRouter);
-app.use('/api/v1/auth',authRouter);
-app.use('/api/v1/memories',memoriesRouter);
-app.use('/api/v1/favorites',favoritesRouter);
-<<<<<<< HEAD
-app.get('/',(req, res) => { res.send("API running")});
-=======
->>>>>>> c617b4f (favorites page backend api)
-
->>>>>>> df7c7cc (Update app.ts)
 export default app;

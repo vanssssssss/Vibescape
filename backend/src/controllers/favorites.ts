@@ -59,7 +59,7 @@ export const markVisited = async (req: Request, res: Response) => {
 // GET /api/v1/favorites/:user_id
 // Query param: ?status=TO_VISIT | VISITED (optional)
 export const getFavorites = async (req: Request, res: Response) => {
-  const { user_id } = req.params;
+  const { user_id }  = req.params;
   const { status } = req.query;
 
   if (!user_id) {
@@ -72,7 +72,7 @@ export const getFavorites = async (req: Request, res: Response) => {
   }
 
   try {
-    const favorites = await getFavoritesByUser(user_id, status as string | undefined);
+    const favorites = await getFavoritesByUser(user_id as string, status as string | undefined);
 
     return res.status(200).json({ favorites });
   } catch (err: any) {
