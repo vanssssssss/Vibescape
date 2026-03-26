@@ -239,9 +239,10 @@ function App() {
     if (!user?.id) return alert("Please log in to save places.");
     setPopupStatus((prev) => ({ ...prev, [p.id]: "saving" }));
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch("http://localhost:3000/api/v1/favorites/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           user_id: user.id,
           place_id: String(p.id),
@@ -265,9 +266,10 @@ function App() {
     if (!user?.id) return alert("Please log in to save places.");
     setPopupStatus((prev) => ({ ...prev, [p.id]: "marking" }));
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch("http://localhost:3000/api/v1/favorites/visited", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           user_id: user.id,
           place_id: String(p.id),

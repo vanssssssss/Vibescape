@@ -6,11 +6,23 @@ import {
   removeFavorite,
 } from "../db/queries/favorites.js";
 
+interface AuthRequest extends Request {
+  user?: {
+    id: string;
+  };
+}
+
 // POST /api/v1/favorites/add
 // Body: { user_id, place_id, place_name, city }
 // Adds place with status TO_VISIT
-export const addFavorite = async (req: Request, res: Response) => {
-  const { user_id, place_id, place_name, city } = req.body;
+export const addFavorite = async (req: AuthRequest, res: Response) => {
+  const { place_id, place_name, city } = req.body;
+
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  } 
+
+  const user_id = req.user.id;
 
   if (!user_id || !place_id || !place_name) {
     return res.status(400).json({ error: "Missing required fields: user_id, place_id, place_name" });
@@ -36,8 +48,14 @@ export const addFavorite = async (req: Request, res: Response) => {
 // PATCH /api/v1/favorites/visited
 // Body: { user_id, place_id, place_name, city }
 // Marks place as VISITED (inserts if not exists, updates if exists)
-export const markVisited = async (req: Request, res: Response) => {
-  const { user_id, place_id, place_name, city } = req.body;
+export const markVisited = async (req: AuthRequest, res: Response) => {
+  const { place_id, place_name, city } = req.body;
+
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  } 
+
+  const user_id = req.user.id;
 
   if (!user_id || !place_id || !place_name) {
     return res.status(400).json({ error: "Missing required fields: user_id, place_id, place_name" });
@@ -58,9 +76,14 @@ export const markVisited = async (req: Request, res: Response) => {
 
 // GET /api/v1/favorites/:user_id
 // Query param: ?status=TO_VISIT | VISITED (optional)
-export const getFavorites = async (req: Request, res: Response) => {
-  const { user_id }  = req.params;
+export const getFavorites = async (req: AuthRequest, res: Response) => {
   const { status } = req.query;
+
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  } 
+
+  const user_id = req.user.id;
 
   if (!user_id) {
     return res.status(400).json({ error: "Missing user_id" });
@@ -83,8 +106,14 @@ export const getFavorites = async (req: Request, res: Response) => {
 
 // DELETE /api/v1/favorites/remove
 // Body: { user_id, place_id }
-export const deleteFavorite = async (req: Request, res: Response) => {
-  const { user_id, place_id } = req.body;
+export const deleteFavorite = async (req: AuthRequest, res: Response) => {
+  const { place_id } = req.body;
+
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  } 
+
+  const user_id = req.user.id;
 
   if (!user_id || !place_id) {
     return res.status(400).json({ error: "Missing required fields: user_id, place_id" });

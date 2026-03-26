@@ -35,8 +35,6 @@ export const register = async(req : Request,res : Response) =>{
     }
 
     try{
-        // await sendMailVerification(email,"hjh");
-
         const registeredUser = await registerUser(name,email,password);
 
         const userId = registeredUser.user_id;
@@ -48,7 +46,7 @@ export const register = async(req : Request,res : Response) =>{
         await sendVerificationToken(hashedToken,userId);
         console.log(token);
 
-        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?tokenn=${token}`;
 
         await sendMailVerification(email,verificationUrl);
      
@@ -202,7 +200,7 @@ export const resendVerification = async(req: Request, res: Response) => {
 
         await sendVerificationToken(hashedToken,user.user_id);
 
-        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?tokenn=${token}`;
         await sendMailVerification(email,verificationUrl);
 
     }catch(err : any){
