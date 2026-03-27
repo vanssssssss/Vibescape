@@ -682,3 +682,66 @@
 .closee-btn:hover {
  color: #EF4444;
 }
+
+/* user Location hover */
+.user-tooltip {
+  background: rgba(255, 255, 255, 0.75);
+  color: #111827;
+  padding: 6px 12px;
+  border-radius: 14px;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* remove default leaflet box */
+.leaflet-tooltip.user-tooltip {
+  border: none;
+}
+
+/* arrow fix */
+.leaflet-tooltip-top.user-tooltip:before {
+  border-top-color: rgba(255,255,255,0.75);
+}
+
+.place-tooltip {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 14px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.6);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+}
+
+/* remove default leaflet border */
+.leaflet-tooltip.place-tooltip {
+  border: none;
+}
+
+/* arrow */
+.leaflet-tooltip-top.place-tooltip:before {
+  border-top-color: rgba(255,255,255,0.8);
+}
+
+/* content */
+.place-tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.place-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #111;
+}
