@@ -14,6 +14,7 @@ import "./App.css";
 
 import Favourites from "./Favourites";
 import MemoriesPage from "./MemoriesPage";
+import { createPortal } from "react-dom";
 
 /* ---------- PURPLE MARKER ---------- */
 const purpleMarker = new L.Icon({
@@ -55,14 +56,95 @@ function App() {
   const fileInputRef = useRef(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
 
+  const [userLocation, setUserLocation] = useState(null);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [area, setArea] = useState("");
+  const [activeAction, setActiveAction] = useState(null);
+// values: "manual" | "gps"
+
+   /* ---------- location resolver ---------- */ 
+
+  const resolveLocation = () => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        setShowLocationModal(true);
+        return resolve(false);
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLocation({
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            source: "gps",
+          });
+          resolve(true);
+        },
+        () => {
+          setShowLocationModal(true);
+          resolve(false);
+        }
+      );
+    });
+  };
+
+const tryGPS = () => {
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      setUserLocation({
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+        source: "gps",
+      });
+      setShowLocationModal(false);
+    },
+    () => alert("Location permission denied")
+  );
+};
+
+const handleManualLocation = async () => {
+  if (!area.trim()) return;
+
+  try {
+    const res = await fetch(
+      //our navigator backend api
+    );
+
+    const data = await res.json();
+    const result = data.results[0];
+
+    if (!result) {
+      alert("Invalid area");
+      return;
+    }
+
+    setUserLocation({
+      lat: result.geometry.lat,
+      lon: result.geometry.lng,
+      source: "manual",
+    });
+
+    setShowLocationModal(false);
+  } catch {
+    alert("Failed to get location");
+  }
+};
+
   /* ---------- SEARCH (UNCHANGED) ---------- */
   const handleSearch = async () => {
     if (!query.trim()) return;
+    console.log(userLocation);
+    if (!userLocation) {
+      const success = await resolveLocation();
+      if (!success) return; // wait for manual input
+    }
+
+    console.log(userLocation);
 
     setLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/search?vibe=${query}&lat=26.9124&lon=75.7873&radius=5000`
+        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${userLocation.lat}&lon=${userLocation.lon}&radius=5000`
       );
       const data = await res.json();
       setPlaces(
@@ -540,7 +622,65 @@ function App() {
   }
   /* ---------- MAIN APP (UNCHANGED) ---------- */
    return (
+
     <div className="app-container">
+
+{showLocationModal &&
+  createPortal(
+    <div className="location-modal-backdrop">
+      <div
+        className="location-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="location-modal-header">
+          <h3>Set your location</h3>
+          <button
+            className="closee-btn"
+            onClick={() => setShowLocationModal(false)}
+          >
+            ×
+          </button>
+        </div>
+
+        <input
+          className="vibe-input"
+          value={area}
+          onChange={(e) => {
+              setArea(e.target.value);
+              setActiveAction("manual");
+            }}
+          placeholder="Enter area (e.g. Vaishali Nagar)"
+        />
+
+        <div className="actions">
+          <button
+            className={activeAction === "manual" ? "active" : ""}
+            onClick={() => {
+              setActiveAction("manual");
+              handleManualLocation();
+            }}
+            disabled={!area.trim()}   // important
+          >
+            Set Location
+          </button>
+
+          <button
+            className={activeAction === "gps" ? "active" : ""}
+            onClick={() => {
+              setActiveAction("gps");
+              setArea("");   
+              tryGPS();
+            }}
+          >
+            Use GPS
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )}
+
+
       <input
         type="file"
         ref={fileInputRef}
@@ -929,7 +1069,9 @@ function App() {
             path="/"
             element={
               <div className="search-section">
-                <MapContainer center={[26.9124, 75.7873]} zoom={13}>
+                <MapContainer center={userLocation
+    ? [userLocation.lat, userLocation.lon]
+    : [26.9124, 75.7873]} zoom={13}>
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   {places.map((p) => (
                     <Marker
@@ -1114,10 +1256,11 @@ function App() {
 </Popup>
 
 
+
                     </Marker>
                   ))}
                 </MapContainer>
-
+                  
                 <div className="search-overlay">
                   <input
                     className="vibe-input"
