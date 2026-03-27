@@ -97,21 +97,23 @@ function App() {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
         setShowLocationModal(true);
-        return resolve(false);
+        return resolve(null);
       }
 
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setUserLocation({
+          const loc = {
             lat: pos.coords.latitude,
             lon: pos.coords.longitude,
             source: "gps",
-          });
-          resolve(true);
+          };
+
+          setUserLocation(loc); // UI sync
+          resolve(loc); // DATA return
         },
         () => {
           setShowLocationModal(true);
-          resolve(false);
+          resolve(null);
         },
       );
     });
@@ -174,22 +176,19 @@ function App() {
   };
 
   /* ---------- SEARCH (UNCHANGED) ---------- */
-  const handleSearch = async () => {
-    if (!query.trim()) return;
-    console.log(userLocation);
-    if (!userLocation) {
-      const success = await resolveLocation();
-      if (!success) return; // wait for manual input
-    }
 
-    console.log(userLocation);
+  const handleSearchWithLocation = async (loc) => {
+    if (!query.trim()) return;
 
     setLoading(true);
+
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${userLocation.lat}&lon=${userLocation.lon}&radius=500000000`,
+        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${loc.lat}&lon=${loc.lon}&radius=50000000`,
       );
+
       const data = await res.json();
+
       setPlaces(
         (data.places || []).map((p) => ({
           ...p,
@@ -202,6 +201,21 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = async () => {
+    if (!query.trim()) return;
+    console.log(userLocation);
+    let loc = userLocation;
+
+    if (!loc) {
+      loc = await resolveLocation();
+      if (!loc) return;
+    }
+
+    console.log(userLocation);
+
+    handleSearchWithLocation(loc);
   };
 
   const handleKey = (e) => e.key === "Enter" && handleSearch();
