@@ -17,15 +17,13 @@ if (!frontend_url) {
 app.use(cors({ origin: frontend_url }));
 app.use(express.json());
 
+
 app.use("/api/v1/search", searchPlaceRouter);   // GET  /api/v1/search?vibe=...
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/memories", memoriesRouter);
 app.use("/api/v1/favorites", favoritesRouter);
 app.use("/api/location", locationRouter);        // ← NEW: POST /api/location/geocode
                                                  //        GET  /api/location/nearby
-
-app.get("/", (req, res) => {
-  res.send("API running");
-});
+app.get('/',(req, res) => { res.send("API running")});
 
 export default app;
