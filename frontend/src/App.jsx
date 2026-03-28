@@ -78,6 +78,7 @@ function App() {
   const [query, setQuery] = useState("");
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [popupStatus, setPopupStatus] = useState({});
 
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -223,7 +224,7 @@ function App() {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${loc.lat}&lon=${loc.lon}&radius=50000000`,
+        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${loc.lat}&lon=${loc.lon}&radius=5000`,
       );
 
       const data = await res.json();
