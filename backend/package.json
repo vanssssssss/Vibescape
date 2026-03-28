@@ -7,7 +7,7 @@
     "dev": "nodemon --watch src --ext ts --exec node --loader ts-node/esm src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "format" : "npx prettier --write src/"
+    "format": "npx prettier --write src/"
   },
   "keywords": [],
   "author": "",
@@ -30,11 +30,13 @@
   "type": "module",
   "dependencies": {
     "@xenova/transformers": "^2.17.2",
+    "axios": "^1.14.0",
     "bcrypt": "^6.0.0",
     "crypto": "^1.0.1",
     "dotenv": "^17.2.3",
     "es-set-tostringtag": "^2.1.0",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.3.1",
     "fast-levenshtein": "^3.0.0",
     "imagekit": "^6.0.0",
     "joi": "^18.0.2",
