@@ -579,3 +579,169 @@
   color: #7c3aed;
   text-shadow: 0 0 10px rgba(124, 58, 237, 0.35);
 }
+
+
+/* manual location */
+.location-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 99999;
+}
+
+.location-modal {
+  width: 360px;
+  padding: 22px;
+  border-radius: 20px;
+
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+
+  box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  animation: scaleIn 0.2s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: center;   /* center horizontally */
+  gap: 12px;                 /* space between buttons */
+  margin-top: 14px;
+}
+
+.actions button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  background: #E5E7EB;
+  color: #111;
+}
+
+.actions button:first-child {
+  background: #7C3AED;
+  color: white;
+}
+
+.actions button:last-child {
+  background: #E5E7EB;
+}
+
+/* ACTIVE (purple) */
+.actions button.active {
+  background: linear-gradient(135deg, #7C3AED, #6D28D9);
+  color: white;
+}
+
+/* DISABLED */
+.actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.location-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.closee-btn {
+  all: unset;   
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: #6a6d71;        /* subtle gray */
+  cursor: pointer;
+  padding: 1px;
+  line-height: 1;
+}
+
+.closee-btn:hover {
+ color: #EF4444;
+}
+
+/* user Location hover */
+.user-tooltip {
+  background: rgba(255, 255, 255, 0.75);
+  color: #111827;
+  padding: 6px 12px;
+  border-radius: 14px;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* remove default leaflet box */
+.leaflet-tooltip.user-tooltip {
+  border: none;
+}
+
+/* arrow fix */
+.leaflet-tooltip-top.user-tooltip:before {
+  border-top-color: rgba(255,255,255,0.75);
+}
+
+.place-tooltip {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 14px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.6);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+}
+
+/* remove default leaflet border */
+.leaflet-tooltip.place-tooltip {
+  border: none;
+}
+
+/* arrow */
+.leaflet-tooltip-top.place-tooltip:before {
+  border-top-color: rgba(255,255,255,0.8);
+}
+
+/* content */
+.place-tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.place-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #111;
+}

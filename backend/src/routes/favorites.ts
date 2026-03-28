@@ -5,6 +5,7 @@ import {
   getFavorites,
   deleteFavorite,
 } from "../controllers/favorites.js";
+import { verifyToken } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -13,9 +14,9 @@ const router = Router();
 // PATCH /api/v1/favorites/visited        → mark as visited
 // DELETE /api/v1/favorites/remove        → remove from favorites
 
-router.get("/:user_id", getFavorites);
-router.post("/add", addFavorite);
-router.patch("/visited", markVisited);
-router.delete("/remove", deleteFavorite);
+router.get("/", verifyToken, getFavorites);
+router.post("/add", verifyToken, addFavorite);
+router.patch("/visited",verifyToken, markVisited);
+router.delete("/remove",verifyToken, deleteFavorite);
 
 export default router;

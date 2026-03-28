@@ -8,7 +8,7 @@ export default function Favourites({ user }) {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
-
+  
   /* ---------- FETCH FAVOURITES ---------- */
   const fetchFavourites = async () => {
     if (!user?.id) {
@@ -16,7 +16,10 @@ export default function Favourites({ user }) {
       return;
     }
     try {
-      const res = await fetch(`${API}/${user.id}`);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/`, {
+        headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
       setPlaces(data.favorites || []);
     } catch (err) {
@@ -28,16 +31,17 @@ export default function Favourites({ user }) {
 
   useEffect(() => {
     fetchFavourites();
-  }, [user?.id]);
+  });
 
   /* ---------- MARK AS VISITED ---------- */
   const handleMarkVisited = async (place) => {
     if (!user?.id) return alert("Please log in to update favourites.");
     setActionLoading(place.place_id);
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`${API}/visited`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           user_id: user.id,
           place_id: place.place_id,
@@ -63,9 +67,10 @@ export default function Favourites({ user }) {
     if (!user?.id) return;
     setActionLoading(place.place_id);
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`${API}/remove`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
         body: JSON.stringify({ user_id: user.id, place_id: place.place_id }),
       });
       if (!res.ok) throw new Error("Failed to remove");

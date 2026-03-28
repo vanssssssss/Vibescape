@@ -35,8 +35,6 @@ export const register = async(req : Request,res : Response) =>{
     }
 
     try{
-        // await sendMailVerification(email,"hjh");
-
         const registeredUser = await registerUser(name,email,password);
 
         const userId = registeredUser.user_id;
@@ -48,7 +46,7 @@ export const register = async(req : Request,res : Response) =>{
         await sendVerificationToken(hashedToken,userId);
         console.log(token);
 
-        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?tokenn=${token}`;
 
         await sendMailVerification(email,verificationUrl);
      
@@ -128,11 +126,19 @@ export const forgotPassword = async(req : Request, res : Response) => {
 }
 
 export const resetPassword = async(req : Request, res : Response) => {
-    const { token, newPassword } = req.body;
+    const { token, newPassword, confirmPassword } = req.body;
 
     console.log("reset password");
-    if (!token || !newPassword) {
+    if (!token || !newPassword || !confirmPassword) {
         return res.status(400).json({ message: "Missing fields" });
+    }
+
+    if(newPassword != confirmPassword){
+        return res.status(400).json({message:"Password do not match! Try again"});
+    }
+
+    if(newPassword.length < 8){
+        return res.status(400).json({message:"Password should atleast be of 8 characters"});
     }
 
    const success = await resetPasswordWithToken(token, newPassword);
@@ -150,6 +156,7 @@ const validateEmail = (email:string) => {
 
 export const verifyEmail = async(req: Request, res: Response) => {
     const token = req.query.token;
+    console.log("email verificstion");
 
     if(!token){
         return res.status(400).json({message: "Token is missing!"});
@@ -198,7 +205,7 @@ export const resendVerification = async(req: Request, res: Response) => {
         }
 
         const token = crypto.randomBytes(32).toString("hex");
-        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+        const hashedToken = crypto.createHash("sha256").update(token as string).digest("hex");
 
         await sendVerificationToken(hashedToken,user.user_id);
 
