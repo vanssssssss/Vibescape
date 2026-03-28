@@ -1,10 +1,9 @@
 import express from "express";
 import searchPlaceRouter from "./routes/searchPlace.js";
-import mapSearchRouter from "./routes/mapSearch.js";
 import authRouter from "./routes/auth.js";
 import favoritesRouter from "./routes/favorites.js";
 import memoriesRouter from "./routes/memories.js";
-import locationRouter from "./routes/locationRoutes.js";   // ← NEW
+import locationRouter from "./routes/locationRoutes.js";   // ← NEW — for geocoding and nearby search
 import cors from "cors";
 import "dotenv/config";
 
@@ -19,7 +18,6 @@ app.use(cors({ origin: frontend_url }));
 app.use(express.json());
 
 app.use("/api/v1/search", searchPlaceRouter);   // GET  /api/v1/search?vibe=...
-app.use("/api/v1/search", mapSearchRouter);      // POST /api/v1/search/map
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/memories", memoriesRouter);
 app.use("/api/v1/favorites", favoritesRouter);

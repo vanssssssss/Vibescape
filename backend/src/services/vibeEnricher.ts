@@ -22,46 +22,56 @@ type VibeTag = typeof VIBE_TAG[number];
 //   Format: "key=value" → VibeTag[]
 //   Use "*" as wildcard for value: "historic=*" matches any value.
 
-const OSM_TAG_TO_VIBES: Record<string, VibeTag[]> = {
-  // CAFES
+const OSM_TAG_TO_VIBES: Record<string, string[]> = {
+  // Food 
   "amenity=cafe":           ["cafe", "quiet"],
-  "amenity=bar":            ["cafe", "crowded"],
-  "amenity=food_court":     ["StreetFood", "crowded"],
-  "amenity=marketplace":    ["StreetFood", "crowded", "budget"],
-
-  // FOOD
-  "amenity=restaurant":     ["StreetFood"],
-  "amenity=fast_food":      ["StreetFood", "budget"],
+  "amenity=bar":            ["bar", "lively"],
+  "amenity=restaurant":     ["restaurant"],
+  "amenity=fast_food":      ["restaurant", "budget"],
+  "amenity=food_court":     ["StreetFood", "lively"],
+  "amenity=marketplace":    ["StreetFood", "market", "local", "budget"],
   "shop=bakery":            ["cafe", "budget"],
   "shop=confectionery":     ["cafe", "budget"],
-
-  // NATURE
-  "leisure=park":           ["nature", "quiet"],
-  "leisure=garden":         ["nature", "quiet"],
-  "leisure=nature_reserve": ["nature", "quiet"],
-
-  // HISTORIC / TOURIST
-  "tourism=attraction":     ["historic", "crowded"],
-  "tourism=museum":         ["historic", "quiet"],
-  "tourism=viewpoint":      ["nature", "historic"],
-  "tourism=artwork":        ["historic", "quiet"],
+  // Shopping & Entertainment
+  "amenity=cinema":         ["cinema", "lively"],
+  "amenity=theatre":        ["theatre", "artsy"],
+  "shop=mall":              ["mall"],
+  "shop=supermarket":       ["market"],
+  "leisure=park":           ["park", "nature", "peaceful"],
+  "leisure=garden":         ["park", "nature", "peaceful"],
+  "leisure=nature_reserve": ["nature", "peaceful"],
+  "leisure=sports_centre":  ["lively"],
+  // Touristy places
+  "tourism=attraction":     ["historic", "lively"],
+  "tourism=museum":         ["museum", "quiet"],
+  "tourism=viewpoint":      ["nature", "rooftop", "romantic"],
+  "tourism=artwork":        ["artsy"],
+  "tourism=hotel":          ["luxury"],
+  // Historic sites (many subtypes, but all share "historic" vibe)
+  "historic=*":            ["historic"],
+  "historic=castle":       ["historic", "lively"],
   "historic=monument":      ["historic"],
   "historic=memorial":      ["historic", "quiet"],
-  "historic=fort":          ["historic", "crowded"],
-  "historic=palace":        ["historic", "crowded"],
+  "historic=fort":          ["historic", "lively"],
+  "historic=palace":        ["historic", "luxury"],
   "historic=ruins":         ["historic", "quiet"],
-  "historic=temple":        ["historic"],
+  "historic=temple":        ["temple", "peaceful"],
+  "historic=shrine":        ["temple", "peaceful"],
 };
 
 // ── Name-based heuristics (fallback) ────────────────────────
 // If OSM tags don't give us enough signal, scan the place name.
-const NAME_KEYWORDS: Array<{ words: string[]; vibes: VibeTag[] }> = [
-  { words: ["cafe", "coffee", "roaster", "brew"],  vibes: ["cafe"] },
-  { words: ["park", "garden", "bagh", "udyan"],    vibes: ["nature", "quiet"] },
-  { words: ["fort", "mahal", "palace", "haveli", "mandir", "kund"], vibes: ["historic"] },
-  { words: ["bazaar", "bazar", "market", "chowk"], vibes: ["StreetFood", "crowded"] },
-  { words: ["museum"],                              vibes: ["historic", "quiet"] },
-  { words: ["dhaba", "thali", "restaurant"],        vibes: ["StreetFood"] },
+const NAME_KEYWORDS: Array<{ words: string[]; vibes: string[] }> = [
+  { words: ["cafe", "coffee", "roaster", "brew", "tapri"],  vibes: ["cafe"] },
+  { words: ["park", "garden", "bagh", "udyan", "van"],      vibes: ["park", "nature"] },
+  { words: ["fort", "mahal", "palace", "haveli"],           vibes: ["historic"] },
+  { words: ["mandir", "temple", "shrine", "devi", "mata"],  vibes: ["temple"] },
+  { words: ["bazaar", "bazar", "market", "chowk", "mandi"], vibes: ["market", "StreetFood"] },
+  { words: ["museum", "gallery"],                           vibes: ["museum"] },
+  { words: ["mall", "multiplex"],                           vibes: ["mall"] },
+  { words: ["rooftop", "terrace"],                          vibes: ["rooftop"] },
+  { words: ["dhaba", "thali", "restaurant", "bhojnalay"],   vibes: ["restaurant"] },
+  { words: ["lake", "talab", "sagar", "waterfront"],        vibes: ["waterfront", "romantic"] },
 ];
 
 // ── Main export ───────────────────────────────────────────────
@@ -69,15 +79,13 @@ const NAME_KEYWORDS: Array<{ words: string[]; vibes: VibeTag[] }> = [
  * Given a raw OSM tags object (e.g. { amenity: "cafe", name: "Tapri" })
  * returns a deduplicated array of VibeTag strings.
  */
-export function assignVibesFromOSMTags(
-  osmTags: Record<string, string>
-): VibeTag[] {
-  const vibeSet = new Set<VibeTag>();
+export function assignVibesFromOSMTags(osmTags: Record<string, string>): string[] {
+  const vibeSet = new Set<string>();
 
   // 1. Primary: exact key=value lookup
   for (const [key, value] of Object.entries(osmTags)) {
-    const exact = OSM_TAG_TO_VIBES[`${key}=${value}`];
-    if (exact) exact.forEach((v) => vibeSet.add(v));
+    const vibes = OSM_TAG_TO_VIBES[`${key}=${value}`];
+    if (vibes) vibes.forEach((v) => vibeSet.add(v));
   }
 
   // 2. Fallback: scan place name with keyword heuristics
@@ -90,10 +98,10 @@ export function assignVibesFromOSMTags(
     }
   }
 
-  // 3. Last resort: mark as "crowded" if popular tourism spot
-  if (vibeSet.size === 0 && osmTags.tourism) {
-    vibeSet.add("crowded");
-  }
+  // 3. Last resort: mark as "lively" if popular tourism spot
+  if (vibeSet.size === 0 && osmTags.tourism) 
+    vibeSet.add("lively");
+
 
   return [...vibeSet];
 }
