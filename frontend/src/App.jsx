@@ -224,7 +224,7 @@ function App() {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${loc.lat}&lon=${loc.lon}&radius=50000000`,
+        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${loc.lat}&lon=${loc.lon}&radius=5000`,
       );
 
       const data = await res.json();
