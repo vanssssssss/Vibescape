@@ -126,11 +126,19 @@ export const forgotPassword = async(req : Request, res : Response) => {
 }
 
 export const resetPassword = async(req : Request, res : Response) => {
-    const { token, newPassword } = req.body;
+    const { token, newPassword, confirmPassword } = req.body;
 
     console.log("reset password");
-    if (!token || !newPassword) {
+    if (!token || !newPassword || !confirmPassword) {
         return res.status(400).json({ message: "Missing fields" });
+    }
+
+    if(newPassword != confirmPassword){
+        return res.status(400).json({message:"Password do not match! Try again"});
+    }
+
+    if(newPassword.length < 8){
+        return res.status(400).json({message:"Password should atleast be of 8 characters"});
     }
 
    const success = await resetPasswordWithToken(token, newPassword);
