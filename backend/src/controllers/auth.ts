@@ -6,7 +6,15 @@ import { sendResetMail,sendMailVerification } from "../services/sendMail.js";
 import { createPasswordReset } from "../db/queries/passwordReset.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { pool } from "../db/db.js";
+import { comparePassword,hashPassword } from "../utils/password.js";
+import { updateUserPassword } from "../db/queries/user.js";
 
+interface AuthRequest extends Request {
+  user?: {
+    id: string;
+  };
+}
 
 export const register = async(req : Request,res : Response) =>{
     const name = req.body.name;
@@ -46,7 +54,7 @@ export const register = async(req : Request,res : Response) =>{
         await sendVerificationToken(hashedToken,userId);
         console.log(token);
 
-        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?tokenn=${token}`;
+        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
 
         await sendMailVerification(email,verificationUrl);
      
@@ -217,4 +225,68 @@ export const resendVerification = async(req: Request, res: Response) => {
     }
     return res.status(200).json({"msg": "If the email exists, a reset link was sent."});
 
+}
+
+export const changePassword = async(req : AuthRequest, res : Response) => {
+    const {oldPassword,newPassword,confirmPassword} = req.body;
+
+    console.log("change password");
+    if (!oldPassword || !newPassword || !confirmPassword) {
+        return res.status(400).json({ message: "Missing fields" });
+    }
+
+    if(newPassword != confirmPassword){
+        return res.status(400).json({message:"Password do not match! Try again"});
+    }
+
+    if(newPassword.length < 8){
+        return res.status(400).json({message:"Password should atleast be of 8 characters"});
+    }
+
+    try{
+        if (!req.user) {
+            return res.status(401).json({ message: "Unauthorized" });
+        } 
+
+        const userId = req.user.id;
+
+        const user = await pool.query(`SELECT password FROM users WHERE user_id = $1`,[userId]);
+        
+        if (user.rowCount == 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const isValid = await comparePassword(oldPassword,user.rows[0].password);
+        
+        if(!isValid){
+            return res.status(401).json({ message: "Incorrect old password" });
+        }
+        
+        if(oldPassword == newPassword){
+            return res.status(400).json({ message: "New password must be different" });
+        }
+
+        const hashed_pwd = await hashPassword(newPassword);
+
+        await updateUserPassword(userId,hashed_pwd );
+
+        return res.status(200).json({message: "Password updated successfully",});
+
+    }catch(err:any){
+        return res.status(500).json({ message: "Server error" });
+    }
+}
+
+export const logout = async(req : AuthRequest, res : Response) => {
+    try{
+        if (!req.user) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+
+        return res.status(200).json({message: "Logged out successfully"});
+
+    }catch(err:any){
+        return res.status(500).json({ message: "Server error" });
+    }
 }
