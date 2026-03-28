@@ -22,6 +22,7 @@ import "./App.css";
 import Favourites from "./Favourites";
 import MemoriesPage from "./MemoriesPage";
 import { createPortal } from "react-dom";
+import debounce from "lodash.debounce";
 
 /* ---------- PURPLE MARKER ---------- */
 const purpleMarker = new L.Icon({
@@ -89,8 +90,8 @@ function App() {
   const [userLocation, setUserLocation] = useState(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [area, setArea] = useState("");
-  const [activeAction, setActiveAction] = useState(null);
-  // values: "manual" | "gps"
+  const [activeAction, setActiveAction] = useState(null);// values: "manual" | "gps"
+  const [suggestions, setSuggestions] = useState([]);
 
   const [confirmPassword, setConfirmPassword] = useState("");// added for the usestate of confirm password in registration form
   const [error, setError] = useState(""); //set
@@ -173,6 +174,51 @@ function App() {
     );
   };
 
+  const handleAreaChange = (e) => {
+    const value = e.target.value;
+    setArea(value);
+    setActiveAction("manual");
+
+    debouncedFetch(value);
+  };
+
+  const fetchSuggestions = async (query) => {
+    if (!query.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/v1/geocode/autocomplete?q=${encodeURIComponent(query)}`
+      );
+
+      const data = await res.json();
+
+      setSuggestions(data);
+    } catch {
+      console.error("Autocomplete failed");
+      setSuggestions([]);
+    }
+  };
+
+  const debouncedFetch = useRef(
+    debounce((q) => fetchSuggestions(q), 300)
+  ).current;
+
+  const handleSelectSuggestion = (place) => {
+    setArea(place.label);
+    setSuggestions([]);
+
+    setUserLocation({
+      lat: place.lat,
+      lon: place.lon,
+      source: "manual",
+    });
+
+    setShowLocationModal(false);
+  };
+
   const handleManualLocation = async () => {
     if (!area.trim()) return;
 
@@ -200,6 +246,12 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      debouncedFetch.cancel();
+    };
+  }, []);
+
   const handleGoHere = (place) => {
     const newLocation = {
       lat: place.latitude,
@@ -224,7 +276,7 @@ function App() {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${loc.lat}&lon=${loc.lon}&radius=5000`,
+        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${loc.lat}&lon=${loc.lon}&radius=2000`,
       );
 
       const data = await res.json();
@@ -458,7 +510,7 @@ function App() {
 
   /* ---------- AUTH HANDLERS ---------- */
 
- const handleLogin = async () => {
+  const handleLogin = async () => {
     setError(""); // ✅ add here
     try {
       const res = await fetch("http://localhost:3000/api/v1/auth/login", {
@@ -487,7 +539,7 @@ function App() {
     }
   };
 
-const handleRegister = async () => {
+  const handleRegister = async () => {
     setError("");
     setMessage("");
     setLoadingAuth(true);
@@ -563,7 +615,7 @@ const handleRegister = async () => {
     }
   };
 
-const handleForgotPassword = async () => {
+  const handleForgotPassword = async () => {
     setError(""); // ✅ ADD THIS
     try {
       await fetch("http://localhost:3000/api/v1/auth/forgot-password", {
@@ -579,7 +631,7 @@ const handleForgotPassword = async () => {
     }
   };
 
-const handleResetPassword = async (token) => {
+  const handleResetPassword = async (token) => {
     setError(""); // ✅ ADD THIS
     try {
       const res = await fetch(
@@ -611,7 +663,7 @@ const handleResetPassword = async (token) => {
   };
 
   /* ---------- AUTH GUARD ---------- */
-if (!isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <Routes>
         <Route
@@ -919,15 +971,28 @@ if (!isAuthenticated) {
                 </button>
               </div>
 
-              <input
-                className="vibe-input"
-                value={area}
-                onChange={(e) => {
-                  setArea(e.target.value);
-                  setActiveAction("manual");
-                }}
-                placeholder="Enter area (e.g. Vaishali Nagar)"
-              />
+              <div className="autocomplete-wrapper">
+                <input
+                  className="vibe-input"
+                  value={area}
+                  onChange={handleAreaChange}
+                  placeholder="Enter area (e.g. Vaishali Nagar)"
+                />
+
+                {suggestions.length > 0 && (
+                  <div className="autocomplete-dropdown">
+                    {suggestions.map((s, i) => (
+                      <div
+                        key={i}
+                        className="autocomplete-item"
+                        onClick={() => handleSelectSuggestion(s)}
+                      >
+                        {s.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <div className="actions">
                 <button
@@ -967,9 +1032,8 @@ if (!isAuthenticated) {
       {/* SIDEBAR */}
       <div className="sidebar">
         <div
-          className={`sidebar-icon ${
-            location.pathname === "/" ? "active purple" : ""
-          }`}
+          className={`sidebar-icon ${location.pathname === "/" ? "active purple" : ""
+            }`}
           onClick={() => navigate("/")}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -982,9 +1046,8 @@ if (!isAuthenticated) {
         </div>
 
         <div
-          className={`sidebar-icon ${
-            location.pathname === "/photos" ? "active purple" : ""
-          }`}
+          className={`sidebar-icon ${location.pathname === "/photos" ? "active purple" : ""
+            }`}
           onClick={() => navigate("/photos")}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -1002,9 +1065,8 @@ if (!isAuthenticated) {
         </div>
 
         <div
-          className={`sidebar-icon ${
-            location.pathname === "/favorites" ? "active purple" : ""
-          }`}
+          className={`sidebar-icon ${location.pathname === "/favorites" ? "active purple" : ""
+            }`}
           onClick={() => navigate("/favorites")}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -1017,9 +1079,8 @@ if (!isAuthenticated) {
         </div>
 
         <div
-          className={`sidebar-icon ${
-            location.pathname === "/places" ? "active purple" : ""
-          }`}
+          className={`sidebar-icon ${location.pathname === "/places" ? "active purple" : ""
+            }`}
           onClick={() => navigate("/places")}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -1032,9 +1093,8 @@ if (!isAuthenticated) {
         </div>
 
         <div
-          className={`sidebar-icon sidebar-bottom ${
-            showProfile ? "active purple" : ""
-          }`}
+          className={`sidebar-icon sidebar-bottom ${showProfile ? "active purple" : ""
+            }`}
           onClick={() => navigate("/settings")}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -1524,12 +1584,12 @@ if (!isAuthenticated) {
                                     }}
                                     onClick={() => handleAddNotes(p)}
                                     onMouseEnter={(e) =>
-                                      (e.currentTarget.style.background =
-                                        "rgba(124,58,237,0.12)")
+                                    (e.currentTarget.style.background =
+                                      "rgba(124,58,237,0.12)")
                                     }
                                     onMouseLeave={(e) =>
-                                      (e.currentTarget.style.background =
-                                        "transparent")
+                                    (e.currentTarget.style.background =
+                                      "transparent")
                                     }
                                   >
                                     📝 Add Notes
@@ -1544,12 +1604,12 @@ if (!isAuthenticated) {
                                     }}
                                     onClick={() => handleAddPhoto(p)}
                                     onMouseEnter={(e) =>
-                                      (e.currentTarget.style.background =
-                                        "rgba(124,58,237,0.12)")
+                                    (e.currentTarget.style.background =
+                                      "rgba(124,58,237,0.12)")
                                     }
                                     onMouseLeave={(e) =>
-                                      (e.currentTarget.style.background =
-                                        "transparent")
+                                    (e.currentTarget.style.background =
+                                      "transparent")
                                     }
                                   >
                                     📷 Add Photos
@@ -1566,7 +1626,7 @@ if (!isAuthenticated) {
                                   fontWeight: 700,
                                   background:
                                     popupStatus[p.id] === "saved" ||
-                                    popupStatus[p.id] === "already_saved"
+                                      popupStatus[p.id] === "already_saved"
                                       ? "rgba(124,58,237,0.15)"
                                       : "rgba(255,255,255,0.55)",
                                   border: "1px solid rgba(0,0,0,0.06)",
@@ -1587,7 +1647,7 @@ if (!isAuthenticated) {
                                   e.currentTarget.style.boxShadow = "none";
                                   e.currentTarget.style.background =
                                     popupStatus[p.id] === "saved" ||
-                                    popupStatus[p.id] === "already_saved"
+                                      popupStatus[p.id] === "already_saved"
                                       ? "rgba(124,58,237,0.15)"
                                       : "rgba(255,255,255,0.55)";
                                 }}
