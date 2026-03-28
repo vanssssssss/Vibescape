@@ -3,6 +3,7 @@ import searchPlaceRouter from "./routes/searchPlace.js";
 import authRouter from "./routes/auth.js";
 import favoritesRouter from "./routes/favorites.js";
 import memoriesRouter from "./routes/memories.js";
+import userInfoRouter from "./routes/userInfo.js";
 import cors from "cors";
 import "dotenv/config";
 import { initTagVectors } from "./nlp/tagVectors.js";
@@ -25,6 +26,7 @@ app.use('/api/v1/search',searchPlaceRouter);
 app.use('/api/v1/auth',authRouter);
 app.use('/api/v1/memories',memoriesRouter);
 app.use('/api/v1/favorites',favoritesRouter);
+app.use('/api/v1/users/me',userInfoRouter);
 app.get('/',(req, res) => { res.send("API running")});
 
 export default app;
