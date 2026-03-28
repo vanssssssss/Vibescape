@@ -64,6 +64,7 @@ function App() {
 
   const params = new URLSearchParams(location.search);
   const resetToken = params.get("token");
+  const verifyToken = location.pathname === "/verify-email" ? params.get("token") : null;
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState("login");
@@ -90,6 +91,45 @@ function App() {
   const [area, setArea] = useState("");
   const [activeAction, setActiveAction] = useState(null);
   // values: "manual" | "gps"
+
+  const [confirmPassword, setConfirmPassword] = useState("");// added for the usestate of confirm password in registration form
+  const [error, setError] = useState(""); //set
+  const [message, setMessage] = useState("");
+  const [loadingAuth, setLoadingAuth] = useState(false);
+  const verifyCalledRef = useRef(false);//
+
+  useEffect(() => {
+    if (!verifyToken) return;
+    if (verifyCalledRef.current) return;  // ← ADD
+    verifyCalledRef.current = true;        // ← ADD
+    console.log(verifyToken);
+    const verifyEmail = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:3000/api/v1/auth/verify-email?token=${verifyToken}`
+        );
+        const data = await res.json();
+        console.log(data);
+        if (!res.ok) throw new Error(data.message || "Verification failed");
+        setMessage(data.message);
+      } catch (err) {
+        setError(err.message || "Verification failed");
+      }
+    };
+    verifyEmail();
+  }, [verifyToken]); // ← changed from resetToken to verifyToken
+  useEffect(() => {
+    if (location.pathname === "/verify-email") return;
+    setEmail("");
+    setPassword("");
+    setError("");
+    setMessage("");
+  }, [authMode]); // ← remove location.pathname
+
+  useEffect(() => {
+    if (location.pathname === "/verify-email") return;
+    setError("");
+  }, [authStep]); // ← remove location.pathname
 
   /* ---------- location resolver ---------- */
 
@@ -418,7 +458,8 @@ function App() {
 
   /* ---------- AUTH HANDLERS ---------- */
 
-  const handleLogin = async () => {
+ const handleLogin = async () => {
+    setError(""); // ✅ add here
     try {
       const res = await fetch("http://localhost:3000/api/v1/auth/login", {
         method: "POST",
@@ -428,39 +469,102 @@ function App() {
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.message);
-      localStorage.setItem("token", data.token);
+      //if (!res.ok) throw new Error(data.message);
+      if (!res.ok) {
+        if (data.message?.toLowerCase().includes("verify") ||
+          data.message?.toLowerCase().includes("verified")) {
+          setAuthStep("unverified");
+          return;
+        }
+        throw new Error(data.message);
+      }
 
       setUser({ email, id: data.user_id });
       setIsAuthenticated(true);
       navigate("/");
     } catch (err) {
-      alert(err.message || "Login failed");
+      setError(err.message || "Invalid email or password");
     }
   };
 
-  const handleRegister = async () => {
+const handleRegister = async () => {
+    setError("");
+    setMessage("");
+    setLoadingAuth(true);
+
+    if (!name || !email || !password || !confirmPassword) {
+      setError("All fields are required");
+      setLoadingAuth(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setLoadingAuth(false);
+      return;
+    }
+
     try {
       const res = await fetch("http://localhost:3000/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          password,
+          confirmPassword,
+        }),
       });
 
-      const data = await res.json();
+      let data = {};
+      try {
+        data = await res.json();
+      } catch { }
 
-      if (!res.ok) throw new Error(data.message);
-      localStorage.setItem("token", data.token);
+      // console.log("REGISTER RESPONSE:", data);
 
-      setUser({ email: data.email, id: data.user_id });
-      setIsAuthenticated(true);
-      navigate("/");
+      if (!res.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
+
+      // ✅ SUCCESS
+      setMessage("Verification link sent! Please check your email before logging in.");
+
+      // clear form
+      setName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+
+      // move to login screen
+      // setAuthMode("login");
+
     } catch (err) {
-      alert(err.message || "Registration failed");
+      console.error(err);
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoadingAuth(false);
     }
   };
 
-  const handleForgotPassword = async () => {
+  const handleResendVerification = async () => {
+    setMessage("");
+    setError("");
+    try {
+      const res = await fetch("http://localhost:3000/api/v1/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      setMessage(data.msg || "Verification email sent!");
+    } catch {
+      setError("Failed to resend. Try again.");
+    }
+  };
+
+const handleForgotPassword = async () => {
+    setError(""); // ✅ ADD THIS
     try {
       await fetch("http://localhost:3000/api/v1/auth/forgot-password", {
         method: "POST",
@@ -468,14 +572,15 @@ function App() {
         body: JSON.stringify({ email }),
       });
 
-      alert("If the email exists, a reset link was sent.");
-      setAuthStep("auth");
+      setMessage("The reset link was sent.");
+      //setAuthStep("auth");
     } catch {
-      alert("Failed to send reset email");
+      setMessage("Failed to send reset email");
     }
   };
 
-  const handleResetPassword = async (token) => {
+const handleResetPassword = async (token) => {
+    setError(""); // ✅ ADD THIS
     try {
       const res = await fetch(
         "http://localhost:3000/api/v1/auth/reset-password",
@@ -485,26 +590,67 @@ function App() {
           body: JSON.stringify({
             token,
             newPassword: password,
+            confirmPassword: confirmPassword
           }),
-        },
+        }
       );
 
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.message);
 
-      alert("Password reset successful. Please login.");
-      setAuthStep("auth");
-      navigate("/");
+      setMessage("Password reset successful. Please login.");
+
+      setTimeout(() => {
+        setAuthStep("auth");
+        navigate("/");
+      }, 3000); // 2 seconds delay
     } catch (err) {
-      alert(err.message || "Password reset failed");
+      setMessage(err.message || "Password reset failed");
     }
   };
 
   /* ---------- AUTH GUARD ---------- */
-  if (!isAuthenticated) {
+if (!isAuthenticated) {
     return (
       <Routes>
+        <Route
+          path="/verify-email"
+          element={
+            <div className="auth-screen">
+              <h1 className="auth-brand">VibeScape</h1>
+              <div className="auth-wrapper">
+                <div className="auth-card-glass">
+                  <h2 className="auth-title">
+                    {error
+                      ? "❌ Verification Failed"
+                      : message
+                        ? "✅ Email Verified"
+                        : "⏳ Verifying..."}
+                  </h2>
+
+                  <p style={{ textAlign: "center", fontWeight: "600" }}>
+                    {error
+                      ? error
+                      : message
+                        ? message
+                        : "Verifying your email..."}
+                  </p>
+
+                  {message && (
+                    <button
+                      className="auth-btn"
+                      style={{ marginTop: "15px" }}
+                      onClick={() => navigate("/")}
+                    >
+                      Go to Login →
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          }
+        />
         <Route
           path="*"
           element={
@@ -523,22 +669,23 @@ function App() {
 
                       <div className="auth-tabs">
                         <button
-                          className={
-                            authMode === "login"
-                              ? "auth-tab active"
-                              : "auth-tab"
-                          }
-                          onClick={() => setAuthMode("login")}
+                          className={authMode === "login" ? "auth-tab active" : "auth-tab"}
+                          onClick={() => {
+                            setAuthMode("login");
+                            setEmail("");
+                            setPassword("");
+                          }}
                         >
                           Login
                         </button>
+
                         <button
-                          className={
-                            authMode === "register"
-                              ? "auth-tab active"
-                              : "auth-tab"
-                          }
-                          onClick={() => setAuthMode("register")}
+                          className={authMode === "register" ? "auth-tab active" : "auth-tab"}
+                          onClick={() => {
+                            setAuthMode("register");
+                            setEmail("");
+                            setPassword("");
+                          }}
                         >
                           Register
                         </button>
@@ -559,7 +706,11 @@ function App() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                           />
-
+                          {error && (
+                            <p style={{ color: "red", fontSize: "14px", marginBottom: "10px" }}>
+                              {error}
+                            </p>
+                          )}
                           <button className="auth-btn" onClick={handleLogin}>
                             Login
                           </button>
@@ -579,24 +730,58 @@ function App() {
                             className="auth-input"
                             placeholder="Name"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => {
+                              setName(e.target.value);
+                              setError("");
+                            }}
                           />
                           <input
                             className="auth-input"
                             placeholder="Email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => {
+                              setEmail(e.target.value);
+                              setError("");
+                            }}
                           />
                           <input
                             className="auth-input"
                             type="password"
                             placeholder="Password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => {
+                              setPassword(e.target.value);
+                              setError("");
+                            }}
                           />
+                          <input // input field for confirm password in registration form
+                            className="auth-input"
+                            type="password"
+                            placeholder="Confirm Password"
+                            value={confirmPassword}
+                            onChange={(e) => {
+                              setConfirmPassword(e.target.value);
+                              setError("");
+                            }}
+                          />
+                          {error && (
+                            <p style={{ color: "red", fontSize: "14px", marginBottom: "10px" }}>
+                              {error}
+                            </p>
+                          )}
+                          {message && (
+                            <p style={{ color: "green", fontSize: "14px", marginBottom: "10px" }}>
+                              {message}
+                            </p>
+                          )}
 
-                          <button className="auth-btn" onClick={handleRegister}>
-                            Create Account
+
+                          <button
+                            className="auth-btn"
+                            onClick={handleRegister}
+                            disabled={loadingAuth}
+                          >
+                            {loadingAuth ? "Creating..." : "Create Account"}
                           </button>
                         </>
                       )}
@@ -623,6 +808,11 @@ function App() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                       />
+                      {message && (
+                        <p style={{ color: "green", fontSize: "14px", marginBottom: "10px" }}>
+                          {message}
+                        </p>
+                      )}
                       <button
                         className="auth-btn"
                         onClick={handleForgotPassword}
@@ -637,7 +827,40 @@ function App() {
                       </p>
                     </>
                   )}
+                  {authStep === "unverified" && (
+                    <>
+                      <h2 className="auth-title">Email Not Verified</h2>
+                      <p style={{
+                        textAlign: "center", fontSize: "14px",
+                        color: "#6B7280", marginBottom: "16px"
+                      }}>
+                        Please verify your email before logging in.
+                      </p>
+                      <input
+                        className="auth-input"
+                        placeholder="Email address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                      {message && (
+                        <p style={{ color: "green", fontSize: "14px", marginBottom: "10px" }}>
+                          {message}
+                        </p>
 
+                      )}
+                      {error && (
+                        <p style={{ color: "red", fontSize: "14px", marginBottom: "10px" }}>
+                          {error}
+                        </p>
+                      )}
+                      <button className="auth-btn" onClick={handleResendVerification}>
+                        Resend Verification Email
+                      </button>
+                      <p className="auth-link" onClick={() => setAuthStep("auth")}>
+                        Back to login
+                      </p>
+                    </>
+                  )}
                   {resetToken && (
                     <>
                       <h2 className="auth-title">Set New Password</h2>
@@ -648,6 +871,18 @@ function App() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
+                      <input
+                        className="auth-input"
+                        type="password"
+                        placeholder="Confirm new password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                      />
+                      {message && (
+                        <p style={{ color: "green", fontSize: "14px", marginBottom: "10px" }}>
+                          {message}
+                        </p>
+                      )}
                       <button
                         className="auth-btn"
                         onClick={() => handleResetPassword(resetToken)}

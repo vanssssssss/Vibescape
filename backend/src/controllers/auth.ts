@@ -156,6 +156,7 @@ const validateEmail = (email:string) => {
 
 export const verifyEmail = async(req: Request, res: Response) => {
     const token = req.query.token;
+    console.log("email verificstion");
 
     if(!token){
         return res.status(400).json({message: "Token is missing!"});
@@ -204,11 +205,11 @@ export const resendVerification = async(req: Request, res: Response) => {
         }
 
         const token = crypto.randomBytes(32).toString("hex");
-        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+        const hashedToken = crypto.createHash("sha256").update(token as string).digest("hex");
 
         await sendVerificationToken(hashedToken,user.user_id);
 
-        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?tokenn=${token}`;
+        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
         await sendMailVerification(email,verificationUrl);
 
     }catch(err : any){
