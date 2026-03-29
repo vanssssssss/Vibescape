@@ -237,7 +237,7 @@ export default function SettingsPage({ user, setUser, navigate }) {
                     <div className="guest-actions">
                         <button
                             className="action-btn"
-                            onClick={() => navigate("/login")}
+                            onClick={() => navigate("/login")} // it is not navigating to the login page
                         >
                             Login
                         </button>
