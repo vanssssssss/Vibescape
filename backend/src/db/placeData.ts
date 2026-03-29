@@ -15,15 +15,25 @@ export async function getAllPlaces(lat: Number, lon: Number, radius: Number) : P
         COALESCE(
           array_agg(t.tag_name) FILTER (WHERE t.tag_name IS NOT NULL),
           '{}'
-        ) AS tags
+        ) AS tags,
+        COALESCE(pr.average_rating, 0) AS average_rating,
+        COALESCE(pr.total_ratings, 0) AS total_ratings
+
       FROM places p
+
       LEFT JOIN place_tag pt ON pt.place_id = p.place_id
       LEFT JOIN interest_tag t ON t.tag_id = pt.tag_id
+      LEFT JOIN place_ratings pr ON pr.place_id = p.place_id
+
       WHERE ST_DWithin(
         p.location::geography,
         ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,$3
       )
-      GROUP BY p.place_id
+      GROUP BY
+          p.place_id,
+          pr.average_rating,
+          pr.total_ratings
+
       ORDER BY distance ASC
     `,[lon, lat, radius]);
     return result.rows;
