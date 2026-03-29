@@ -97,7 +97,14 @@ function App() {
   const [error, setError] = useState(""); //set
   const [message, setMessage] = useState("");
   const [loadingAuth, setLoadingAuth] = useState(false);
-  const verifyCalledRef = useRef(false);//
+  const verifyCalledRef = useRef(false);
+
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [noteText, setNoteText] = useState("");
+
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
 
   useEffect(() => {
     if (!verifyToken) return;
@@ -131,6 +138,36 @@ function App() {
     if (location.pathname === "/verify-email") return;
     setError("");
   }, [authStep]); // ← remove location.pathname
+
+  /* ---------- STAR RENDERER HELPER ---------- */
+  const renderStars = (rating, isInteractive = false) => {
+    return (
+      <div style={{ display: "flex", gap: "3px", alignItems: "center" }}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span
+            key={star}
+            style={{
+              fontSize: isInteractive ? "36px" : "18px",
+              cursor: isInteractive ? "pointer" : "default",
+              color: star <= (hoverRating || (isInteractive ? userRating : rating)) 
+                     ? "#FBBF24" : "#D1D5DB",
+              transition: "0.1s"
+            }}
+            onClick={() => isInteractive && setUserRating(star)}
+            onMouseEnter={() => isInteractive && setHoverRating(star)}
+            onMouseLeave={() => isInteractive && setHoverRating(0)}
+          >
+            ★
+          </span>
+        ))}
+        {!isInteractive && (
+          <span style={{ fontSize: "13px", fontWeight: "900", marginLeft: "5px", color: "#4B5563" }}>
+            {rating || "0.0"}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   /* ---------- location resolver ---------- */
 
@@ -395,57 +432,99 @@ function App() {
   };
 
   /*-----------handleAddNotes----------*/
-  const handleAddNotes = async (place) => {
-    const note = prompt("Write your memory notes:");
+  const handleAddNotes = (place) => {
+    setSelectedPlace(place);
+    setShowNoteModal(true);
+  };
 
-    if (!note) return;
-
+  const handleSaveNote = async () => {
+    if (!noteText.trim()) return setShowNoteModal(false);
     try {
       const token = localStorage.getItem("token");
-
-      const memRes = await fetch("http://localhost:3000/api/v1/memories", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      const memRes = await fetch("http://localhost:3000/api/v1/memories", { headers: { Authorization: `Bearer ${token}` } });
       const memories = await memRes.json();
-
-      let memory = memories.find((m) => m.place_id === place.id);
+      let memory = memories.find((m) => m.place_id === selectedPlace.id);
 
       if (!memory) {
         const createRes = await fetch("http://localhost:3000/api/v1/memories", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            place_id: place.id,
-            title: place.name,
-          }),
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ place_id: selectedPlace.id, title: selectedPlace.name }),
         });
-
         memory = await createRes.json();
       }
 
       await fetch(`http://localhost:3000/api/v1/memories/${memory.memory_id}`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ notes: noteText }),
+      });
+      alert("Notes saved!");
+      setShowNoteModal(false);
+      setNoteText("");
+    } catch (err) { alert("Failed to save notes"); }
+  };
+
+  /* ---------- RATING & VISITED HANDLERS ---------- */
+  const handleMarkVisitedClick = (p) => {
+    setSelectedPlace(p);
+    setShowRatingModal(true);
+  };
+
+  const submitRatingAndVisit = async () => {
+    // 1. Update UI locally (Mock logic for average)
+    try {
+      const res = await fetch("http://localhost:3000/api/v1/rating/rate", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          notes: note,
+          place_id: Number(selectedPlace.id),
+          rating: userRating,
         }),
       });
 
-      alert("Notes saved!");
+      const data = await res.json();
+
+      if (res.ok) {
+        // Update UI instantly
+        setPlaces((prev) =>
+          prev.map((p) =>
+            p.id === selectedPlace.id
+              ? {
+                  ...p,
+                  average_rating: data.average_rating,
+                  total_ratings: data.total_ratings,
+                }
+              : p
+          )
+        );
+      }
     } catch (err) {
-      console.error(err);
-      alert("Failed to save notes");
+      console.error("Rating failed");
     }
+    
+    // 2. Original Mark Visited Logic (Matches your reference)
+    try {
+      const res = await fetch("http://localhost:3000/api/v1/favorites/visited", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user.id,
+          place_id: String(selectedPlace.id),
+          place_name: selectedPlace.name,
+          city: "Jaipur",
+        }),
+      });
+      if (res.ok) setPopupStatus((prev) => ({ ...prev, [selectedPlace.id]: "visited" }));
+    } catch (err) { console.error("Visit failed"); }
+
+    alert(`Vibe Rated: ${userRating} Stars!`);
+    setShowRatingModal(false);
+    setUserRating(0);
   };
+
   /* ---------- FAVOURITES HELPERS ---------- */
   const handleAddToFavourites = async (p) => {
     if (!user?.id) return alert("Please log in to save places.");
@@ -477,36 +556,36 @@ function App() {
     }
   };
 
-  const handleMarkVisited = async (p) => {
-    if (!user?.id) return alert("Please log in to save places.");
-    setPopupStatus((prev) => ({ ...prev, [p.id]: "marking" }));
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(
-        "http://localhost:3000/api/v1/favorites/visited",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            user_id: user.id,
-            place_id: String(p.id),
-            place_name: p.name,
-            city: "Jaipur",
-          }),
-        },
-      );
-      if (res.ok) {
-        setPopupStatus((prev) => ({ ...prev, [p.id]: "visited" }));
-      } else {
-        throw new Error();
-      }
-    } catch {
-      setPopupStatus((prev) => ({ ...prev, [p.id]: "error" }));
-    }
-  };
+  // const handleMarkVisited = async (p) => {
+  //   if (!user?.id) return alert("Please log in to save places.");
+  //   setPopupStatus((prev) => ({ ...prev, [p.id]: "marking" }));
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const res = await fetch(
+  //       "http://localhost:3000/api/v1/favorites/visited",
+  //       {
+  //         method: "PATCH",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify({
+  //           user_id: user.id,
+  //           place_id: String(p.id),
+  //           place_name: p.name,
+  //           city: "Jaipur",
+  //         }),
+  //       },
+  //     );
+  //     if (res.ok) {
+  //       setPopupStatus((prev) => ({ ...prev, [p.id]: "visited" }));
+  //     } else {
+  //       throw new Error();
+  //     }
+  //   } catch {
+  //     setPopupStatus((prev) => ({ ...prev, [p.id]: "error" }));
+  //   }
+  // };
 
   /* ---------- AUTH HANDLERS ---------- */
 
@@ -1494,218 +1573,36 @@ function App() {
                           <div className="place-name">{p.name}</div>
                         </div>
                       </Tooltip>
-                      <Popup
-                        autoPan={true}
-                        keepInView={true}
-                        maxWidth={220}
-                        closeButton={true}
-                      >
-                        <div
-                          style={{
-                            minWidth: "165px",
-                            padding: "8px 10px",
-                            borderRadius: "14px",
-                            background: "rgba(255, 255, 255, 0.70)",
-                            backdropFilter: "blur(14px)",
-                            WebkitBackdropFilter: "blur(14px)",
-                            border: "1px solid rgba(255, 255, 255, 0.6)",
-                            boxShadow: "0 18px 45px rgba(0,0,0,0.18)",
-                            color: "#111",
-                            fontFamily: "Roboto, sans-serif",
-                          }}
-                        >
-                          {/* PLACE NAME */}
-                          <div
-                            style={{
-                              fontWeight: 800,
-                              fontSize: "14px",
-                              marginBottom: "6px",
-                              color: "#1f1f1f",
-                            }}
-                          >
-                            {p.name}
-                          </div>
-
-                          {/* OPTIONS DROPDOWN */}
-                          <details>
-                            <summary
-                              style={{
-                                cursor: "pointer",
-                                fontSize: "13px",
-                                fontWeight: 700,
-                                color: "#4c1d95",
-                                listStyle: "none",
-                                userSelect: "none",
-                              }}
-                            >
-                              ▼ Options
-                            </summary>
-
-                            <div
-                              style={{
-                                marginTop: "10px",
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "6px",
-                                fontSize: "13px",
-                              }}
-                            >
-                              {/* ADD TO MEMORIES */}
-                              <div
-                                style={{
-                                  padding: "8px 10px",
-                                  borderRadius: "12px",
-                                  background: "rgba(255,255,255,0.55)",
-                                  border: "1px solid rgba(0,0,0,0.06)",
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    fontWeight: 800,
-                                    marginBottom: "6px",
-                                  }}
-                                >
-                                  Add to Memories
-                                </div>
-
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: "5px",
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      padding: "6px 8px",
-                                      borderRadius: "10px",
-                                      cursor: "pointer",
-                                      transition: "0.2s",
-                                    }}
-                                    onClick={() => handleAddNotes(p)}
-                                    onMouseEnter={(e) =>
-                                    (e.currentTarget.style.background =
-                                      "rgba(124,58,237,0.12)")
-                                    }
-                                    onMouseLeave={(e) =>
-                                    (e.currentTarget.style.background =
-                                      "transparent")
-                                    }
-                                  >
-                                    📝 Add Notes
-                                  </div>
-
-                                  <div
-                                    style={{
-                                      padding: "6px 8px",
-                                      borderRadius: "10px",
-                                      cursor: "pointer",
-                                      transition: "0.2s",
-                                    }}
-                                    onClick={() => handleAddPhoto(p)}
-                                    onMouseEnter={(e) =>
-                                    (e.currentTarget.style.background =
-                                      "rgba(124,58,237,0.12)")
-                                    }
-                                    onMouseLeave={(e) =>
-                                    (e.currentTarget.style.background =
-                                      "transparent")
-                                    }
-                                  >
-                                    📷 Add Photos
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* ADD TO FAVOURITES */}
-                              <div
-                                style={{
-                                  padding: "10px",
-                                  borderRadius: "12px",
-                                  cursor: "pointer",
-                                  fontWeight: 700,
-                                  background:
-                                    popupStatus[p.id] === "saved" ||
-                                      popupStatus[p.id] === "already_saved"
-                                      ? "rgba(124,58,237,0.15)"
-                                      : "rgba(255,255,255,0.55)",
-                                  border: "1px solid rgba(0,0,0,0.06)",
-                                  transition: "0.2s",
-                                }}
-                                onClick={() => handleAddToFavourites(p)}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.transform =
-                                    "translateY(-1px)";
-                                  e.currentTarget.style.boxShadow =
-                                    "0 10px 22px rgba(0,0,0,0.10)";
-                                  e.currentTarget.style.background =
-                                    "rgba(124,58,237,0.10)";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.transform =
-                                    "translateY(0px)";
-                                  e.currentTarget.style.boxShadow = "none";
-                                  e.currentTarget.style.background =
-                                    popupStatus[p.id] === "saved" ||
-                                      popupStatus[p.id] === "already_saved"
-                                      ? "rgba(124,58,237,0.15)"
-                                      : "rgba(255,255,255,0.55)";
-                                }}
-                              >
-                                {popupStatus[p.id] === "saving" && "⭐ Saving…"}
-                                {popupStatus[p.id] === "saved" &&
-                                  "⭐ Saved to To Visit!"}
-                                {popupStatus[p.id] === "already_saved" &&
-                                  "⭐ Already saved"}
-                                {!popupStatus[p.id] && "⭐ Add to Favourites"}
-                              </div>
-
-                              {/* MARK AS VISITED */}
-                              <div
-                                style={{
-                                  padding: "10px",
-                                  borderRadius: "12px",
-                                  cursor: "pointer",
-                                  fontWeight: 700,
-                                  background:
-                                    popupStatus[p.id] === "visited"
-                                      ? "rgba(16,185,129,0.15)"
-                                      : "rgba(255,255,255,0.55)",
-                                  border: "1px solid rgba(0,0,0,0.06)",
-                                  transition: "0.2s",
-                                }}
-                                onClick={() => handleMarkVisited(p)}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.transform =
-                                    "translateY(-1px)";
-                                  e.currentTarget.style.boxShadow =
-                                    "0 10px 22px rgba(0,0,0,0.10)";
-                                  e.currentTarget.style.background =
-                                    "rgba(16,185,129,0.12)";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.transform =
-                                    "translateY(0px)";
-                                  e.currentTarget.style.boxShadow = "none";
-                                  e.currentTarget.style.background =
-                                    popupStatus[p.id] === "visited"
-                                      ? "rgba(16,185,129,0.15)"
-                                      : "rgba(255,255,255,0.55)";
-                                }}
-                              >
-                                {popupStatus[p.id] === "marking" &&
-                                  "✅ Saving…"}
-                                {popupStatus[p.id] === "visited" &&
-                                  "✅ Marked as Visited!"}
-                                {(!popupStatus[p.id] ||
-                                  popupStatus[p.id] === "saved" ||
-                                  popupStatus[p.id] === "already_saved") &&
-                                  "✅ Mark as Visited"}
-                              </div>
-                            </div>
-                          </details>
+                      <Popup maxWidth={220}>
+                      <div style={{ minWidth: "165px", padding: "8px 10px", borderRadius: "14px", background: "rgba(255, 255, 255, 0.70)", backdropFilter: "blur(14px)" }}>
+                        <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>{p.name}</div>
+                        
+                        {/* STAR DISPLAY IN POPUP */}
+                        <div style={{ marginBottom: "8px" }}>
+                          {renderStars(p.average_rating || 0)}
+                          <span style={{ fontSize: "12px", marginLeft: "5px" }}>
+                            ({p.total_ratings || 0})
+                          </span>
                         </div>
-                      </Popup>
+
+                        <details>
+                          <summary style={{ cursor: "pointer", fontSize: "13px", fontWeight: 700, color: "#4c1d95", listStyle: "none" }}>▼ Options</summary>
+                          <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                            <div style={{ padding: "8px 10px", borderRadius: "12px", background: "rgba(255,255,255,0.55)", border: "1px solid rgba(0,0,0,0.06)" }}>
+                              <div style={{ fontWeight: 800, marginBottom: "6px" }}>Add to Memories</div>
+                              <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddNotes(p)}>📝 Add Notes</div>
+                              <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddPhoto(p)}>📷 Add Photos</div>
+                            </div>
+                            <div style={{ padding: "10px", cursor: "pointer", fontWeight: 700 }} onClick={() => handleAddToFavourites(p)}>
+                              {popupStatus[p.id] === "saved" ? "⭐ Saved!" : "⭐ Add to Favourites"}
+                            </div>
+                            <div style={{ padding: "10px", cursor: "pointer", fontWeight: 700 }} onClick={() => handleMarkVisitedClick(p)}>
+                              {popupStatus[p.id] === "visited" ? "✅ Visited!" : "✅ Mark as Visited"}
+                            </div>
+                          </div>
+                        </details>
+                      </div>
+                    </Popup>
                     </Marker>
                   ))}
                 </MapContainer>
@@ -1733,6 +1630,48 @@ function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
+
+      {/* NOTE MODAL */}
+      {showNoteModal && (
+        <div className="note-modal-overlay">
+          <div className="note-modal-card">
+            <h3>Create a Memory</h3>
+            <p>Capture your thoughts about <strong>{selectedPlace?.name}</strong></p>
+            <textarea className="note-textarea" value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="How was the vibe here?..." autoFocus />
+            <div className="modal-buttons">
+              <button className="cancel-btn" onClick={() => { setShowNoteModal(false); setNoteText(""); }}>Cancel</button>
+              <button className="save-btn" onClick={handleSaveNote}>Save Memory</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RATING MODAL (TRIGGERED BY VISITED) */}
+      {showRatingModal && (
+        <div className="note-modal-overlay">
+          <div className="note-modal-card">
+            <div style={{ fontSize: "40px", marginBottom: "10px" }}>⭐</div>
+            <h3>Rate your visit</h3>
+            <p>How was the vibe at <strong>{selectedPlace?.name}</strong>?</p>
+            
+            <div style={{ margin: "20px 0", display: "flex", justifyContent: "center" }}>
+              {renderStars(0, true)}
+            </div>
+
+            <div className="modal-buttons">
+              <button className="cancel-btn" onClick={() => { setShowRatingModal(false); setUserRating(0); }}>Skip</button>
+              <button 
+                className="save-btn" 
+                disabled={userRating === 0}
+                style={{ opacity: userRating === 0 ? 0.5 : 1 }}
+                onClick={submitRatingAndVisit}
+              >
+                Confirm Visit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
