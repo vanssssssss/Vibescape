@@ -7,6 +7,7 @@ import userInfoRouter from "./routes/userInfo.js";
 import geocodeRouter from "./routes/geocode.js";
 import cors from "cors";
 import "dotenv/config";
+import ratingRouter from "./routes/rating.js";
 import { initTagVectors } from "./nlp/tagVectors.js";
 
 const app = express();
@@ -24,6 +25,7 @@ app.set("trust proxy", 1);
 
 
 app.use('/api/v1/search',searchPlaceRouter);
+app.use('/api/v1/rating', ratingRouter);
 app.use('/api/v1/auth',authRouter);
 app.use('/api/v1/memories',memoriesRouter);
 app.use('/api/v1/favorites',favoritesRouter);
