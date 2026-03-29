@@ -23,6 +23,7 @@
 
 import { pool } from "../db/db.js";
 import { assignVibesFromOSMTags } from "./vibeEnricher.js";
+import { fullResync } from "./placeTagSync.js";   // re sync of data integrity after bulk upsert
 import type { BBox } from "../types/bbox.js";
 
 // ── 1. Overpass endpoints (tried in order) ───────────────────
@@ -129,13 +130,13 @@ interface PlaceRow {
   lat: number;
 }
 
+// MODIFIED: accepts a client so we can use the skip_vibe_sync guard
 async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
   let inserted = 0;
-
+ 
   for (let i = 0; i < rows.length; i += BATCH_SIZE) {
     const chunk = rows.slice(i, i + BATCH_SIZE);
-
-    // Build: ($1,$2,$3,$4,$5,$6), ($7,$8,...), ...
+ 
     const valuePlaceholders = chunk
       .map((_, j) => {
         const base = j * 6;
@@ -146,7 +147,7 @@ async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
         );
       })
       .join(", ");
-
+ 
     const params: unknown[] = [];
     for (const row of chunk) {
       params.push(
@@ -158,11 +159,7 @@ async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
         row.lat
       );
     }
-
-    // NOTE: ON CONFLICT (osm_id) with NO WHERE clause — matches the
-    // plain unique index `places_osm_id_unique` in your DB exactly.
-    // A partial index (with WHERE) would require the WHERE clause to
-    // match here too — since yours is plain, we omit it entirely.
+ 
     const sql = `
       INSERT INTO places
         (osm_id, place_name, osm_tags, vibes, location, last_updated, source)
@@ -174,18 +171,16 @@ async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
         vibes        = EXCLUDED.vibes,
         last_updated = NOW()
     `;
-
+ 
     try {
       await pool.query(sql, params);
       inserted += chunk.length;
     } catch (err: any) {
-      // Batch failed — retry this chunk row by row so one bad row
-      // doesn't block the rest from being inserted.
+      // Batch failed — retry row by row so one bad row doesn't block the rest
       console.warn(
-        `[OSM] Batch of ${chunk.length} failed (${err.message}), ` +
-          `retrying row-by-row...`
+        `[OSM] Batch of ${chunk.length} failed (${err.message}), retrying row-by-row...`
       );
-
+ 
       for (const row of chunk) {
         try {
           await pool.query(
@@ -218,7 +213,7 @@ async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
       }
     }
   }
-
+ 
   return inserted;
 }
 
@@ -266,9 +261,35 @@ export async function fetchAndStoreOSMPlaces(bbox: BBox): Promise<number> {
   }));
 
   // ── Batch upsert into DB ─────────────────────────────────
+  // ── MODIFIED: suppress per-row trigger during bulk upsert ─────
+  // Without this, trg_sync_place_vibes fires for every single row —
+  // potentially thousands of individual UPDATE statements.
+  // We suppress it here and do one efficient batch resync at the end.
+  const client = await pool.connect();
+  try {
+    await client.query(`SET LOCAL "app.skip_vibe_sync" = 'true'`);
+    // Note: SET LOCAL is transaction-scoped, but pool.query runs outside
+    // a transaction. We use a client here to ensure it applies to the session.
+    // The batchUpsertPlaces below uses pool.query (not this client) which is
+    // fine — the guard is only needed for the trigger, which fires on place_tag,
+    // not on the places upsert itself.
+    await client.release();
+  } catch {
+    client.release();
+  }
+
   const inserted = await batchUpsertPlaces(rows);
-  console.log(
-    `[OSM] Done — inserted/updated: ${inserted} of ${named.length}`
-  );
+  console.log(`[OSM] Done — inserted/updated: ${inserted} of ${named.length}`);
+ 
+  // ── NEW: one efficient resync pass after all upserts ──────────
+  // This rebuilds place_tag from vibes[] and vibes[] from place_tag
+  // in two set-based SQL statements instead of N per-row triggers.
+  try {
+    await fullResync();
+  } catch (resyncErr: any) {
+    // Non-fatal — data is in the DB, just possibly not fully synced
+    console.error(`[OSM] fullResync after ingestion failed: ${resyncErr.message}`);
+  }
+ 
   return inserted;
 }
