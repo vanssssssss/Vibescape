@@ -133,6 +133,9 @@ function App() {
   }, [authStep]); // ← remove location.pathname
 
   /* ---------- location resolver ---------- */
+  useEffect(() => {
+  fetchUser();
+}, []);
 
   const resolveLocation = () => {
     return new Promise((resolve) => {
@@ -173,7 +176,42 @@ function App() {
       () => alert("Location permission denied"),
     );
   };
+const fetchUser = async () => {
+  const token = localStorage.getItem("token");
 
+  if (!token) return;
+
+  try {
+    const res = await fetch("http://localhost:3000/api/v1/users/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // 🔥 ADD THIS BLOCK HERE
+    if (!res.ok) {
+      localStorage.removeItem("token");
+
+
+      setIsAuthenticated(false); // 🔥 Adding this one tooo
+      setUser(null);
+      return;
+    }
+
+    const data = await res.json();
+
+    setUser({
+  id: data.user_id, // 🔥 IMPORTANT (missing earlier)
+  email: data.email,
+  nickname: data.nickname,
+  profile_pic: data.profile_pic,
+});
+
+  } catch (err) {
+    console.log("Failed to fetch user");
+  }
+};
+  
   const handleManualLocation = async () => {
     if (!area.trim()) return;
 
@@ -472,29 +510,31 @@ function App() {
 
       //if (!res.ok) throw new Error(data.message);
       if (!res.ok) {
+
         if (data.message?.toLowerCase().includes("verify") ||
           data.message?.toLowerCase().includes("verified")) {
           setAuthStep("unverified");
           return;
         }
         throw new Error(data.message);
+        
       }
 
-      //  for the settings page removed this setUser({ email, id: data.user_id });
-      setUser({
-        id: data.user_id,
-        email: data.email || email,
-        nickname: data.name || name,
-        profile_image: null,
-      });
+
+      // here adding the token to local storage and setting the user state with the user id and email returned from the backend, which will be used in the settings page to display user details and allow updates.
+     localStorage.setItem("token", data.token);
+      await fetchUser(); // 🔥 IMPORTANT
+
+
       setIsAuthenticated(true);
+      await fetchUser(); // ✅ fetch user details after login
       navigate("/");
     } catch (err) {
       setError(err.message || "Invalid email or password");
     }
   };
 
-  const handleRegister = async () => {
+const handleRegister = async () => {
     setError("");
     setMessage("");
     setLoadingAuth(true);
@@ -528,7 +568,7 @@ function App() {
         data = await res.json();
       } catch { }
 
-      // console.log("REGISTER RESPONSE:", data);
+      console.log("REGISTER RESPONSE:", data);
 
       if (!res.ok) {
         throw new Error(data.message || "Registration failed");
@@ -1040,9 +1080,9 @@ function App() {
             }`}
           onClick={() => navigate("/settings")}
         >
-          {user?.profile_image ? (
+          {user?.profile_pic ? (
             <img
-              src={user.profile_image}
+              src={user.profile_pic}
               alt="profile"
               style={{
                 width: "28px",
@@ -1167,6 +1207,7 @@ function App() {
                   user={user}
                   setUser={setUser}
                   navigate={navigate}
+                  //fetchUser={fetchUser}// here i have added the fetchUser function as a prop to the settings page so that after updating the user details in the settings page we can fetch the updated user details and update the user state in the app component which will reflect in the sidebar with the updated profile picture and nickname without needing to refresh the page 
                 />
               }
             />
