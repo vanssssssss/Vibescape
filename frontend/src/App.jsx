@@ -136,6 +136,8 @@ function App() {
 
   const [addingPhoto, setAddingPhoto] = useState(false);
   const [savingNote, setSavingNote] = useState(false);
+  const [actionMessage, setActionMessage] = useState("");
+
 
 
   useEffect(() => {
@@ -253,7 +255,7 @@ function App() {
         });
         setShowLocationModal(false);
       },
-      () => alert("Location permission denied"),
+      () => setAction("Location permission denied"),
     );
   };
   const fetchUser = async () => {
@@ -299,6 +301,13 @@ function App() {
 
     debouncedFetch(value);
   };
+
+  // ← ADD HERE
+  useEffect(() => {
+    if (!actionMessage) return;
+    const timer = setTimeout(() => setActionMessage(""), 3000);
+    return () => clearTimeout(timer);
+  }, [actionMessage]);
 
   const fetchSuggestions = async (query) => {
     if (!query.trim()) {
@@ -348,7 +357,7 @@ function App() {
       const result = data.results[0];
 
       if (!result) {
-        alert("Invalid area");
+        setActionMessage("Invalid area");
         return;
       }
 
@@ -360,7 +369,7 @@ function App() {
 
       setShowLocationModal(false);
     } catch {
-      alert("Failed to get location");
+      setActionMessage("Failed to get location");
     }
   };
 
@@ -404,7 +413,7 @@ function App() {
         })),
       );
     } catch {
-      alert("Search failed");
+      setActionMessage("Search failed");
     } finally {
       setLoading(false);
     }
@@ -505,10 +514,10 @@ function App() {
         },
       );
 
-      alert("Photo added to memory!");
+      setActionMessage("Photo added to memory!");
     } catch (err) {
       console.error(err);
-      alert("Image upload failed");
+      setActionMessage("Image upload failed");
     } finally {
       setAddingPhoto(false);
     }
@@ -543,10 +552,10 @@ function App() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ notes: noteText }),
       });
-      alert("Notes saved!");
+      setActionMessage("Notes saved!");
       setShowNoteModal(false);
       setNoteText("");
-    } catch (err) { alert("Failed to save notes"); }
+    } catch (err) { setActionMessage("Failed to save notes"); }
     finally {
       setSavingNote(false);
     }
@@ -628,7 +637,7 @@ function App() {
       console.error("Rating failed");
     }
 
-    alert(`Vibe Rated: ${userRating} Stars!`);
+    setActionMessage(`Vibe Rated: ${userRating} Stars!`);
     setShowRatingModal(false);
     setUserRating(0);
   };
@@ -1051,7 +1060,7 @@ function App() {
                           navigate("/");
                         }}
                       >
-                        Skip for now →
+                        Guest Mode →
                       </button>
                     </>
                   )}
@@ -1679,7 +1688,7 @@ function App() {
             }
           />
          // <Route path="/favorites" element={<Favourites user={user} />} />
-          <Route path="/photos" element={<MemoriesPage />} />
+          <Route path="/photos" element={<MemoriesPage user={user} />} />
 
           <Route path="/places" element={<FeaturesPage />} />
           <Route path="*" element={<Navigate to="/" />} />
@@ -1707,6 +1716,8 @@ function App() {
         </div>
       )}
 
+
+
       {/* RATING MODAL (TRIGGERED BY VISITED) */}
       {showRatingModal && (
         <div className="note-modal-overlay">
@@ -1731,6 +1742,28 @@ function App() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {actionMessage && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "30px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#7C3AED",
+            color: "white",
+            padding: "12px 24px",
+            borderRadius: "12px",
+            fontWeight: "700",
+            fontSize: "14px",
+            zIndex: 9999,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.2)"
+          }}
+          onClick={() => setActionMessage("")}
+        >
+          {actionMessage}
         </div>
       )}
     </div>

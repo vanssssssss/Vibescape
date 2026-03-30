@@ -2,12 +2,27 @@ import { useState, useEffect } from "react";
 import "./MemoriesPage.css";
 
 
-export default function MemoriesPage() {
+export default function MemoriesPage({ user })  {
   const [selected, setSelected] = useState(null);
   const [imageIndex, setImageIndex] = useState(0);
   const [memories, setMemories] = useState([]);
   const [editingNote, setEditingNote] = useState(false);
-const [noteText, setNoteText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [noteText, setNoteText] = useState("");
+
+  if (!user?.id) {
+    return (
+      <div className="memories-page">
+        <div className="memories-header">
+          <h2>Your Travel Memories</h2>
+        </div>
+
+        <p className="empty-text">
+          Please login to save memories ✨
+        </p>
+      </div>
+    );
+  }
 
   const fetchMemories = async () => {
     try {
@@ -37,6 +52,8 @@ const [noteText, setNoteText] = useState("");
 
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,6 +63,7 @@ const [noteText, setNoteText] = useState("");
 
   return (
     <div className="memories-page">
+      <div className="memories-wrapper">
       <div className="memories-header">
         <h2>Your Travel Memories</h2>
 
@@ -58,20 +76,24 @@ const [noteText, setNoteText] = useState("");
       </div>
 
       <div className="memories-grid">
-        {memories.map((m) => (
+        {loading && <p className="empty-text">Loading memories...</p>}
+        {!loading && memories.length === 0 && (
+          <p className="empty-text">No memories yet. Start exploring and save one </p>
+        )}
+        {!loading && memories.map((m) => (
           <div
             key={m.memory_id}
             className="memory-card"
             onClick={() => {
-  setSelected({
-    ...m,
-    images: m.images || []
-  });
+              setSelected({
+                ...m,
+                images: m.images || []
+              });
 
-  setImageIndex(0);
-  setNoteText(m.notes || "");
-  setEditingNote(false);
-}}
+              setImageIndex(0);
+              setNoteText(m.notes || "");
+              setEditingNote(false);
+            }}
           >
             <img
               src={m.images?.[0] || "https://via.placeholder.com/300"}
@@ -124,66 +146,67 @@ const [noteText, setNoteText] = useState("");
 
             <div className="modal-text">
 
-  <p className="modal-date">
-    {new Date(selected.created_at).toLocaleDateString()}
-  </p>
+              <p className="modal-date">
+                {new Date(selected.created_at).toLocaleDateString()}
+              </p>
 
-  {editingNote ? (
-    <>
-      <textarea
-        className="note-editor"
-        value={noteText}
-        onChange={(e) => setNoteText(e.target.value)}
-      />
+              {editingNote ? (
+                <>
+                  <textarea
+                    className="note-editor"
+                    value={noteText}
+                    onChange={(e) => setNoteText(e.target.value)}
+                  />
 
-      <div className="note-actions">
-        <button
-          onClick={async () => {
-            const token = localStorage.getItem("token");
+                  <div className="note-actions">
+                    <button
+                      onClick={async () => {
+                        const token = localStorage.getItem("token");
 
-            await fetch(
-              `http://localhost:3000/api/v1/memories/${selected.memory_id}`,
-              {
-                method: "PATCH",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ notes: noteText }),
-              }
-            );
+                        await fetch(
+                          `http://localhost:3000/api/v1/memories/${selected.memory_id}`,
+                          {
+                            method: "PATCH",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({ notes: noteText }),
+                          }
+                        );
 
-            setSelected({ ...selected, notes: noteText });
-            setEditingNote(false);
-          }}
-        >
-          Save
-        </button>
+                        setSelected({ ...selected, notes: noteText });
+                        setEditingNote(false);
+                      }}
+                    >
+                      Save
+                    </button>
 
-        <button onClick={() => setEditingNote(false)}>
-          Cancel
-        </button>
-      </div>
-    </>
-  ) : (
-    <>
-      <p className="modal-desc">
-        {selected.notes || "No notes added yet."}
-      </p>
+                    <button onClick={() => setEditingNote(false)}>
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="modal-desc">
+                    {selected.notes || "No notes added yet."}
+                  </p>
 
-      <button
-        className="add-note-btn"
-        onClick={() => setEditingNote(true)}
-      >
-       ✏️
-      </button>
-    </>
-  )}
+                  <button
+                    className="add-note-btn"
+                    onClick={() => setEditingNote(true)}
+                  >
+                    ✏️
+                  </button>
+                </>
+              )}
 
-</div>
+            </div>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

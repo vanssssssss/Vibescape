@@ -8,6 +8,7 @@ export default function Favourites({ user }) {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
+  const [actionMessage, setActionMessage] = useState("");
 
   /* ---------- FETCH FAVOURITES ---------- */
   const fetchSavedPlaces = async () => {
@@ -62,7 +63,7 @@ export default function Favourites({ user }) {
       const data = await res.json();
 
       // show backend message
-      alert(data.message);
+      setActionMessage(data.message);
 
       if (!res.ok) return;
 
@@ -77,7 +78,7 @@ export default function Favourites({ user }) {
 
     } catch (err) {
       console.error(err);
-      alert("Failed to toggle favorite. Please try again.");
+      setActionMessage("Failed to toggle favorite. Please try again.");
     }
   };
 
@@ -85,9 +86,15 @@ export default function Favourites({ user }) {
     fetchSavedPlaces();
   }, [filter]);
 
+  useEffect(() => {
+    if (!actionMessage) return;
+    const timer = setTimeout(() => setActionMessage(""), 3000);
+    return () => clearTimeout(timer);
+  }, [actionMessage]);
+
   /* ---------- MARK AS VISITED ---------- */
   const handleMarkVisited = async (place) => {
-    if (!user?.id) return alert("Please log in to update saved places.");
+    if (!user?.id) return setActionMessage("Please log in to update saved places.");
     setActionLoading(place.place_id);
     try {
       const token = localStorage.getItem("token");
@@ -100,7 +107,7 @@ export default function Favourites({ user }) {
       });
       const data = await res.json();
 
-      alert(data.message);
+      setActionMessage(data.message);
 
       if (!res.ok) throw new Error("Failed to update");
       setPlaces((prev) =>
@@ -109,7 +116,7 @@ export default function Favourites({ user }) {
         )
       );
     } catch {
-      alert("Could not update. Please try again.");
+      setActionMessage("Could not update. Please try again.");
     } finally {
       setActionLoading(null);
     }
@@ -129,11 +136,11 @@ export default function Favourites({ user }) {
       });
 
       const data = await res.json();
-      alert(data.message);
+      setActionMessage(data.message);
       if (!res.ok) return;
       setPlaces((prev) => prev.filter((p) => p.place_id !== place.place_id));
     } catch {
-      alert("Could not remove. Please try again.");
+      setActionMessage("Could not remove. Please try again.");
     } finally {
       setActionLoading(null);
     }
@@ -152,7 +159,7 @@ export default function Favourites({ user }) {
       <div className="favourites-page">
         <div className="favourites-wrapper">
           <h2 className="fav-title">Saved Places</h2>
-          <p className="empty-text">Please log in to see your saved places ✨</p>
+          <p className="empty-text">Please log in to see your saved places</p>
         </div>
       </div>
     );
@@ -223,6 +230,27 @@ export default function Favourites({ user }) {
           ))}
         </div>
       </div>
+      {actionMessage && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "30px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#7C3AED",
+            color: "white",
+            padding: "12px 24px",
+            borderRadius: "12px",
+            fontWeight: "700",
+            fontSize: "14px",
+            zIndex: 9999,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.2)"
+          }}
+          onClick={() => setActionMessage("")}
+        >
+          {actionMessage}
+        </div>
+      )}
     </div>
   );
 }

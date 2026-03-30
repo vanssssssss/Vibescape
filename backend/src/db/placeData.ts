@@ -35,7 +35,7 @@ export async function getAllPlaces(lat: Number, lon: Number, radius: Number) : P
           pr.total_ratings
 
       ORDER BY distance ASC
-      LIMIT 25
+      LIMIT 200
     `,[lon, lat, radius]);
     return result.rows;
 }
