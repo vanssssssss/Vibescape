@@ -725,8 +725,7 @@ span[style*="cursor: pointer"]:hover {
 
 .actions {
   display: flex;
-  justify-content: center;   /* center horizontally */
-  gap: 12px;                 /* space between buttons */
+  justify-content: center;   /* center horizontally */                
   margin-top: 14px;
 }
 
@@ -741,26 +740,14 @@ span[style*="cursor: pointer"]:hover {
   color: #111;
 }
 
-.actions button:first-child {
+
+.actions button:hover {
   background: #7C3AED;
   color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(124, 58, 237, 0.25);
 }
 
-.actions button:last-child {
-  background: #E5E7EB;
-}
-
-/* ACTIVE (purple) */
-.actions button.active {
-  background: linear-gradient(135deg, #7C3AED, #6D28D9);
-  color: white;
-}
-
-/* DISABLED */
-.actions button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 .location-modal-header {
   display: flex;

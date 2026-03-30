@@ -1191,26 +1191,14 @@ function App() {
 
               <div className="actions">
                 <button
-                  className={activeAction === "manual" ? "active" : ""}
-                  onClick={() => {
-                    setActiveAction("manual");
-                    handleManualLocation();
-                  }}
-                  disabled={!area.trim()} // important
-                >
-                  Set Location
-                </button>
-
-                <button
-                  className={activeAction === "gps" ? "active" : ""}
-                  onClick={() => {
-                    setActiveAction("gps");
-                    setArea("");
-                    tryGPS();
-                  }}
-                >
-                  Use GPS
-                </button>
+  className="gps-btn"
+  onClick={() => {
+    setArea("");
+    tryGPS();
+  }}
+>
+  Use GPS
+</button>
               </div>
             </div>
           </div>,
