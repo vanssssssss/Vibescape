@@ -354,10 +354,7 @@ function App() {
 
     setUserLocation(newLocation);
 
-    // trigger search again
-    setTimeout(() => {
-      handleSearch();
-    }, 0);
+    handleSearchWithLocation(newLocation);
   };
 
   /* ---------- SEARCH (UNCHANGED) ---------- */
@@ -572,27 +569,27 @@ function App() {
 
       if (res.ok) {
 
-  setPlaceState(prev => ({
-    ...prev,
-    [selectedPlace.id]: {
-      ...prev[selectedPlace.id],
-      rated: true
-    }
-  }));
-
-  setPlaces(prev =>
-    prev.map(p =>
-      p.id === selectedPlace.id
-        ? {
-            ...p,
-            average_rating: data.average_rating,
-            total_ratings: data.total_ratings
+        setPlaceState(prev => ({
+          ...prev,
+          [selectedPlace.id]: {
+            ...prev[selectedPlace.id],
+            rated: true
           }
-        : p
-    )
-  );
+        }));
 
-}
+        setPlaces(prev =>
+          prev.map(p =>
+            p.id === selectedPlace.id
+              ? {
+                ...p,
+                average_rating: data.average_rating,
+                total_ratings: data.total_ratings
+              }
+              : p
+          )
+        );
+
+      }
     } catch (err) {
       console.error("Rating failed");
     }
@@ -1204,7 +1201,7 @@ function App() {
         accept="image/*"
         onChange={handleFileUpload}
       />
- {/* SIDEBAR */}
+      {/* SIDEBAR */}
       <div className="sidebar">
         <div
           className={`sidebar-icon ${location.pathname === "/" ? "active purple" : ""
@@ -1212,21 +1209,21 @@ function App() {
           onClick={() => navigate("/")}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-  <path
-    d="M12 21s7-7.5 7-12a7 7 0 10-14 0c0 4.5 7 12 7 12z"
-    stroke="white"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  />
-  <circle
-    cx="12"
-    cy="9"
-    r="2.5"
-    stroke="white"
-    strokeWidth="2"
-  />
-</svg>
+            <path
+              d="M12 21s7-7.5 7-12a7 7 0 10-14 0c0 4.5 7 12 7 12z"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle
+              cx="12"
+              cy="9"
+              r="2.5"
+              stroke="white"
+              strokeWidth="2"
+            />
+          </svg>
         </div>
 
         <div
@@ -1268,28 +1265,28 @@ function App() {
           onClick={() => navigate("/places")}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-  <path
-    d="M3 10.5L12 3l9 7.5"
-    stroke="white"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  />
-  <path
-    d="M5 10v10h14V10"
-    stroke="white"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  />
-  <path
-    d="M9 20v-6h6v6"
-    stroke="white"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  />
-</svg>
+            <path
+              d="M3 10.5L12 3l9 7.5"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M5 10v10h14V10"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M9 20v-6h6v6"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
 
 
@@ -1485,11 +1482,27 @@ function App() {
                           <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>{p.name}</div>
 
                           {/* STAR DISPLAY IN POPUP */}
-                          <div style={{ marginBottom: "8px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
                             {renderStars(p.average_rating || 0)}
-                            <span style={{ fontSize: "12px", marginLeft: "5px" }}>
+                            <span style={{ fontSize: "12px", color: "#6B7280" }}>
                               ({p.total_ratings || 0})
                             </span>
+                          </div>
+
+                          <div
+                            style={{
+                              padding: "8px",
+                              borderRadius: "10px",
+                              background: "#ede9fe",
+                              color: "#4c1d95",
+                              fontWeight: 700,
+                              textAlign: "center",
+                              cursor: "pointer",
+                              marginBottom: "10px"
+                            }}
+                            onClick={() => handleGoHere(p)}
+                          >
+                            Go Here
                           </div>
 
                           <details>
@@ -1506,19 +1519,19 @@ function App() {
                                   fontWeight: 700,
                                   cursor:
                                     placeState[p.id]?.status === "TO_VISIT" ||
-placeState[p.id]?.status === "VISITED"
+                                      placeState[p.id]?.status === "VISITED"
                                       ? "not-allowed"
                                       : "pointer",
                                   opacity:
                                     placeState[p.id]?.status === "TO_VISIT" ||
-placeState[p.id]?.status === "VISITED"
+                                      placeState[p.id]?.status === "VISITED"
                                       ? 0.5
                                       : 1
                                 }}
                                 onClick={() => {
                                   if (
                                     placeState[p.id]?.status === "TO_VISIT" ||
-placeState[p.id]?.status === "VISITED"
+                                    placeState[p.id]?.status === "VISITED"
                                   ) return;
 
                                   handleAddToVisit(p);
