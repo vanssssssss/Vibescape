@@ -134,6 +134,9 @@ function App() {
   const [loadingUser, setLoadingUser] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
 
+  const [addingPhoto, setAddingPhoto] = useState(false);
+  const [savingNote, setSavingNote] = useState(false);
+
 
   useEffect(() => {
     if (!verifyToken) return;
@@ -434,6 +437,8 @@ function App() {
     const file = e.target.files[0];
     if (!file) return;
 
+    setAddingPhoto(true);
+
     try {
       const token = localStorage.getItem("token");
 
@@ -504,6 +509,8 @@ function App() {
     } catch (err) {
       console.error(err);
       alert("Image upload failed");
+    } finally {
+      setAddingPhoto(false);
     }
   };
 
@@ -515,6 +522,7 @@ function App() {
 
   const handleSaveNote = async () => {
     if (!noteText.trim()) return setShowNoteModal(false);
+    setSavingNote(true);
     try {
       const token = localStorage.getItem("token");
       const memRes = await fetch("http://localhost:3000/api/v1/memories", { headers: { Authorization: `Bearer ${token}` } });
@@ -539,6 +547,9 @@ function App() {
       setShowNoteModal(false);
       setNoteText("");
     } catch (err) { alert("Failed to save notes"); }
+    finally {
+      setSavingNote(false);
+    }
   };
 
   /* ---------- RATING & VISITED HANDLERS ---------- */
@@ -1191,14 +1202,14 @@ function App() {
 
               <div className="actions">
                 <button
-  className="gps-btn"
-  onClick={() => {
-    setArea("");
-    tryGPS();
-  }}
->
-  Use GPS
-</button>
+                  className="gps-btn"
+                  onClick={() => {
+                    setArea("");
+                    tryGPS();
+                  }}
+                >
+                  Use GPS
+                </button>
               </div>
             </div>
           </div>,
@@ -1489,13 +1500,13 @@ function App() {
                     else if (index <= 4) {
                       iconToUse = bigPurpleMarker;
                     }
-                    else if (index <= 10) {
-                      iconToUse = purpleMarker;
-                      markerOpacity = 0.8;
-                    }
+                    // else if (index <= 10) {
+                    //   iconToUse = purpleMarker;
+                    //   markerOpacity = 0.8;
+                    // }
                     else {
-                      iconToUse = smallPurpleMarker;
-                      markerOpacity = 0.55;
+                      iconToUse = purpleMarker;
+                      markerOpacity = 0.75;
                     }
 
                     return (
@@ -1550,7 +1561,14 @@ function App() {
                                 <div style={{ padding: "8px 10px", borderRadius: "12px", background: "rgba(255,255,255,0.55)", border: "1px solid rgba(0,0,0,0.06)" }}>
                                   <div style={{ fontWeight: 800, marginBottom: "6px" }}>Add to Memories</div>
                                   <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddNotes(p)}>📝 Add Notes</div>
-                                  <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddPhoto(p)}>📷 Add Photos</div>
+                                  <div style={{
+                                    padding: "6px",
+                                    cursor: addingPhoto ? "not-allowed" : "pointer",
+                                    opacity: addingPhoto ? 0.6 : 1
+                                  }} onClick={() => {
+                                    if (addingPhoto) return;
+                                    handleAddPhoto(p);
+                                  }}> {addingPhoto ? "Adding..." : "📷 Add Photos"}</div>
                                 </div>
                                 <div
                                   style={{
@@ -1677,7 +1695,13 @@ function App() {
             <textarea className="note-textarea" value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="How was the vibe here?..." autoFocus />
             <div className="modal-buttons">
               <button className="cancel-btn" onClick={() => { setShowNoteModal(false); setNoteText(""); }}>Cancel</button>
-              <button className="save-btn" onClick={handleSaveNote}>Save Memory</button>
+              <button
+                className="save-btn"
+                onClick={handleSaveNote}
+                disabled={savingNote}
+              >
+                {savingNote ? "Adding..." : "Save Memory"}
+              </button>
             </div>
           </div>
         </div>
