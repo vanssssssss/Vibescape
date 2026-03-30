@@ -6,6 +6,8 @@ export default function MemoriesPage() {
   const [selected, setSelected] = useState(null);
   const [imageIndex, setImageIndex] = useState(0);
   const [memories, setMemories] = useState([]);
+  const [editingNote, setEditingNote] = useState(false);
+const [noteText, setNoteText] = useState("");
 
   const fetchMemories = async () => {
     try {
@@ -27,8 +29,8 @@ export default function MemoriesPage() {
         images: Array.isArray(m.photos)
           ? m.photos
           : m.photos
-          ? JSON.parse(m.photos)
-          : [],
+            ? JSON.parse(m.photos)
+            : [],
       }));
 
       setMemories(parsed);
@@ -39,7 +41,7 @@ export default function MemoriesPage() {
   };
 
   useEffect(() => {
-  fetchMemories();
+    fetchMemories();
   }, []);
 
   return (
@@ -61,12 +63,15 @@ export default function MemoriesPage() {
             key={m.memory_id}
             className="memory-card"
             onClick={() => {
-              setSelected({
-                ...m,
-                images: m.images || []
-              });
-              setImageIndex(0);
-            }}
+  setSelected({
+    ...m,
+    images: m.images || []
+  });
+
+  setImageIndex(0);
+  setNoteText(m.notes || "");
+  setEditingNote(false);
+}}
           >
             <img
               src={m.images?.[0] || "https://via.placeholder.com/300"}
@@ -87,6 +92,16 @@ export default function MemoriesPage() {
       {selected && (
         <div className="memory-modal" onClick={() => setSelected(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{selected.title}</h3>
+
+              <button
+                className="close-btn"
+                onClick={() => setSelected(null)}
+              >
+                ×
+              </button>
+            </div>
             <div className="modal-images">
               <img
                 src={selected.images?.[imageIndex] || "https://via.placeholder.com/400"}
@@ -108,14 +123,64 @@ export default function MemoriesPage() {
             </div>
 
             <div className="modal-text">
-              <h3>{selected.title}</h3>
-              <p className="modal-date">{selected.date}</p>
-              <p className="modal-desc">{selected.notes}</p>
-            </div>
 
-            <button className="close-btn" onClick={() => setSelected(null)}>
-              Close
-            </button>
+  <p className="modal-date">
+    {new Date(selected.created_at).toLocaleDateString()}
+  </p>
+
+  {editingNote ? (
+    <>
+      <textarea
+        className="note-editor"
+        value={noteText}
+        onChange={(e) => setNoteText(e.target.value)}
+      />
+
+      <div className="note-actions">
+        <button
+          onClick={async () => {
+            const token = localStorage.getItem("token");
+
+            await fetch(
+              `http://localhost:3000/api/v1/memories/${selected.memory_id}`,
+              {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ notes: noteText }),
+              }
+            );
+
+            setSelected({ ...selected, notes: noteText });
+            setEditingNote(false);
+          }}
+        >
+          Save
+        </button>
+
+        <button onClick={() => setEditingNote(false)}>
+          Cancel
+        </button>
+      </div>
+    </>
+  ) : (
+    <>
+      <p className="modal-desc">
+        {selected.notes || "No notes added yet."}
+      </p>
+
+      <button
+        className="add-note-btn"
+        onClick={() => setEditingNote(true)}
+      >
+       ✏️
+      </button>
+    </>
+  )}
+
+</div>
           </div>
         </div>
       )}
