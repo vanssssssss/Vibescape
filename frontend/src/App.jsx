@@ -1460,149 +1460,159 @@ function App() {
                       </Tooltip>
                     </Marker>
                   )}
-                  {places.map((p) => (
-                    <Marker
-                      key={p.id}
-                      position={[p.latitude, p.longitude]}
-                      icon={purpleMarker}
-                    >
-                      <Tooltip
-                        direction="auto"
-                        offset={[0, -20]}
-                        opacity={0.7}
-                        permanent={false}
-                        className="place-tooltip"
+                  {places.map((p) => {
+
+                    const sameLocation =
+                      userLocation &&
+                      Math.abs(userLocation.lat - p.latitude) < 0.00005 &&
+                      Math.abs(userLocation.lon - p.longitude) < 0.00005;
+
+                    if (sameLocation) return null;
+
+                    return (
+                      <Marker
+                        key={p.id}
+                        position={[p.latitude, p.longitude]}
+                        icon={purpleMarker}
                       >
-                        <div className="place-tooltip-content">
-                          <div className="place-name">{p.name}</div>
-                        </div>
-                      </Tooltip>
-                      <Popup maxWidth={220}>
-                        <div style={{ minWidth: "165px", padding: "8px 10px", borderRadius: "14px", background: "rgba(255, 255, 255, 0.70)", backdropFilter: "blur(14px)" }}>
-                          <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>{p.name}</div>
-
-                          {/* STAR DISPLAY IN POPUP */}
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
-                            {renderStars(p.average_rating || 0)}
-                            <span style={{ fontSize: "12px", color: "#6B7280" }}>
-                              ({p.total_ratings || 0})
-                            </span>
+                        <Tooltip
+                          direction="auto"
+                          offset={[0, -20]}
+                          opacity={0.7}
+                          permanent={false}
+                          className="place-tooltip"
+                        >
+                          <div className="place-tooltip-content">
+                            <div className="place-name">{p.name}</div>
                           </div>
+                        </Tooltip>
+                        <Popup maxWidth={220}>
+                          <div style={{ minWidth: "165px", padding: "8px 10px", borderRadius: "14px", background: "rgba(255, 255, 255, 0.70)", backdropFilter: "blur(14px)" }}>
+                            <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>{p.name}</div>
 
-                          <div
-                            style={{
-                              padding: "8px",
-                              borderRadius: "10px",
-                              background: "#ede9fe",
-                              color: "#4c1d95",
-                              fontWeight: 700,
-                              textAlign: "center",
-                              cursor: "pointer",
-                              marginBottom: "10px"
-                            }}
-                            onClick={() => handleGoHere(p)}
-                          >
-                            Go Here
-                          </div>
-
-                          <details>
-                            <summary style={{ cursor: "pointer", fontSize: "13px", fontWeight: 700, color: "#4c1d95", listStyle: "none" }}>▼ Options</summary>
-                            <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                              <div style={{ padding: "8px 10px", borderRadius: "12px", background: "rgba(255,255,255,0.55)", border: "1px solid rgba(0,0,0,0.06)" }}>
-                                <div style={{ fontWeight: 800, marginBottom: "6px" }}>Add to Memories</div>
-                                <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddNotes(p)}>📝 Add Notes</div>
-                                <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddPhoto(p)}>📷 Add Photos</div>
-                              </div>
-                              <div
-                                style={{
-                                  padding: "10px",
-                                  fontWeight: 700,
-                                  cursor:
-                                    placeState[p.id]?.status === "TO_VISIT" ||
-                                      placeState[p.id]?.status === "VISITED"
-                                      ? "not-allowed"
-                                      : "pointer",
-                                  opacity:
-                                    placeState[p.id]?.status === "TO_VISIT" ||
-                                      placeState[p.id]?.status === "VISITED"
-                                      ? 0.5
-                                      : 1
-                                }}
-                                onClick={() => {
-                                  if (
-                                    placeState[p.id]?.status === "TO_VISIT" ||
-                                    placeState[p.id]?.status === "VISITED"
-                                  ) return;
-
-                                  handleAddToVisit(p);
-                                }}
-                              >
-                                {placeState[p.id]?.status === "VISITED"
-                                  ? "⭐ Already Visited"
-                                  : placeState[p.id]?.status === "TO_VISIT"
-                                    ? "⭐ Added to To Visit"
-                                    : "⭐ Add to To Visit"}
-                              </div>
-                              <div
-                                style={{
-                                  padding: "10px",
-                                  cursor: placeState[p.id]?.status === "VISITED" ? "default" : "pointer",
-                                  fontWeight: 700,
-                                  opacity: placeState[p.id]?.status === "VISITED" ? 0.6 : 1
-                                }}
-                                onClick={() => handleMarkVisitedClick(p)}
-                              >
-                                {placeState[p.id]?.status !== "VISITED" && (
-                                  <div
-                                    style={{ padding: "10px", cursor: "pointer", fontWeight: 700 }}
-                                    onClick={() => handleMarkVisitedClick(p)}
-                                  >
-                                    ✅ Mark as Visited
-                                  </div>
-                                )}
-
-                                {placeState[p.id]?.status === "VISITED" && (
-                                  <div
-                                    style={{
-                                      padding: "10px",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "8px",
-                                      fontWeight: 700
-                                    }}
-                                  >
-                                    <span>✅ Visited!</span>
-
-                                    <span
-                                      style={{
-                                        cursor: placeState[p.id]?.rated ? "not-allowed" : "pointer",
-                                        opacity: placeState[p.id]?.rated ? 0.5 : 1
-                                      }}
-                                      onClick={() => {
-                                        if (placeState[p.id]?.rated) return;
-
-                                        setSelectedPlace(p);
-                                        setShowRatingModal(true);
-                                      }}
-                                    >
-                                      ⭐
-                                    </span>
-
-                                    <span
-                                      style={{ cursor: "pointer" }}
-                                      onClick={() => toggleFavorite(p)}
-                                    >
-                                      {placeState[p.id]?.favorite ? "❤️" : "🤍"}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
+                            {/* STAR DISPLAY IN POPUP */}
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
+                              {renderStars(p.average_rating || 0)}
+                              <span style={{ fontSize: "12px", color: "#6B7280" }}>
+                                ({p.total_ratings || 0})
+                              </span>
                             </div>
-                          </details>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  ))}
+
+                            <div
+                              style={{
+                                padding: "8px",
+                                borderRadius: "10px",
+                                background: "#ede9fe",
+                                color: "#4c1d95",
+                                fontWeight: 700,
+                                textAlign: "center",
+                                cursor: "pointer",
+                                marginBottom: "10px"
+                              }}
+                              onClick={() => handleGoHere(p)}
+                            >
+                              Go Here
+                            </div>
+
+                            <details>
+                              <summary style={{ cursor: "pointer", fontSize: "13px", fontWeight: 700, color: "#4c1d95", listStyle: "none" }}>▼ Options</summary>
+                              <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                                <div style={{ padding: "8px 10px", borderRadius: "12px", background: "rgba(255,255,255,0.55)", border: "1px solid rgba(0,0,0,0.06)" }}>
+                                  <div style={{ fontWeight: 800, marginBottom: "6px" }}>Add to Memories</div>
+                                  <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddNotes(p)}>📝 Add Notes</div>
+                                  <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddPhoto(p)}>📷 Add Photos</div>
+                                </div>
+                                <div
+                                  style={{
+                                    padding: "10px",
+                                    fontWeight: 700,
+                                    cursor:
+                                      placeState[p.id]?.status === "TO_VISIT" ||
+                                        placeState[p.id]?.status === "VISITED"
+                                        ? "not-allowed"
+                                        : "pointer",
+                                    opacity:
+                                      placeState[p.id]?.status === "TO_VISIT" ||
+                                        placeState[p.id]?.status === "VISITED"
+                                        ? 0.5
+                                        : 1
+                                  }}
+                                  onClick={() => {
+                                    if (
+                                      placeState[p.id]?.status === "TO_VISIT" ||
+                                      placeState[p.id]?.status === "VISITED"
+                                    ) return;
+
+                                    handleAddToVisit(p);
+                                  }}
+                                >
+                                  {placeState[p.id]?.status === "VISITED"
+                                    ? "⭐ Already Visited"
+                                    : placeState[p.id]?.status === "TO_VISIT"
+                                      ? "⭐ Added to To Visit"
+                                      : "⭐ Add to To Visit"}
+                                </div>
+                                <div
+                                  style={{
+                                    padding: "10px",
+                                    cursor: placeState[p.id]?.status === "VISITED" ? "default" : "pointer",
+                                    fontWeight: 700,
+                                    opacity: placeState[p.id]?.status === "VISITED" ? 0.6 : 1
+                                  }}
+                                  onClick={() => handleMarkVisitedClick(p)}
+                                >
+                                  {placeState[p.id]?.status !== "VISITED" && (
+                                    <div
+                                      style={{ padding: "10px", cursor: "pointer", fontWeight: 700 }}
+                                      onClick={() => handleMarkVisitedClick(p)}
+                                    >
+                                      ✅ Mark as Visited
+                                    </div>
+                                  )}
+
+                                  {placeState[p.id]?.status === "VISITED" && (
+                                    <div
+                                      style={{
+                                        padding: "10px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "8px",
+                                        fontWeight: 700
+                                      }}
+                                    >
+                                      <span>✅ Visited!</span>
+
+                                      <span
+                                        style={{
+                                          cursor: placeState[p.id]?.rated ? "not-allowed" : "pointer",
+                                          opacity: placeState[p.id]?.rated ? 0.5 : 1
+                                        }}
+                                        onClick={() => {
+                                          if (placeState[p.id]?.rated) return;
+
+                                          setSelectedPlace(p);
+                                          setShowRatingModal(true);
+                                        }}
+                                      >
+                                        ⭐
+                                      </span>
+
+                                      <span
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleFavorite(p)}
+                                      >
+                                        {placeState[p.id]?.favorite ? "❤️" : "🤍"}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </details>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    );
+            })}
                 </MapContainer>
 
                 <div className="search-overlay">
