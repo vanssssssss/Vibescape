@@ -1,27 +1,42 @@
 import { useState, useEffect } from "react";
 import "./Favourite.css";
 
-const API = "http://localhost:3000/api/v1/favorites";
+const API = "http://localhost:3000/api/v1/saved-places";
 
 export default function Favourites({ user }) {
   const [places, setPlaces] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
-  
+
   /* ---------- FETCH FAVOURITES ---------- */
-  const fetchFavourites = async () => {
+  const fetchSavedPlaces = async () => {
     if (!user?.id) {
       setLoading(false);
       return;
     }
+
+    let url = "http://localhost:3000/api/v1/saved-places";
+
+    if (filter === "tovisit") {
+      url += "?status=TO_VISIT";
+    }
+
+    if (filter === "visited") {
+      url += "?status=VISITED";
+    }
+
+    if (filter === "favorites") {
+      url += "?favorite=true";
+    }
+
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API}/`, {
-        headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
+      const res = await fetch(`${url}`, {
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      setPlaces(data.favorites || []);
+      setPlaces(data.data || []);
     } catch (err) {
       console.error("Failed to fetch favourites", err);
     } finally {
@@ -29,26 +44,64 @@ export default function Favourites({ user }) {
     }
   };
 
+  const handleToggleFavorite = async (place) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${API}/favorites`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          place_id: place.place_id
+        })
+      });
+
+      const data = await res.json();
+
+      // show backend message
+      alert(data.message);
+
+      if (!res.ok) return;
+
+      // safer state update
+      setPlaces((prev) =>
+        prev.map((p) =>
+          p.place_id === place.place_id
+            ? { ...p, ...data.data }
+            : p
+        )
+      );
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to toggle favorite. Please try again.");
+    }
+  };
+
   useEffect(() => {
-    fetchFavourites();
-  });
+    fetchSavedPlaces();
+  }, [filter]);
 
   /* ---------- MARK AS VISITED ---------- */
   const handleMarkVisited = async (place) => {
-    if (!user?.id) return alert("Please log in to update favourites.");
+    if (!user?.id) return alert("Please log in to update saved places.");
     setActionLoading(place.place_id);
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${API}/visited`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          user_id: user.id,
           place_id: place.place_id,
-          place_name: place.place_name,
-          city: place.city || "",
         }),
       });
+      const data = await res.json();
+
+      alert(data.message);
+
       if (!res.ok) throw new Error("Failed to update");
       setPlaces((prev) =>
         prev.map((p) =>
@@ -68,12 +121,16 @@ export default function Favourites({ user }) {
     setActionLoading(place.place_id);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API}/remove`, {
+      const res = await fetch(`${API}/${place.place_id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ user_id: user.id, place_id: place.place_id }),
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
-      if (!res.ok) throw new Error("Failed to remove");
+
+      const data = await res.json();
+      alert(data.message);
+      if (!res.ok) return;
       setPlaces((prev) => prev.filter((p) => p.place_id !== place.place_id));
     } catch {
       alert("Could not remove. Please try again.");
@@ -86,6 +143,7 @@ export default function Favourites({ user }) {
   const filteredPlaces = places.filter((p) => {
     if (filter === "visited") return p.status === "VISITED";
     if (filter === "tovisit") return p.status === "TO_VISIT";
+    if (filter === "favorites") return p.favorite_at !== null;
     return true;
   });
 
@@ -109,6 +167,7 @@ export default function Favourites({ user }) {
           <button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>All</button>
           <button className={filter === "tovisit" ? "active" : ""} onClick={() => setFilter("tovisit")}>To Visit</button>
           <button className={filter === "visited" ? "active" : ""} onClick={() => setFilter("visited")}>Visited</button>
+          <button className={filter === "favorites" ? "active" : ""} onClick={() => setFilter("favorites")}>Favorites</button>
         </div>
 
         <div className="fav-list">
@@ -137,9 +196,20 @@ export default function Favourites({ user }) {
                   </button>
                 ) : (
                   <button className="visit-btn visited-btn" disabled>
-                    Visited ✓
+                    Visited
                   </button>
                 )}
+
+                {place.status === "VISITED" && (
+                  <button
+                    className="fav-btn"
+                    disabled={actionLoading === place.place_id}
+                    onClick={() => handleToggleFavorite(place)}
+                  >
+                    {place.favorite_at ? "❤️" : "🤍"}
+                  </button>
+                )}
+
                 <button
                   className="remove-btn"
                   disabled={actionLoading === place.place_id}
