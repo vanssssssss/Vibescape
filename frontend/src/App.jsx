@@ -1,5 +1,6 @@
 import logo from "./assets/logo.png";
 import SettingsPage from "./SettingsPage";// here we are importing the settings page component which we will create later
+import FeaturesPage from "./FeaturesPage";
 
 import { useState, useRef, useEffect } from "react";
 import {
@@ -99,6 +100,10 @@ function App() {
   const [loadingAuth, setLoadingAuth] = useState(false);
   const verifyCalledRef = useRef(false);//
 
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
+
+
   useEffect(() => {
     if (!verifyToken) return;
     if (verifyCalledRef.current) return;  // ← ADD
@@ -134,8 +139,17 @@ function App() {
 
   /* ---------- location resolver ---------- */
   useEffect(() => {
-  fetchUser();
-}, []);
+    const token = localStorage.getItem("token");
+    //const guest = localStorage.getItem("guest"); // ✅ ADD
+
+
+    if (token) {
+      setIsAuthenticated(true);
+      fetchUser().finally(() => setLoadingUser(false));
+    } else {
+      setLoadingUser(false);
+    }
+  }, []);
 
   const resolveLocation = () => {
     return new Promise((resolve) => {
@@ -176,42 +190,42 @@ function App() {
       () => alert("Location permission denied"),
     );
   };
-const fetchUser = async () => {
-  const token = localStorage.getItem("token");
+  const fetchUser = async () => {
+    const token = localStorage.getItem("token");
 
-  if (!token) return;
+    if (!token) return;
 
-  try {
-    const res = await fetch("http://localhost:3000/api/v1/users/me", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      const res = await fetch("http://localhost:3000/api/v1/users/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    // 🔥 ADD THIS BLOCK HERE
-    if (!res.ok) {
-      localStorage.removeItem("token");
+      // 🔥 ADD THIS BLOCK HERE
+      if (!res.ok) {
+        localStorage.removeItem("token");
 
 
-      setIsAuthenticated(false); // 🔥 Adding this one tooo
-      setUser(null);
-      return;
+        setIsAuthenticated(false); // 🔥 Adding this one tooo
+        setUser(null);
+        return;
+      }
+
+      const data = await res.json();
+
+      setUser({
+        id: data.user_id, // 🔥 IMPORTANT (missing earlier)
+        email: data.email,
+        nickname: data.nickname,
+        profile_pic: data.profile_pic,
+      });
+
+    } catch (err) {
+      console.log("Failed to fetch user");
     }
+  };
 
-    const data = await res.json();
-
-    setUser({
-  id: data.user_id, // 🔥 IMPORTANT (missing earlier)
-  email: data.email,
-  nickname: data.nickname,
-  profile_pic: data.profile_pic,
-});
-
-  } catch (err) {
-    console.log("Failed to fetch user");
-  }
-};
-  
   const handleManualLocation = async () => {
     if (!area.trim()) return;
 
@@ -517,24 +531,29 @@ const fetchUser = async () => {
           return;
         }
         throw new Error(data.message);
-        
+
       }
 
 
       // here adding the token to local storage and setting the user state with the user id and email returned from the backend, which will be used in the settings page to display user details and allow updates.
-     localStorage.setItem("token", data.token);
+      localStorage.setItem("token", data.token);
       await fetchUser(); // 🔥 IMPORTANT
 
 
       setIsAuthenticated(true);
-      await fetchUser(); // ✅ fetch user details after login
+      setIsGuest(false);
+      localStorage.removeItem("guest");
+
+      // await fetchUser(); // ✅ fetch user details after login
       navigate("/");
+      //const from = location.state?.from || "/";  // ✅ NEW
+      //navigate(from);                            // ✅ NEW
     } catch (err) {
       setError(err.message || "Invalid email or password");
     }
   };
 
-const handleRegister = async () => {
+  const handleRegister = async () => {
     setError("");
     setMessage("");
     setLoadingAuth(true);
@@ -658,7 +677,9 @@ const handleRegister = async () => {
   };
 
   /* ---------- AUTH GUARD ---------- */
-  if (!isAuthenticated) {
+  // ✅ ADD THIS FIRST
+  if (loadingUser) return null;
+  if (!isAuthenticated && !user && !isGuest) {
     return (
       <Routes>
         <Route
@@ -837,7 +858,9 @@ const handleRegister = async () => {
                         className="skip-link"
                         onClick={() => {
                           setUser(null);
-                          setIsAuthenticated(true);
+                          setIsAuthenticated(false);
+                          setIsGuest(true);
+                          // localStorage.setItem("guest", "true"); // ✅ ADD THIS
                           navigate("/");
                         }}
                       >
@@ -947,6 +970,7 @@ const handleRegister = async () => {
     );
   }
   /* ---------- MAIN APP (UNCHANGED) ---------- */
+
   return (
     <div className="app-container">
       {showLocationModal &&
@@ -1011,20 +1035,29 @@ const handleRegister = async () => {
         accept="image/*"
         onChange={handleFileUpload}
       />
-      {/* SIDEBAR */}
+ {/* SIDEBAR */}
       <div className="sidebar">
         <div
           className={`sidebar-icon ${location.pathname === "/" ? "active purple" : ""
             }`}
           onClick={() => navigate("/")}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M3 5l6-2 6 2 6-2v14l-6 2-6-2-6 2z"
-              stroke="white"
-              strokeWidth="2"
-            />
-          </svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <path
+    d="M12 21s7-7.5 7-12a7 7 0 10-14 0c0 4.5 7 12 7 12z"
+    stroke="white"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  <circle
+    cx="12"
+    cy="9"
+    r="2.5"
+    stroke="white"
+    strokeWidth="2"
+  />
+</svg>
         </div>
 
         <div
@@ -1065,14 +1098,33 @@ const handleRegister = async () => {
             }`}
           onClick={() => navigate("/places")}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 21s6-5.5 6-10a6 6 0 10-12 0c0 4.5 6 10 6 10z"
-              stroke="white"
-              strokeWidth="2"
-            />
-          </svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <path
+    d="M3 10.5L12 3l9 7.5"
+    stroke="white"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  <path
+    d="M5 10v10h14V10"
+    stroke="white"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  <path
+    d="M9 20v-6h6v6"
+    stroke="white"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+</svg>
         </div>
+
+
+
 
         <div
           //sidebar new one added for the settings page with the profile image and the first letter of the nickname if the profile image is not available
@@ -1110,391 +1162,397 @@ const handleRegister = async () => {
             </div>
           )}
         </div>
-        </div>
-        <div className="main-content">
-          {/* TOP BROWSER-LIKE RIBBON */}
-          <div
-            style={{
-              height: "44px",
-              width: "100%",
-              background: "#E5E7EB" /* same as vibe input */,
-              display: "flex",
-              alignItems: "center",
-              padding: "0 6px",
-              //boxShadow: "0 10px 24px rgba(0,0,0,0.10)",
-              marginBottom: "12px",
-              marginTop: "-10px", // ✅ shifted slightly upwards
-            }}
-          >
-            <div style={{ marginRight: "2px" }}>
-              <svg
-                width="58"
-                height="58"
-                viewBox="0 0 64 64"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {/* Globe Outer */}
-                <circle cx="32" cy="32" r="18" fill="#7C3AED" opacity="0.95" />
-
-                {/* Globe Highlight */}
-                <circle cx="26" cy="26" r="12" fill="white" opacity="0.12" />
-
-                {/* Latitude Line */}
-                <path
-                  d="M14 32H50"
-                  stroke="white"
-                  strokeWidth="2.6"
-                  strokeLinecap="round"
-                  opacity="0.85"
-                />
-
-                {/* Longitude Curves */}
-                <path
-                  d="M32 14C26 20 26 44 32 50"
-                  stroke="white"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  opacity="0.7"
-                />
-                <path
-                  d="M32 14C38 20 38 44 32 50"
-                  stroke="white"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  opacity="0.7"
-                />
-
-                {/* Top Curve */}
-                <path
-                  d="M20 22C24 25 40 25 44 22"
-                  stroke="white"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  opacity="0.6"
-                />
-
-                {/* Bottom Curve */}
-                <path
-                  d="M20 42C24 39 40 39 44 42"
-                  stroke="white"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  opacity="0.6"
-                />
-              </svg>
-            </div>
-
-            {/* App Name */}
-            <span
-              style={{
-                fontSize: "28px",
-                fontWeight: "900",
-                color: "#111827",
-                letterSpacing: "-0.5px",
-              }}
+      </div>
+      <div className="main-content">
+        {/* TOP BROWSER-LIKE RIBBON */}
+        <div
+          style={{
+            height: "44px",
+            width: "100%",
+            background: "#E5E7EB" /* same as vibe input */,
+            display: "flex",
+            alignItems: "center",
+            padding: "0 6px",
+            //boxShadow: "0 10px 24px rgba(0,0,0,0.10)",
+            marginBottom: "12px",
+            marginTop: "-10px", // ✅ shifted slightly upwards
+          }}
+        >
+          <div style={{ marginRight: "2px" }}>
+            <svg
+              width="58"
+              height="58"
+              viewBox="0 0 64 64"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              VibeScape
-            </span>
+              {/* Globe Outer */}
+              <circle cx="32" cy="32" r="18" fill="#7C3AED" opacity="0.95" />
+
+              {/* Globe Highlight */}
+              <circle cx="26" cy="26" r="12" fill="white" opacity="0.12" />
+
+              {/* Latitude Line */}
+              <path
+                d="M14 32H50"
+                stroke="white"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                opacity="0.85"
+              />
+
+              {/* Longitude Curves */}
+              <path
+                d="M32 14C26 20 26 44 32 50"
+                stroke="white"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                opacity="0.7"
+              />
+              <path
+                d="M32 14C38 20 38 44 32 50"
+                stroke="white"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                opacity="0.7"
+              />
+
+              {/* Top Curve */}
+              <path
+                d="M20 22C24 25 40 25 44 22"
+                stroke="white"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                opacity="0.6"
+              />
+
+              {/* Bottom Curve */}
+              <path
+                d="M20 42C24 39 40 39 44 42"
+                stroke="white"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                opacity="0.6"
+              />
+            </svg>
           </div>
 
-          {/* here removed the old ui page and made changes to the settings page  added the new route below*/}
-          <Routes>
-            <Route
-              path="/settings"
-              element={
-                <SettingsPage
-                  user={user}
-                  setUser={setUser}
-                  navigate={navigate}
-                  //fetchUser={fetchUser}// here i have added the fetchUser function as a prop to the settings page so that after updating the user details in the settings page we can fetch the updated user details and update the user state in the app component which will reflect in the sidebar with the updated profile picture and nickname without needing to refresh the page 
-                />
-              }
-            />
-            <Route
-              path="/"
-              element={
-                <div className="search-section">
-                  <MapContainer
-                    center={
-                      userLocation
-                        ? [userLocation.lat, userLocation.lon]
-                        : [26.9124, 75.7873]
-                    }
-                    zoom={9}
-                  >
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    <RecenterMap userLocation={userLocation} />
-                    {userLocation && (
-                      <Marker
-                        position={[userLocation.lat, userLocation.lon]}
-                        icon={userMarker}
+          {/* App Name */}
+          <span
+            style={{
+              fontSize: "28px",
+              fontWeight: "900",
+              color: "#111827",
+              letterSpacing: "-0.5px",
+            }}
+          >
+            VibeScape
+          </span>
+        </div>
+
+        {/* here removed the old ui page and made changes to the settings page  added the new route below*/}
+        <Routes>
+          <Route
+            path="/settings"
+            element={
+              <SettingsPage
+                user={user}
+                setUser={setUser}
+                navigate={navigate}
+                setIsGuest={setIsGuest}
+              //fetchUser={fetchUser}// here i have added the fetchUser function as a prop to the settings page so that after updating the user details in the settings page we can fetch the updated user details and update the user state in the app component which will reflect in the sidebar with the updated profile picture and nickname without needing to refresh the page 
+              />
+            }
+          />
+          <Route
+            path="/"
+            element={
+              <div className="search-section">
+                <MapContainer
+                  center={
+                    userLocation
+                      ? [userLocation.lat, userLocation.lon]
+                      : [26.9124, 75.7873]
+                  }
+                  zoom={9}
+                >
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <RecenterMap userLocation={userLocation} />
+                  {userLocation && (
+                    <Marker
+                      position={[userLocation.lat, userLocation.lon]}
+                      icon={userMarker}
+                    >
+                      <Tooltip
+                        direction="auto"
+                        offset={[0, -20]}
+                        opacity={0.7}
+                        permanent={false}
+                        className="user-tooltip"
                       >
-                        <Tooltip
-                          direction="auto"
-                          offset={[0, -20]}
-                          opacity={0.7}
-                          permanent={false}
-                          className="user-tooltip"
-                        >
-                          You are here
-                        </Tooltip>
-                      </Marker>
-                    )}
-                    {places.map((p) => (
-                      <Marker
-                        key={p.id}
-                        position={[p.latitude, p.longitude]}
-                        icon={purpleMarker}
+                        You are here
+                      </Tooltip>
+                    </Marker>
+                  )}
+                  {places.map((p) => (
+                    <Marker
+                      key={p.id}
+                      position={[p.latitude, p.longitude]}
+                      icon={purpleMarker}
+                    >
+                      <Tooltip
+                        direction="auto"
+                        offset={[0, -20]}
+                        opacity={0.7}
+                        permanent={false}
+                        className="place-tooltip"
                       >
-                        <Tooltip
-                          direction="auto"
-                          offset={[0, -20]}
-                          opacity={0.7}
-                          permanent={false}
-                          className="place-tooltip"
+                        <div className="place-tooltip-content">
+                          <div className="place-name">{p.name}</div>
+                        </div>
+                      </Tooltip>
+                      <Popup
+                        autoPan={true}
+                        keepInView={true}
+                        maxWidth={220}
+                        closeButton={true}
+                      >
+                        <div
+                          style={{
+                            minWidth: "165px",
+                            padding: "8px 10px",
+                            borderRadius: "14px",
+                            background: "rgba(255, 255, 255, 0.70)",
+                            backdropFilter: "blur(14px)",
+                            WebkitBackdropFilter: "blur(14px)",
+                            border: "1px solid rgba(255, 255, 255, 0.6)",
+                            boxShadow: "0 18px 45px rgba(0,0,0,0.18)",
+                            color: "#111",
+                            fontFamily: "Roboto, sans-serif",
+                          }}
                         >
-                          <div className="place-tooltip-content">
-                            <div className="place-name">{p.name}</div>
-                          </div>
-                        </Tooltip>
-                        <Popup
-                          autoPan={true}
-                          keepInView={true}
-                          maxWidth={220}
-                          closeButton={true}
-                        >
+                          {/* PLACE NAME */}
                           <div
                             style={{
-                              minWidth: "165px",
-                              padding: "8px 10px",
-                              borderRadius: "14px",
-                              background: "rgba(255, 255, 255, 0.70)",
-                              backdropFilter: "blur(14px)",
-                              WebkitBackdropFilter: "blur(14px)",
-                              border: "1px solid rgba(255, 255, 255, 0.6)",
-                              boxShadow: "0 18px 45px rgba(0,0,0,0.18)",
-                              color: "#111",
-                              fontFamily: "Roboto, sans-serif",
+                              fontWeight: 800,
+                              fontSize: "14px",
+                              marginBottom: "6px",
+                              color: "#1f1f1f",
                             }}
                           >
-                            {/* PLACE NAME */}
-                            <div
+                            {p.name}
+                          </div>
+
+                          {/* OPTIONS DROPDOWN */}
+                          <details>
+                            <summary
                               style={{
-                                fontWeight: 800,
-                                fontSize: "14px",
-                                marginBottom: "6px",
-                                color: "#1f1f1f",
+                                cursor: "pointer",
+                                fontSize: "13px",
+                                fontWeight: 700,
+                                color: "#4c1d95",
+                                listStyle: "none",
+                                userSelect: "none",
                               }}
                             >
-                              {p.name}
-                            </div>
+                              ▼ Options
+                            </summary>
 
-                            {/* OPTIONS DROPDOWN */}
-                            <details>
-                              <summary
-                                style={{
-                                  cursor: "pointer",
-                                  fontSize: "13px",
-                                  fontWeight: 700,
-                                  color: "#4c1d95",
-                                  listStyle: "none",
-                                  userSelect: "none",
-                                }}
-                              >
-                                ▼ Options
-                              </summary>
-
+                            <div
+                              style={{
+                                marginTop: "10px",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "6px",
+                                fontSize: "13px",
+                              }}
+                            >
+                              {/* ADD TO MEMORIES */}
                               <div
                                 style={{
-                                  marginTop: "10px",
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  gap: "6px",
-                                  fontSize: "13px",
+                                  padding: "8px 10px",
+                                  borderRadius: "12px",
+                                  background: "rgba(255,255,255,0.55)",
+                                  border: "1px solid rgba(0,0,0,0.06)",
                                 }}
                               >
-                                {/* ADD TO MEMORIES */}
                                 <div
                                   style={{
-                                    padding: "8px 10px",
-                                    borderRadius: "12px",
-                                    background: "rgba(255,255,255,0.55)",
-                                    border: "1px solid rgba(0,0,0,0.06)",
+                                    fontWeight: 800,
+                                    marginBottom: "6px",
+                                  }}
+                                >
+                                  Add to Memories
+                                </div>
+
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "5px",
                                   }}
                                 >
                                   <div
                                     style={{
-                                      fontWeight: 800,
-                                      marginBottom: "6px",
+                                      padding: "6px 8px",
+                                      borderRadius: "10px",
+                                      cursor: "pointer",
+                                      transition: "0.2s",
                                     }}
+                                    onClick={() => handleAddNotes(p)}
+                                    onMouseEnter={(e) =>
+                                    (e.currentTarget.style.background =
+                                      "rgba(124,58,237,0.12)")
+                                    }
+                                    onMouseLeave={(e) =>
+                                    (e.currentTarget.style.background =
+                                      "transparent")
+                                    }
                                   >
-                                    Add to Memories
+                                    📝 Add Notes
                                   </div>
 
                                   <div
                                     style={{
-                                      display: "flex",
-                                      flexDirection: "column",
-                                      gap: "5px",
+                                      padding: "6px 8px",
+                                      borderRadius: "10px",
+                                      cursor: "pointer",
+                                      transition: "0.2s",
                                     }}
+                                    onClick={() => handleAddPhoto(p)}
+                                    onMouseEnter={(e) =>
+                                    (e.currentTarget.style.background =
+                                      "rgba(124,58,237,0.12)")
+                                    }
+                                    onMouseLeave={(e) =>
+                                    (e.currentTarget.style.background =
+                                      "transparent")
+                                    }
                                   >
-                                    <div
-                                      style={{
-                                        padding: "6px 8px",
-                                        borderRadius: "10px",
-                                        cursor: "pointer",
-                                        transition: "0.2s",
-                                      }}
-                                      onClick={() => handleAddNotes(p)}
-                                      onMouseEnter={(e) =>
-                                      (e.currentTarget.style.background =
-                                        "rgba(124,58,237,0.12)")
-                                      }
-                                      onMouseLeave={(e) =>
-                                      (e.currentTarget.style.background =
-                                        "transparent")
-                                      }
-                                    >
-                                      📝 Add Notes
-                                    </div>
-
-                                    <div
-                                      style={{
-                                        padding: "6px 8px",
-                                        borderRadius: "10px",
-                                        cursor: "pointer",
-                                        transition: "0.2s",
-                                      }}
-                                      onClick={() => handleAddPhoto(p)}
-                                      onMouseEnter={(e) =>
-                                      (e.currentTarget.style.background =
-                                        "rgba(124,58,237,0.12)")
-                                      }
-                                      onMouseLeave={(e) =>
-                                      (e.currentTarget.style.background =
-                                        "transparent")
-                                      }
-                                    >
-                                      📷 Add Photos
-                                    </div>
+                                    📷 Add Photos
                                   </div>
-                                </div>
-
-                                {/* ADD TO FAVOURITES */}
-                                <div
-                                  style={{
-                                    padding: "10px",
-                                    borderRadius: "12px",
-                                    cursor: "pointer",
-                                    fontWeight: 700,
-                                    background:
-                                      popupStatus[p.id] === "saved" ||
-                                        popupStatus[p.id] === "already_saved"
-                                        ? "rgba(124,58,237,0.15)"
-                                        : "rgba(255,255,255,0.55)",
-                                    border: "1px solid rgba(0,0,0,0.06)",
-                                    transition: "0.2s",
-                                  }}
-                                  onClick={() => handleAddToFavourites(p)}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform =
-                                      "translateY(-1px)";
-                                    e.currentTarget.style.boxShadow =
-                                      "0 10px 22px rgba(0,0,0,0.10)";
-                                    e.currentTarget.style.background =
-                                      "rgba(124,58,237,0.10)";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform =
-                                      "translateY(0px)";
-                                    e.currentTarget.style.boxShadow = "none";
-                                    e.currentTarget.style.background =
-                                      popupStatus[p.id] === "saved" ||
-                                        popupStatus[p.id] === "already_saved"
-                                        ? "rgba(124,58,237,0.15)"
-                                        : "rgba(255,255,255,0.55)";
-                                  }}
-                                >
-                                  {popupStatus[p.id] === "saving" && "⭐ Saving…"}
-                                  {popupStatus[p.id] === "saved" &&
-                                    "⭐ Saved to To Visit!"}
-                                  {popupStatus[p.id] === "already_saved" &&
-                                    "⭐ Already saved"}
-                                  {!popupStatus[p.id] && "⭐ Add to Favourites"}
-                                </div>
-
-                                {/* MARK AS VISITED */}
-                                <div
-                                  style={{
-                                    padding: "10px",
-                                    borderRadius: "12px",
-                                    cursor: "pointer",
-                                    fontWeight: 700,
-                                    background:
-                                      popupStatus[p.id] === "visited"
-                                        ? "rgba(16,185,129,0.15)"
-                                        : "rgba(255,255,255,0.55)",
-                                    border: "1px solid rgba(0,0,0,0.06)",
-                                    transition: "0.2s",
-                                  }}
-                                  onClick={() => handleMarkVisited(p)}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform =
-                                      "translateY(-1px)";
-                                    e.currentTarget.style.boxShadow =
-                                      "0 10px 22px rgba(0,0,0,0.10)";
-                                    e.currentTarget.style.background =
-                                      "rgba(16,185,129,0.12)";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform =
-                                      "translateY(0px)";
-                                    e.currentTarget.style.boxShadow = "none";
-                                    e.currentTarget.style.background =
-                                      popupStatus[p.id] === "visited"
-                                        ? "rgba(16,185,129,0.15)"
-                                        : "rgba(255,255,255,0.55)";
-                                  }}
-                                >
-                                  {popupStatus[p.id] === "marking" &&
-                                    "✅ Saving…"}
-                                  {popupStatus[p.id] === "visited" &&
-                                    "✅ Marked as Visited!"}
-                                  {(!popupStatus[p.id] ||
-                                    popupStatus[p.id] === "saved" ||
-                                    popupStatus[p.id] === "already_saved") &&
-                                    "✅ Mark as Visited"}
                                 </div>
                               </div>
-                            </details>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    ))}
-                  </MapContainer>
 
-                  <div className="search-overlay">
-                    <input
-                      className="vibe-input"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      onKeyDown={handleKey}
-                      placeholder="Describe your vibe…"
-                    />
-                    <button className="search-btn" onClick={handleSearch}>
-                      {loading ? "…" : "🔍"}
-                    </button>
-                  </div>
+                              {/* ADD TO FAVOURITES */}
+                              <div
+                                style={{
+                                  padding: "10px",
+                                  borderRadius: "12px",
+                                  cursor: "pointer",
+                                  fontWeight: 700,
+                                  background:
+                                    popupStatus[p.id] === "saved" ||
+                                      popupStatus[p.id] === "already_saved"
+                                      ? "rgba(124,58,237,0.15)"
+                                      : "rgba(255,255,255,0.55)",
+                                  border: "1px solid rgba(0,0,0,0.06)",
+                                  transition: "0.2s",
+                                }}
+                                onClick={() => handleAddToFavourites(p)}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform =
+                                    "translateY(-1px)";
+                                  e.currentTarget.style.boxShadow =
+                                    "0 10px 22px rgba(0,0,0,0.10)";
+                                  e.currentTarget.style.background =
+                                    "rgba(124,58,237,0.10)";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform =
+                                    "translateY(0px)";
+                                  e.currentTarget.style.boxShadow = "none";
+                                  e.currentTarget.style.background =
+                                    popupStatus[p.id] === "saved" ||
+                                      popupStatus[p.id] === "already_saved"
+                                      ? "rgba(124,58,237,0.15)"
+                                      : "rgba(255,255,255,0.55)";
+                                }}
+                              >
+                                {popupStatus[p.id] === "saving" && "⭐ Saving…"}
+                                {popupStatus[p.id] === "saved" &&
+                                  "⭐ Saved to To Visit!"}
+                                {popupStatus[p.id] === "already_saved" &&
+                                  "⭐ Already saved"}
+                                {!popupStatus[p.id] && "⭐ Add to Favourites"}
+                              </div>
+
+                              {/* MARK AS VISITED */}
+                              <div
+                                style={{
+                                  padding: "10px",
+                                  borderRadius: "12px",
+                                  cursor: "pointer",
+                                  fontWeight: 700,
+                                  background:
+                                    popupStatus[p.id] === "visited"
+                                      ? "rgba(16,185,129,0.15)"
+                                      : "rgba(255,255,255,0.55)",
+                                  border: "1px solid rgba(0,0,0,0.06)",
+                                  transition: "0.2s",
+                                }}
+                                onClick={() => handleMarkVisited(p)}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform =
+                                    "translateY(-1px)";
+                                  e.currentTarget.style.boxShadow =
+                                    "0 10px 22px rgba(0,0,0,0.10)";
+                                  e.currentTarget.style.background =
+                                    "rgba(16,185,129,0.12)";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform =
+                                    "translateY(0px)";
+                                  e.currentTarget.style.boxShadow = "none";
+                                  e.currentTarget.style.background =
+                                    popupStatus[p.id] === "visited"
+                                      ? "rgba(16,185,129,0.15)"
+                                      : "rgba(255,255,255,0.55)";
+                                }}
+                              >
+                                {popupStatus[p.id] === "marking" &&
+                                  "✅ Saving…"}
+                                {popupStatus[p.id] === "visited" &&
+                                  "✅ Marked as Visited!"}
+                                {(!popupStatus[p.id] ||
+                                  popupStatus[p.id] === "saved" ||
+                                  popupStatus[p.id] === "already_saved") &&
+                                  "✅ Mark as Visited"}
+                              </div>
+                            </div>
+                          </details>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  ))}
+                </MapContainer>
+
+                <div className="search-overlay">
+                  <input
+                    className="vibe-input"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={handleKey}
+                    placeholder="Describe your vibe…"
+                  />
+                  <button className="search-btn" onClick={handleSearch}>
+                    {loading ? "…" : "🔍"}
+                  </button>
                 </div>
-              }
-            />
-            <Route path="/favorites" element={<Favourites user={user} />} />
-            <Route path="/photos" element={<MemoriesPage />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </div>
+              </div>
+            }
+          />
+         // <Route path="/favorites" element={<Favourites user={user} />} />
+          <Route path="/photos" element={<MemoriesPage />} />
+
+          <Route path="/places" element={<FeaturesPage />} />
+          <Route path="*" element={<div />} />
+        </Routes>
       </div>
-      );
- }
-      export default App;
+    </div>
+  );
+}
+export default App;
+
+
+

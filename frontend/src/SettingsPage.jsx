@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import "./SettingsPage.css";
 
-export default function SettingsPage({ user, setUser, navigate }) {
+export default function SettingsPage({ user, setUser, navigate,setIsGuest }) {
     const [isEditing, setIsEditing] = useState(false);
     const [showPasswordUI, setShowPasswordUI] = useState(false);
 
@@ -237,7 +237,14 @@ export default function SettingsPage({ user, setUser, navigate }) {
                     <div className="guest-actions">
                         <button
                             className="action-btn"
-                            onClick={() => navigate("/login")} // it is not navigating to the login page
+                            //onClick={() => navigate("/login")} // it is not navigating to the login page
+                            onClick={() => {
+                                //sessionStorage.removeItem("guest"); // ✅ REMOVE guest mode
+                                setIsGuest(false);
+                                navigate("/", {
+                                    state: { from: window.location.pathname }
+                                });
+                            }}
                         >
                             Login
                         </button>
@@ -262,7 +269,7 @@ export default function SettingsPage({ user, setUser, navigate }) {
                 {/* HEADER */}
                 <div className="settings-header">
                     <h2 className="page-title">Account Settings</h2>
-                    <button className="close-btn" onClick={() => navigate("/")}>✕</button>
+                    <button className="closee-btn" onClick={() => navigate("/")}>×</button>
                 </div>
 
                 {/* PROFILE CARD */}

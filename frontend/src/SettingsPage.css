@@ -545,3 +545,19 @@
 .modal-msg.error {
   color: #dc2626;
 }
+
+.closee-btn {
+  all: unset;   
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: #6a6d71;        /* subtle gray */
+  cursor: pointer;
+  padding: 1px;
+  line-height: 1;
+}
+
+.closee-btn:hover {
+ color: #EF4444;
+}
