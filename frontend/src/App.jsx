@@ -184,7 +184,9 @@ function App() {
 
     if (token) {
       setIsAuthenticated(true);
+      setIsGuest(false);
       fetchUser().finally(() => setLoadingUser(false));
+      console.log(user);
     } else {
       setLoadingUser(false);
     }
@@ -1609,7 +1611,7 @@ placeState[p.id]?.status === "VISITED"
           <Route path="/photos" element={<MemoriesPage />} />
 
           <Route path="/places" element={<FeaturesPage />} />
-          <Route path="*" element={<div />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
 

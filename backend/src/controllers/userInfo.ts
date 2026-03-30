@@ -21,7 +21,7 @@ export const getUserInfo = async(req : AuthRequest,res : Response) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        return res.status(200).json({message : "User fetched successfully",email:user.rows[0].email, nickname: user.rows[0].name , profile_pic : user.rows[0].profile_picture || null });
+        return res.status(200).json({message : "User fetched successfully",user_id:userId,email:user.rows[0].email, nickname: user.rows[0].name , profile_pic : user.rows[0].profile_picture || null });
 
     }catch(err: any){
         return res.status(500).json({ message: "Server error" });
@@ -55,7 +55,7 @@ export const updateName = async(req : AuthRequest,res : Response) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        return res.status(200).json({message : "Your nickname is updated",email:user.rows[0].email, nickname: user.rows[0].name , profile_pic : user.rows[0].profile_picture || null });
+        return res.status(200).json({message : "Your nickname is updated",user_id:userId,email:user.rows[0].email, nickname: user.rows[0].name , profile_pic : user.rows[0].profile_picture || null });
 
     }catch(err: any){
         return res.status(500).json({ message: "Server error" });
@@ -84,7 +84,7 @@ export const updateProfilePic  = async(req : AuthRequest,res : Response) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        return res.status(200).json({message : "Profile pic updated",email:user.rows[0].email, nickname: user.rows[0].name , profile_pic : user.rows[0].profile_picture || null });
+        return res.status(200).json({message : "Profile pic updated",user_id:userId,email:user.rows[0].email, nickname: user.rows[0].name , profile_pic : user.rows[0].profile_picture || null });
 
     }catch(err: any){
         return res.status(500).json({ message: "Server error" });

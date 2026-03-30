@@ -278,7 +278,7 @@ export const toggleFavorites = async (req: AuthRequest, res: Response) => {
       [userId, place_id]
     );
 
-    console.log(result.rows);
+    // console.log(result.rows);
 
     if (result.rows.length === 0) {
       return res.status(400).json({
