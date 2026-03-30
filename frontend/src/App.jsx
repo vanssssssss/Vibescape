@@ -79,8 +79,6 @@ function App() {
   const [query, setQuery] = useState("");
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [popupStatus, setPopupStatus] = useState({}); // track per-place action state
-
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
 
@@ -105,6 +103,7 @@ function App() {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  const [placeState, setPlaceState] = useState({});
 
   useEffect(() => {
     if (!verifyToken) return;
@@ -149,8 +148,8 @@ function App() {
             style={{
               fontSize: isInteractive ? "36px" : "18px",
               cursor: isInteractive ? "pointer" : "default",
-              color: star <= (hoverRating || (isInteractive ? userRating : rating)) 
-                     ? "#FBBF24" : "#D1D5DB",
+              color: star <= (hoverRating || (isInteractive ? userRating : rating))
+                ? "#FBBF24" : "#D1D5DB",
               transition: "0.1s"
             }}
             onClick={() => isInteractive && setUserRating(star)}
@@ -466,12 +465,39 @@ function App() {
   };
 
   /* ---------- RATING & VISITED HANDLERS ---------- */
-  const handleMarkVisitedClick = (p) => {
+  const handleMarkVisitedClick = async (p) => {
+    if (placeState[p.id]?.status === "VISITED") return;
+
+    const token = localStorage.getItem("token");
+
+    await fetch(
+      "http://localhost:3000/api/v1/saved-places/visited",
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          place_id: p.id
+        })
+      }
+    );
+
+    setPlaceState(prev => ({
+      ...prev,
+      [p.id]: {
+        status: "VISITED",
+        favorite: prev[p.id]?.favorite || false,
+        rated: prev[p.id]?.rated || false
+      }
+    }))
+
     setSelectedPlace(p);
     setShowRatingModal(true);
   };
 
-  const submitRatingAndVisit = async () => {
+  const submitRating = async () => {
     // 1. Update UI locally (Mock logic for average)
     try {
       const res = await fetch("http://localhost:3000/api/v1/rating/rate", {
@@ -488,37 +514,31 @@ function App() {
       const data = await res.json();
 
       if (res.ok) {
-        // Update UI instantly
-        setPlaces((prev) =>
-          prev.map((p) =>
-            p.id === selectedPlace.id
-              ? {
-                  ...p,
-                  average_rating: data.average_rating,
-                  total_ratings: data.total_ratings,
-                }
-              : p
-          )
-        );
-      }
+
+  setPlaceState(prev => ({
+    ...prev,
+    [selectedPlace.id]: {
+      ...prev[selectedPlace.id],
+      rated: true
+    }
+  }));
+
+  setPlaces(prev =>
+    prev.map(p =>
+      p.id === selectedPlace.id
+        ? {
+            ...p,
+            average_rating: data.average_rating,
+            total_ratings: data.total_ratings
+          }
+        : p
+    )
+  );
+
+}
     } catch (err) {
       console.error("Rating failed");
     }
-    
-    // 2. Original Mark Visited Logic (Matches your reference)
-    try {
-      const res = await fetch("http://localhost:3000/api/v1/favorites/visited", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: user.id,
-          place_id: String(selectedPlace.id),
-          place_name: selectedPlace.name,
-          city: "Jaipur",
-        }),
-      });
-      if (res.ok) setPopupStatus((prev) => ({ ...prev, [selectedPlace.id]: "visited" }));
-    } catch (err) { console.error("Visit failed"); }
 
     alert(`Vibe Rated: ${userRating} Stars!`);
     setShowRatingModal(false);
@@ -526,66 +546,67 @@ function App() {
   };
 
   /* ---------- FAVOURITES HELPERS ---------- */
-  const handleAddToFavourites = async (p) => {
-    if (!user?.id) return alert("Please log in to save places.");
-    setPopupStatus((prev) => ({ ...prev, [p.id]: "saving" }));
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3000/api/v1/favorites/add", {
+  const handleAddToVisit = async (p) => {
+    if (placeState[p.id]?.status === "TO_VISIT") return;
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      "http://localhost:3000/api/v1/saved-places",
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          user_id: user.id,
-          place_id: String(p.id),
-          place_name: p.name,
-          city: "Jaipur",
+          place_id: p.id,
         }),
-      });
-      if (res.status === 409) {
-        setPopupStatus((prev) => ({ ...prev, [p.id]: "already_saved" }));
-      } else if (res.ok) {
-        setPopupStatus((prev) => ({ ...prev, [p.id]: "saved" }));
-      } else {
-        throw new Error();
       }
-    } catch {
-      setPopupStatus((prev) => ({ ...prev, [p.id]: "error" }));
+    );
+
+    if (res.ok) {
+      setPlaceState(prev => ({
+        ...prev,
+        [p.id]: {
+          status: "TO_VISIT",
+          favorite: false,
+          rated: false
+        }
+      }))
     }
   };
 
-  // const handleMarkVisited = async (p) => {
-  //   if (!user?.id) return alert("Please log in to save places.");
-  //   setPopupStatus((prev) => ({ ...prev, [p.id]: "marking" }));
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const res = await fetch(
-  //       "http://localhost:3000/api/v1/favorites/visited",
-  //       {
-  //         method: "PATCH",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //         body: JSON.stringify({
-  //           user_id: user.id,
-  //           place_id: String(p.id),
-  //           place_name: p.name,
-  //           city: "Jaipur",
-  //         }),
-  //       },
-  //     );
-  //     if (res.ok) {
-  //       setPopupStatus((prev) => ({ ...prev, [p.id]: "visited" }));
-  //     } else {
-  //       throw new Error();
-  //     }
-  //   } catch {
-  //     setPopupStatus((prev) => ({ ...prev, [p.id]: "error" }));
-  //   }
-  // };
+  const toggleFavorite = async (p) => {
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      "http://localhost:3000/api/v1/saved-places/favorites",
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          place_id: p.id
+        })
+      }
+    );
+
+    if (res.ok) {
+
+      setPlaceState(prev => ({
+        ...prev,
+        [p.id]: {
+          ...prev[p.id],
+          favorite: !prev[p.id]?.favorite
+        }
+      }));
+
+    }
+
+  };
 
   /* ---------- AUTH HANDLERS ---------- */
 
@@ -609,6 +630,7 @@ function App() {
         }
         throw new Error(data.message);
       }
+      localStorage.setItem("token", data.token);
 
       setUser({ email, id: data.user_id });
       setIsAuthenticated(true);
@@ -1574,35 +1596,113 @@ function App() {
                         </div>
                       </Tooltip>
                       <Popup maxWidth={220}>
-                      <div style={{ minWidth: "165px", padding: "8px 10px", borderRadius: "14px", background: "rgba(255, 255, 255, 0.70)", backdropFilter: "blur(14px)" }}>
-                        <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>{p.name}</div>
-                        
-                        {/* STAR DISPLAY IN POPUP */}
-                        <div style={{ marginBottom: "8px" }}>
-                          {renderStars(p.average_rating || 0)}
-                          <span style={{ fontSize: "12px", marginLeft: "5px" }}>
-                            ({p.total_ratings || 0})
-                          </span>
-                        </div>
+                        <div style={{ minWidth: "165px", padding: "8px 10px", borderRadius: "14px", background: "rgba(255, 255, 255, 0.70)", backdropFilter: "blur(14px)" }}>
+                          <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>{p.name}</div>
 
-                        <details>
-                          <summary style={{ cursor: "pointer", fontSize: "13px", fontWeight: 700, color: "#4c1d95", listStyle: "none" }}>▼ Options</summary>
-                          <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                            <div style={{ padding: "8px 10px", borderRadius: "12px", background: "rgba(255,255,255,0.55)", border: "1px solid rgba(0,0,0,0.06)" }}>
-                              <div style={{ fontWeight: 800, marginBottom: "6px" }}>Add to Memories</div>
-                              <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddNotes(p)}>📝 Add Notes</div>
-                              <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddPhoto(p)}>📷 Add Photos</div>
-                            </div>
-                            <div style={{ padding: "10px", cursor: "pointer", fontWeight: 700 }} onClick={() => handleAddToFavourites(p)}>
-                              {popupStatus[p.id] === "saved" ? "⭐ Saved!" : "⭐ Add to Favourites"}
-                            </div>
-                            <div style={{ padding: "10px", cursor: "pointer", fontWeight: 700 }} onClick={() => handleMarkVisitedClick(p)}>
-                              {popupStatus[p.id] === "visited" ? "✅ Visited!" : "✅ Mark as Visited"}
-                            </div>
+                          {/* STAR DISPLAY IN POPUP */}
+                          <div style={{ marginBottom: "8px" }}>
+                            {renderStars(p.average_rating || 0)}
+                            <span style={{ fontSize: "12px", marginLeft: "5px" }}>
+                              ({p.total_ratings || 0})
+                            </span>
                           </div>
-                        </details>
-                      </div>
-                    </Popup>
+
+                          <details>
+                            <summary style={{ cursor: "pointer", fontSize: "13px", fontWeight: 700, color: "#4c1d95", listStyle: "none" }}>▼ Options</summary>
+                            <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                              <div style={{ padding: "8px 10px", borderRadius: "12px", background: "rgba(255,255,255,0.55)", border: "1px solid rgba(0,0,0,0.06)" }}>
+                                <div style={{ fontWeight: 800, marginBottom: "6px" }}>Add to Memories</div>
+                                <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddNotes(p)}>📝 Add Notes</div>
+                                <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddPhoto(p)}>📷 Add Photos</div>
+                              </div>
+                              <div
+                                style={{
+                                  padding: "10px",
+                                  fontWeight: 700,
+                                  cursor:
+                                    placeState[p.id]?.status === "TO_VISIT" ||
+placeState[p.id]?.status === "VISITED"
+                                      ? "not-allowed"
+                                      : "pointer",
+                                  opacity:
+                                    placeState[p.id]?.status === "TO_VISIT" ||
+placeState[p.id]?.status === "VISITED"
+                                      ? 0.5
+                                      : 1
+                                }}
+                                onClick={() => {
+                                  if (
+                                    placeState[p.id]?.status === "TO_VISIT" ||
+placeState[p.id]?.status === "VISITED"
+                                  ) return;
+
+                                  handleAddToVisit(p);
+                                }}
+                              >
+                                {placeState[p.id]?.status === "VISITED"
+                                  ? "⭐ Already Visited"
+                                  : placeState[p.id]?.status === "TO_VISIT"
+                                    ? "⭐ Added to To Visit"
+                                    : "⭐ Add to To Visit"}
+                              </div>
+                              <div
+                                style={{
+                                  padding: "10px",
+                                  cursor: placeState[p.id]?.status === "VISITED" ? "default" : "pointer",
+                                  fontWeight: 700,
+                                  opacity: placeState[p.id]?.status === "VISITED" ? 0.6 : 1
+                                }}
+                                onClick={() => handleMarkVisitedClick(p)}
+                              >
+                                {placeState[p.id]?.status !== "VISITED" && (
+                                  <div
+                                    style={{ padding: "10px", cursor: "pointer", fontWeight: 700 }}
+                                    onClick={() => handleMarkVisitedClick(p)}
+                                  >
+                                    ✅ Mark as Visited
+                                  </div>
+                                )}
+
+                                {placeState[p.id]?.status === "VISITED" && (
+                                  <div
+                                    style={{
+                                      padding: "10px",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                      fontWeight: 700
+                                    }}
+                                  >
+                                    <span>✅ Visited!</span>
+
+                                    <span
+                                      style={{
+                                        cursor: placeState[p.id]?.rated ? "not-allowed" : "pointer",
+                                        opacity: placeState[p.id]?.rated ? 0.5 : 1
+                                      }}
+                                      onClick={() => {
+                                        if (placeState[p.id]?.rated) return;
+
+                                        setSelectedPlace(p);
+                                        setShowRatingModal(true);
+                                      }}
+                                    >
+                                      ⭐
+                                    </span>
+
+                                    <span
+                                      style={{ cursor: "pointer" }}
+                                      onClick={() => toggleFavorite(p)}
+                                    >
+                                      {placeState[p.id]?.favorite ? "❤️" : "🤍"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </details>
+                        </div>
+                      </Popup>
                     </Marker>
                   ))}
                 </MapContainer>
@@ -1653,20 +1753,20 @@ function App() {
             <div style={{ fontSize: "40px", marginBottom: "10px" }}>⭐</div>
             <h3>Rate your visit</h3>
             <p>How was the vibe at <strong>{selectedPlace?.name}</strong>?</p>
-            
+
             <div style={{ margin: "20px 0", display: "flex", justifyContent: "center" }}>
               {renderStars(0, true)}
             </div>
 
             <div className="modal-buttons">
               <button className="cancel-btn" onClick={() => { setShowRatingModal(false); setUserRating(0); }}>Skip</button>
-              <button 
-                className="save-btn" 
+              <button
+                className="save-btn"
                 disabled={userRating === 0}
                 style={{ opacity: userRating === 0 ? 0.5 : 1 }}
-                onClick={submitRatingAndVisit}
+                onClick={submitRating}
               >
-                Confirm Visit
+                Submit Rating
               </button>
             </div>
           </div>
