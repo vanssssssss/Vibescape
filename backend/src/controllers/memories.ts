@@ -112,9 +112,11 @@ export const addImage = async(req : AuthRequest,res : Response) =>{
       });
     }
 
-    const currentPhotos = memory.rows[0].photos
-      ? JSON.parse(memory.rows[0].photos)
-      : [];
+    const currentPhotos = Array.isArray(memory.rows[0].photos)
+      ? memory.rows[0].photos
+      : memory.rows[0].photos
+        ? JSON.parse(memory.rows[0].photos)
+        : [];
 
     currentPhotos.push(image_url);
 

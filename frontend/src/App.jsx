@@ -460,6 +460,7 @@ function App() {
 
       const uploadData = await uploadRes.json();
       const imageUrl = uploadData.url;
+      // console.log(imageUrl);
 
       const memRes = await fetch("http://localhost:3000/api/v1/memories", {
         headers: { Authorization: `Bearer ${token}` },
