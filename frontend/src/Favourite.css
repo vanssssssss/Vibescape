@@ -6,7 +6,8 @@
 .favourites-wrapper {
   padding: 28px;
   max-width: 1100px;
-  background: #f3f4f6;   /* ✅ grey box */
+  background: #f3f4f6;
+  /* ✅ grey box */
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   border-radius: 18px;
 }
@@ -105,8 +106,10 @@
 }
 
 .visited-btn {
-  background: #2ecc71 !important;
-  cursor: default !important;
+  background: #22c55e !important;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-weight: 500;
 }
 
 /* ACTIONS ROW */
@@ -119,13 +122,13 @@
 /* REMOVE BUTTON */
 .remove-btn {
   background: transparent;
-  border: 1px solid #e0e0e0;
-  color: #999;
+  border: none;
+  color: #9ca3af;
   width: 30px;
   height: 30px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,9 +136,8 @@
 }
 
 .remove-btn:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
   color: #ef4444;
+  transform: scale(1.1);
 }
 
 /* EMPTY STATE */
@@ -143,4 +145,27 @@
   color: #888;
   text-align: center;
   margin-top: 40px;
+}
+
+.fav-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.fav-btn:hover {
+  transform: scale(1.2);
+}
+
+.fav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fav-card:hover {
+  transform: translateY(-2px);
+  transition: 0.15s;
 }

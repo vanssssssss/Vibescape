@@ -135,7 +135,7 @@ interface AuthRequest extends Request {
 // };
 
 export const addToToBeVisted = async (req: AuthRequest, res: Response) => {
-
+  console.log("add to be visited");
   const { place_id } = req.body;
 
   if (!place_id) {
@@ -197,6 +197,7 @@ export const addToToBeVisted = async (req: AuthRequest, res: Response) => {
 }
 
 export const markVisited = async (req: AuthRequest, res: Response) => {
+  console.log("mark as visited");
   const { place_id } = req.body;
 
   if (!place_id) {
@@ -247,6 +248,7 @@ export const markVisited = async (req: AuthRequest, res: Response) => {
 }
 
 export const toggleFavorites = async (req: AuthRequest, res: Response) => {
+  console.log("toggle favorite");
   const { place_id } = req.body;
 
   if (!place_id) {
@@ -276,6 +278,8 @@ export const toggleFavorites = async (req: AuthRequest, res: Response) => {
       [userId, place_id]
     );
 
+    console.log(result.rows);
+
     if (result.rows.length === 0) {
       return res.status(400).json({
         message: "Place must be saved as VISITED to toggle favorite",
@@ -292,6 +296,7 @@ export const toggleFavorites = async (req: AuthRequest, res: Response) => {
 }
 
 export const getPlace = async (req: AuthRequest, res: Response) => {
+  console.log("get saved places");
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
@@ -314,37 +319,51 @@ export const getPlace = async (req: AuthRequest, res: Response) => {
   }
 
   try {
-    let query = `SELECT * FROM user_place WHERE user_id = $1`;
+    let query = `
+      SELECT 
+        up.place_id,
+        up.status,
+        up.created_at,
+        up.favorite_at,
+        p.place_name,
+        'JAIPUR' AS city
+      FROM user_place up
+      LEFT JOIN places p ON up.place_id::int = p.place_id
+      WHERE up.user_id = $1
+    `;
     const params: any[] = [userId];
     let idx = 2;
 
     if (status) {
-      query += ` AND status = $${idx++}`;
+      query += ` AND up.status = $${idx++}`;
       params.push(status);
     }
 
     if (favorite === "true") {
-      query += ` AND favorite_at IS NOT NULL`;
+      query += ` AND up.favorite_at IS NOT NULL`;
     }
 
     if (favorite === "false") {
-      query += ` AND favorite_at IS NULL`;
+      query += ` AND up.favorite_at IS NULL`;
     }
 
     query += ` ORDER BY created_at DESC`;
 
     const result = await pool.query(query, params);
+    // console.log(result.rows);
 
     return res.status(200).json({
       message: "Fetched places successfully",
       data: result.rows,
     });
   } catch (err: any) {
+    console.error(err);
     return res.status(500).json({ message: "Internal server error" });
   }
 }
 
 export const deletePlace = async (req: AuthRequest, res: Response) => {
+  console.log("delete saved place");
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
