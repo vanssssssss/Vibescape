@@ -32,9 +32,31 @@ const purpleMarker = new L.Icon({
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png",
   shadowUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconSize: [15, 24],
+  iconAnchor: [10, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const bigPurpleMarker = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
   iconSize: [18, 28],
   iconAnchor: [10, 41],
   popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const smallPurpleMarker = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconSize: [12, 20],
+  iconAnchor: [7, 22],
+  popupAnchor: [1, -20],
   shadowSize: [41, 41],
 });
 
@@ -1460,7 +1482,7 @@ function App() {
                       </Tooltip>
                     </Marker>
                   )}
-                  {places.map((p) => {
+                  {places.map((p, index) => {
 
                     const sameLocation =
                       userLocation &&
@@ -1469,11 +1491,30 @@ function App() {
 
                     if (sameLocation) return null;
 
+                    let iconToUse = purpleMarker;
+                    let markerOpacity = 1;
+
+                    if (index === 0) {
+                      iconToUse = bigPurpleMarker;
+                    }
+                    else if (index <= 4) {
+                      iconToUse = bigPurpleMarker;
+                    }
+                    else if (index <= 10) {
+                      iconToUse = purpleMarker;
+                      markerOpacity = 0.8;
+                    }
+                    else {
+                      iconToUse = smallPurpleMarker;
+                      markerOpacity = 0.55;
+                    }
+
                     return (
                       <Marker
                         key={p.id}
                         position={[p.latitude, p.longitude]}
-                        icon={purpleMarker}
+                        icon={iconToUse}
+                        opacity={markerOpacity}
                       >
                         <Tooltip
                           direction="auto"
@@ -1612,7 +1653,7 @@ function App() {
                         </Popup>
                       </Marker>
                     );
-            })}
+                  })}
                 </MapContainer>
 
                 <div className="search-overlay">
