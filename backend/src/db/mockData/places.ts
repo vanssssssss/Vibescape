@@ -1,3 +1,4 @@
+/*
 import type { Place } from "../../types/place.js"
 export const places : Place[] = [
     {
@@ -71,3 +72,4 @@ export const places : Place[] = [
     tags: ["historic", "nature", "quiet"]
   }
 ]
+*/

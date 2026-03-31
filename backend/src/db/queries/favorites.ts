@@ -1,5 +1,10 @@
 import { pool } from "../db.js";
 
+// NOTE: place_name and city are stored as a snapshot at save-time (intentional
+// denormalization). The UI reads them directly from this table rather than
+// joining back to `places`. If you normalize this later, update Favourites.jsx
+// (display + the markAsVisited PATCH body) and drop the columns from the table.
+
 // Add a place to favorites with TO_VISIT status
 export async function addToFavorites(
   userId: string,

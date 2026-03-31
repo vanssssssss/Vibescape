@@ -173,7 +173,6 @@ export const addNotes = async (req: AuthRequest, res: Response) => {
     }
 
 
-
     const result = await pool.query(
       `
       UPDATE memories

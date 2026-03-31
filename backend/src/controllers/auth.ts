@@ -58,7 +58,7 @@ export const register = async(req : Request,res : Response) =>{
 
         await sendMailVerification(email,verificationUrl);
      
-        return res.status(201).json({message:"User created successfully!",user_id:userId, email:userEmail});
+        return res.status(201).json({message:"User created successfully!",user_id:userId, email:userEmail,token});
 
     }catch(err:any){
         if(err.message == "EMAIL_EXISTS"){
