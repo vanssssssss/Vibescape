@@ -579,3 +579,306 @@
   color: #7c3aed;
   text-shadow: 0 0 10px rgba(124, 58, 237, 0.35);
 }
+
+.note-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px); /* Matches your project style */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Ensure it's above everything */
+}
+
+.note-modal-card {
+  background: white;
+  padding: 30px;
+  border-radius: 24px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+
+.note-modal-card h3 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.note-modal-card p {
+  color: #6B7280;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.note-textarea {
+  width: 100%;
+  height: 120px;
+  padding: 15px;
+  border-radius: 16px;
+  border: 1px solid #E5E7EB;
+  background: #F9FAFB;
+  font-family: inherit;
+  font-size: 15px;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.note-textarea:focus {
+  border-color: #7C3AED; /* Your purple theme color */
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.cancel-btn, .save-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s;
+}
+
+.cancel-btn {
+  background: #F3F4F6;
+  color: #4B5563;
+}
+
+.save-btn {
+  background: #7C3AED;
+  color: white;
+  box-shadow: 0 10px 20px rgba(124, 58, 237, 0.2);
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+}
+/* Add this to your App.css */
+
+.note-modal-card h3 {
+  margin: 0 0 10px;
+}
+
+/* Make stars pop a bit on hover in the interactive modal */
+span[style*="cursor: pointer"]:hover {
+  transform: scale(1.2);
+  display: inline-block;
+}
+
+.save-btn:disabled {
+  cursor: not-allowed;
+  background: #9CA3AF; /* Gray out if not rated */
+}
+
+/* manual location */
+.location-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 99999;
+}
+
+.location-modal {
+  width: 360px;
+  padding: 22px;
+  border-radius: 20px;
+
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+
+  box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  animation: scaleIn 0.2s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: center;   /* center horizontally */                
+  margin-top: 14px;
+}
+
+.actions button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  background: #E5E7EB;
+  color: #111;
+}
+
+
+.actions button:hover {
+  background: #7C3AED;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(124, 58, 237, 0.25);
+}
+
+
+.location-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.closee-btn {
+  all: unset;   
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: #6a6d71;        /* subtle gray */
+  cursor: pointer;
+  padding: 1px;
+  line-height: 1;
+}
+
+.closee-btn:hover {
+ color: #EF4444;
+}
+
+/* user Location hover */
+.user-tooltip {
+  background: rgba(255, 255, 255, 0.75);
+  color: #111827;
+  padding: 6px 12px;
+  border-radius: 14px;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* remove default leaflet box */
+.leaflet-tooltip.user-tooltip {
+  border: none;
+}
+
+/* arrow fix */
+.leaflet-tooltip-top.user-tooltip:before {
+  border-top-color: rgba(255,255,255,0.75);
+}
+
+.place-tooltip {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 14px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.6);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+}
+
+/* remove default leaflet border */
+.leaflet-tooltip.place-tooltip {
+  border: none;
+}
+
+/* arrow */
+.leaflet-tooltip-top.place-tooltip:before {
+  border-top-color: rgba(255,255,255,0.8);
+}
+
+/* content */
+.place-tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.place-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #111;
+}
+
+/* autocomplete dropdown */
+
+.autocomplete-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-wrapper .vibe-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  right: 0;
+
+  max-height: 180px;
+  overflow-y: auto;
+
+  background: #d7dadf;
+  border-radius: 12px;
+  padding: 6px;
+
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+
+  z-index: 1000;
+}
+
+.autocomplete-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+  transition: 0.15s ease;
+}
+
+.autocomplete-item:hover {
+  background: rgba(124, 58, 237, 0.12);
+}
+
+.autocomplete-item:not(:last-child) {
+  margin-bottom: 4px;
+}

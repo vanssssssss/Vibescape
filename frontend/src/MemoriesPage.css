@@ -29,6 +29,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 20px;
+  min-height: 300px;
 }
 
 /* CARD */
@@ -88,11 +89,15 @@
 
 .modal-content {
   background: white;
-  width: 80%;
+  width: 520px;
+  max-width: 90vw;
   max-height: 85vh;
+
   border-radius: 20px;
   padding: 20px;
+
   overflow-y: auto;
+  position: relative;
 }
 
 .modal-images img {
@@ -127,16 +132,215 @@
 }
 
 .modal-desc {
+  margin-top: 6px;
+  font-size: 15px;
+  color: #444;
   line-height: 1.6;
-  margin-top: 8px;
 }
 
 .close-btn {
-  margin-top: 16px;
-  padding: 8px 16px;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background: transparent;
+
+  font-size: 18px;
+  color: #666;
+
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+  background: transparent;
+  color: #ff4d4f;
+}
+.note-editor {
+  width: 100%;
+  min-height: 90px;
+
+  padding: 12px 14px;
+
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+
+  font-size: 14px;
+  line-height: 1.5;
+
+  resize: vertical;
+
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.note-editor:focus {
+  border-color: #6c4cff;
+  box-shadow: 0 0 0 2px rgba(108,76,255,0.15);
+}
+
+.note-actions button {
+  padding: 8px 14px;
   border-radius: 10px;
   border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.note-actions button:first-child {
   background: #6c4cff;
   color: white;
+}
+
+.note-actions button:first-child:hover {
+  background: #5a3de6;
+}
+
+.note-actions button:last-child {
+  background: #F3F4F6;
+}
+
+.note-actions button:last-child:hover {
+  background: #E5E7EB;
+}
+
+.add-note-btn {
+  margin-top: 10px;
+  padding: 8px 14px;
+
+  border-radius: 12px;
+  border: none;
+
+  background: #6c4cff;
+  color: white;
+
+  font-size: 14px;
+  font-weight: 500;
+
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-note-btn:hover {
+  background: #5a3de6;
+}
+
+.memories-wrapper {
+  background:  #f2f3f5;
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: 0 22px 48px rgba(0,0,0,.15);
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.modal-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.delete-memory-btn{
+  background:none;
+  border:none;
+  font-size:18px;
+  cursor:pointer;
+  color:#ff4d4f;
+  padding:5px;
+}
+
+.delete-memory-btn:hover{
+  transform:scale(1.1);
+}
+
+.delete-confirm-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  z-index:999999;
+}
+
+.delete-confirm-box{
+  background:white;
+  padding:24px 28px;
+  border-radius:16px;
+  width:260px;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+.delete-confirm-box p{
+  font-size:16px;
+  font-weight:600;
+  margin-bottom:18px;
+}
+
+.delete-confirm-actions{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+}
+
+.delete-btn{
+  background:#6c3df4;
+  color:white;
+  border:none;
+  padding:8px 16px;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.delete-btn:hover{
+  background:#9d2226;
+}
+
+.cancel-btn{
+  background:#f3f3f3;
+  border:none;
+  padding:8px 16px;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.cancel-btn:hover{
+  background:#928f8f;
+}
+
+.empty-text {
+  grid-column: 1 / -1;
+  text-align:center;
+}
+
+.empty-state-card{
+  background: white;
+  border-radius: 20px;
+  padding: 60px 20px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 16px;
+  margin-top: 20px;
 }

@@ -26,6 +26,10 @@ export async function loginUser(email: string,password: string){
         throw new Error("INVALID_CREDENTIALS");
     }
 
+    if(!user.is_verified){
+        throw new Error("NOT_VERIFIED");
+    }
+
     const isValid = await comparePassword(password,user.password);
 
     if(!isValid){

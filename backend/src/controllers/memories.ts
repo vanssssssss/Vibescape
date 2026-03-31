@@ -8,12 +8,12 @@ interface AuthRequest extends Request {
   };
 }
 
-export const createMemory = async(req : AuthRequest,res : Response) =>{
-    try {
+export const createMemory = async (req: AuthRequest, res: Response) => {
+  try {
     const { place_id, title, notes } = req.body;
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
-    } 
+    }
 
     const userId = req.user.id;
 
@@ -47,11 +47,11 @@ export const createMemory = async(req : AuthRequest,res : Response) =>{
   }
 }
 
-export const getAllMemories = async(req : AuthRequest,res : Response) =>{
-    try {
+export const getAllMemories = async (req: AuthRequest, res: Response) => {
+  try {
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
-    } 
+    }
 
     const userId = req.user.id;
 
@@ -75,13 +75,13 @@ export const getAllMemories = async(req : AuthRequest,res : Response) =>{
   }
 }
 
-export const addImage = async(req : AuthRequest,res : Response) =>{
-    try {
+export const addImage = async (req: AuthRequest, res: Response) => {
+  try {
     const { memoryId } = req.params;
     const { image_url } = req.body;
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
-    } 
+    }
 
     const userId = req.user.id;
 
@@ -112,9 +112,11 @@ export const addImage = async(req : AuthRequest,res : Response) =>{
       });
     }
 
-    const currentPhotos = memory.rows[0].photos
-      ? JSON.parse(memory.rows[0].photos)
-      : [];
+    const currentPhotos = Array.isArray(memory.rows[0].photos)
+      ? memory.rows[0].photos
+      : memory.rows[0].photos
+        ? JSON.parse(memory.rows[0].photos)
+        : [];
 
     currentPhotos.push(image_url);
 
@@ -139,13 +141,13 @@ export const addImage = async(req : AuthRequest,res : Response) =>{
   }
 }
 
-export const addNotes = async(req : AuthRequest,res : Response) => {
-    try {
+export const addNotes = async (req: AuthRequest, res: Response) => {
+  try {
     const { memoryId } = req.params;
     const { notes, title } = req.body;
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
-    } 
+    }
 
     const userId = req.user.id;
 
@@ -170,7 +172,6 @@ export const addNotes = async(req : AuthRequest,res : Response) => {
       });
     }
 
-    
 
     const result = await pool.query(
       `
@@ -197,4 +198,41 @@ export const addNotes = async(req : AuthRequest,res : Response) => {
 export const imagekitAuth = (req: Request, res: Response) => {
   const authParams = imagekit.getAuthenticationParameters();
   res.json(authParams);
+};
+
+export const deleteMemory = async (req: AuthRequest, res: Response) => {
+  console.log("Delete memory")
+  try {
+    const { memoryId } = req.params;
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const userId = req.user.id;
+
+    const result = await pool.query(
+      `DELETE FROM memories 
+       WHERE memory_id = $1 AND user_id = $2
+       RETURNING memory_id`,
+      [memoryId, userId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Memory not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Memory deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server error",
+    });
+  }
 };
