@@ -357,7 +357,7 @@ function App() {
       const result = data.results[0];
 
       if (!result) {
-        setActionMessage("Invalid area");
+        setActionMessage("Location not found. Try another area.");
         return;
       }
 
@@ -369,7 +369,7 @@ function App() {
 
       setShowLocationModal(false);
     } catch {
-      setActionMessage("Failed to get location");
+      setActionMessage("Location not found. Try another area.");
     }
   };
 
@@ -380,11 +380,11 @@ function App() {
   }, []);
 
   useEffect(() => {
-  if (!userLocation) return;
-  if (!query.trim()) return;
+    if (!userLocation) return;
+    if (!query.trim()) return;
 
-  handleSearchWithLocation(userLocation);
-}, [userLocation]);
+    handleSearchWithLocation(userLocation);
+  }, [userLocation]);
 
   const handleGoHere = (place) => {
     const newLocation = {
@@ -412,28 +412,38 @@ function App() {
 
       const data = await res.json();
 
-      setPlaces(
-        (data.places || []).map((p) => ({
-          ...p,
-          latitude: p.latitude ?? p.lat,
-          longitude: p.longitude ?? p.lng,
-        })),
-      );
+      const results = (data.places || []).map((p) => ({
+        ...p,
+        latitude: p.latitude ?? p.lat,
+        longitude: p.longitude ?? p.lng,
+      }));
+
+      setPlaces(results);
+
+      if (results.length === 0) {
+        setActionMessage("No recommended places found for this vibe nearby.");
+      }
     } catch {
-      setActionMessage("Search failed");
+      setActionMessage("Search failed. Check connection and try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleSearch = async () => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      setActionMessage("Enter a vibe to search places.");
+      return;
+    }
     console.log(userLocation);
     let loc = userLocation;
 
     if (!loc) {
       loc = await resolveLocation();
-      if (!loc) return;
+      if (!loc) {
+        setActionMessage("Location required to search nearby places.");
+        return;
+      }
     }
 
     console.log(userLocation);
@@ -587,7 +597,7 @@ function App() {
         })
       }
     );
-
+    setActionMessage("Marked as visited.");
     setPlaceState(prev => ({
       ...prev,
       [p.id]: {
@@ -669,6 +679,7 @@ function App() {
     );
 
     if (res.ok) {
+      setActionMessage("Added to your To Visit list.");
       setPlaceState(prev => ({
         ...prev,
         [p.id]: {
@@ -699,7 +710,11 @@ function App() {
     );
 
     if (res.ok) {
-
+      setActionMessage(
+        placeState[p.id]?.favorite
+          ? "Removed from favorites."
+          : "Added to favorites."
+      );
       setPlaceState(prev => ({
         ...prev,
         [p.id]: {
@@ -1583,7 +1598,10 @@ function App() {
                                       opacity: isGuest ? 0.5 : 1
                                     }}
                                     onClick={() => {
-                                      if (isGuest) return;
+                                      if (isGuest) {
+                                        setActionMessage("Login required to save memories.");
+                                        return;
+                                      }
                                       handleAddNotes(p);
                                     }}
                                   >
@@ -1596,7 +1614,11 @@ function App() {
                                       opacity: isGuest || addingPhoto ? 0.5 : 1
                                     }}
                                     onClick={() => {
-                                      if (isGuest || addingPhoto) return;
+                                      if (isGuest) {
+                                        setActionMessage("Login required to upload photos.");
+                                        return;
+                                      }
+                                      if (addingPhoto) return;
                                       handleAddPhoto(p);
                                     }}
                                   >
@@ -1621,8 +1643,11 @@ function App() {
                                         : 1
                                   }}
                                   onClick={() => {
+                                    if (isGuest) {
+                                      setActionMessage("Login required to save places.");
+                                      return;
+                                    }
                                     if (
-                                      isGuest ||
                                       placeState[p.id]?.status === "TO_VISIT" ||
                                       placeState[p.id]?.status === "VISITED"
                                     ) return;
@@ -1650,7 +1675,11 @@ function App() {
                                         : 1
                                   }}
                                   onClick={() => {
-                                    if (isGuest || placeState[p.id]?.status === "VISITED") return;
+                                    if (isGuest) {
+                                      setActionMessage("Login required to mark places visited.");
+                                      return;
+                                    }
+                                    if (placeState[p.id]?.status === "VISITED") return;
                                     handleMarkVisitedClick(p);
                                   }}
                                 >

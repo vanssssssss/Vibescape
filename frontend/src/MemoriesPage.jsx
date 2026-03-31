@@ -58,6 +58,7 @@ if (!user?.id) {
 
     } catch (err) {
       console.error(err);
+      setActionMessage("Failed to load memories");
     } finally {
       setLoading(false);
     }
@@ -239,6 +240,7 @@ if (!user?.id) {
 
                           setSelected({ ...selected, notes: noteText });
                           setEditingNote(false);
+                          setActionMessage("Memory note updated");
                         }}
                       >
                         Save
