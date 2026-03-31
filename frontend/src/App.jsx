@@ -748,7 +748,7 @@ function App() {
       localStorage.removeItem("guest");
 
       // await fetchUser(); // ✅ fetch user details after login
-      navigate("/");
+      navigate("/places"); // from login go to the features page
       //const from = location.state?.from || "/";  // ✅ NEW
       //navigate(from);                            // ✅ NEW
     } catch (err) {
@@ -1064,7 +1064,7 @@ function App() {
                           setIsAuthenticated(false);
                           setIsGuest(true);
                           // localStorage.setItem("guest", "true"); // ✅ ADD THIS
-                          navigate("/");
+                          navigate("/places");
                         }}
                       >
                         Guest Mode →

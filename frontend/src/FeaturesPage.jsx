@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {
@@ -171,6 +172,7 @@ const features = [
 ];
 
 export default function FeaturesPage() {
+  const navigate = useNavigate();
   const [active, setActive] = useState(0);
   const [animating, setAnimating] = useState(false);
   const timerRef = useRef(null);
@@ -248,7 +250,7 @@ export default function FeaturesPage() {
         .fp-title span { color: #7C3AED; }
 
         .fp-card {
-          background: white;
+          background:  #F3F4F6;
           border-radius: 22px;
           box-shadow: 0 6px 24px rgba(0,0,0,0.08);
           border: 1px solid #E5E7EB;
@@ -416,6 +418,45 @@ export default function FeaturesPage() {
           <h2 className="fp-title">
             Built for how you <span>actually explore</span>
           </h2>
+        </div>
+        {/* Explore Button */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", maxWidth: "600px" }}>
+            <input
+              placeholder="Start exploring…"
+              style={{
+                flex: 1,
+                padding: "14px 20px",
+                borderRadius: "999px",
+                border: "none",
+                background: "white",
+                fontSize: "15px",
+                color: "#9CA3AF",
+                outline: "none",
+                cursor: "default",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+              }}
+            />
+            <button
+              onClick={() => navigate("/")}
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "50%",
+                background: "white",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "20px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                flexShrink: 0
+              }}
+            >
+              🔍
+            </button>
+          </div>
         </div>
 
         {/* Main Card */}
