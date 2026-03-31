@@ -3,7 +3,7 @@ export const VIBE_TAG = [
   "eat", "explore", "relax", "work", "socialize", "date", "party",
 
   // place types
-  "cafe", "restaurant", "street_food", "bar", "park", "market", "mall", "museum", "temple",
+  "cafe", "restaurant", "StreetFood", "bar", "park", "market", "mall", "museum", "temple",
 
   // environment
   "quiet", "lively", "crowded", "peaceful", "romantic", "family_friendly",

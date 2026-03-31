@@ -76,7 +76,7 @@ function RecenterMap({ userLocation }) {
 
   useEffect(() => {
     if (userLocation) {
-      map.setView([userLocation.lat, userLocation.lon], 13);
+      map.setView([userLocation.lat, userLocation.lon], 12);
     }
   }, [userLocation, map]);
 
@@ -407,7 +407,7 @@ function App() {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${loc.lat}&lon=${loc.lon}&radius=2000`,
+        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${loc.lat}&lon=${loc.lon}&radius=200000000`,
       );
 
       const data = await res.json();

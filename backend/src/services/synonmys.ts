@@ -43,12 +43,12 @@ export const wordsToTag = new Map<string, VibeTag> ([
   ["dine", "restaurant"],
   ["dinner", "restaurant"],
 
-  ["streetfood", "street_food"],
-  ["stall", "street_food"],
-  ["vendor", "street_food"],
-  ["dhaba", "street_food"],
-  ["chaat", "street_food"],
-  ["momos", "street_food"],
+  ["streetfood", "StreetFood"],
+  ["stall", "StreetFood"],
+  ["vendor", "StreetFood"],
+  ["dhaba", "StreetFood"],
+  ["chaat", "StreetFood"],
+  ["momos", "StreetFood"],
 
   ["bar", "bar"],
   ["pub", "bar"],

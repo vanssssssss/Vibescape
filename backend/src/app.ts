@@ -11,6 +11,7 @@ import cors from "cors";
 import "dotenv/config";
 import ratingRouter from "./routes/rating.js";
 import { initTagVectors } from "./nlp/tagVectors.js";
+import { startScheduler } from "./jobs/scheduler.js";
 
 const app = express();
 const frontend_url = process.env.FRONTEND_URL;
@@ -23,6 +24,7 @@ app.use(cors({ origin: frontend_url }));
 app.use(express.json());
 await initTagVectors();
 app.set("trust proxy", 1);
+startScheduler();
 
 
 app.use('/api/v1/search',searchPlaceRouter);

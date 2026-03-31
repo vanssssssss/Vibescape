@@ -32,19 +32,41 @@ import type { BBox } from "../types/bbox.js";
 // ── Full Jaipur metro bounding box ────────────────────────────
 // Covers everything: Amber Fort (north) → Sanganer (south)
 // This is ingested in ONE shot — no panning needed ever again.
-const JAIPUR_BBOX: BBox = {
-  south: 26.75,
-  west:  75.65,
-  north: 27.10,
-  east:  76.00,
-};
+// const JAIPUR_BBOX: BBox = {
+//   south: 26.75,
+//   west:  75.65,
+//   north: 27.10,
+//   east:  76.00,
+// };
+
+const JAIPUR_TILES: BBox[] = [
+  { south: 26.75, west: 75.65, north: 26.875, east: 75.825 }, // SW
+  { south: 26.75, west: 75.825, north: 26.875, east: 76.00 }, // SE
+  { south: 26.875, west: 75.65, north: 27.00, east: 75.825 }, // NW-bottom
+  { south: 26.875, west: 75.825, north: 27.00, east: 76.00 }, // NE-bottom
+  { south: 27.00, west: 75.65, north: 27.10, east: 75.825 },  // NW-top
+  { south: 27.00, west: 75.825, north: 27.10, east: 76.00 },  // NE-top
+];
+
+// for (const tile of JAIPUR_TILES) {
+//   await fetchAndStoreOSMPlaces(tile);
+//   await new Promise(r => setTimeout(r, 2000)); // 2s gap between tiles
+// }
 
 // ── Internal runner ───────────────────────────────────────────
 async function runIngestion(): Promise<void> {
   console.log("[Scheduler] Starting OSM ingestion for Jaipur metro...");
   try {
-    const count = await fetchAndStoreOSMPlaces(JAIPUR_BBOX);
-    console.log(`[Scheduler] Ingestion complete — ${count} places upserted.`);
+    let total = 0;
+
+    for (const tile of JAIPUR_TILES) {
+      const count = await fetchAndStoreOSMPlaces(tile);
+      total += count;
+
+      await new Promise(r => setTimeout(r, 2000));
+    }
+
+    console.log(`[Scheduler] Ingestion complete — ${total} places processed.`);
   } catch (err: any) {
     // NEVER let this crash the server — log and wait for next run
     console.error(`[Scheduler] Ingestion failed (will retry tomorrow): ${err.message}`);

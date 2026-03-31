@@ -43,7 +43,7 @@ function buildOverpassQuery(bbox: BBox): string {
   const { south, west, north, east } = bbox;
   const b = `${south},${west},${north},${east}`;
   return (
-    `[out:json][timeout:25][maxsize:33554432];` +
+    `[out:json][timeout:25][maxsize:536870912];` +
     `(` +
     `node["amenity"~"cafe|restaurant|fast_food|bar|food_court|marketplace"](${b});` +
     `way["amenity"~"cafe|restaurant|fast_food|bar|food_court|marketplace"](${b});` +
@@ -101,6 +101,7 @@ async function fetchFromOverpass(
 
       const data = (await response.json()) as { elements: OSMElement[] };
       console.log(`[OSM] Success from ${endpoint}`);
+      console.log("OSM elements returned:", data.elements.length);
       return data;
 
     } catch (err: any) {
@@ -227,11 +228,25 @@ async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
  * mapSearch controller catches this and falls back to the DB.
  */
 export async function fetchAndStoreOSMPlaces(bbox: BBox): Promise<number> {
-  const query = buildOverpassQuery(bbox);
-  console.log(
-    `[OSM] Querying bbox S=${bbox.south} W=${bbox.west} ` +
-      `N=${bbox.north} E=${bbox.east}`
-  );
+  const query = `
+[out:json][timeout:25];
+
+(
+  node["amenity"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+  node["tourism"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+  node["shop"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+  node["leisure"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+  node["historic"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+
+  way["amenity"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+  way["tourism"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+  way["shop"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+  way["leisure"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+  way["historic"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+);
+
+out tags center;
+`;
 
   // ── Fetch from Overpass (throws if all mirrors fail) ─────
   const data = await fetchFromOverpass(query);

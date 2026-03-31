@@ -13,7 +13,7 @@ export const TAG_DESCRIPTIONS: Record<VibeTag, string> = {
   // place types
   cafe: "coffee light food seating laptop friendly",
   restaurant: "full service dining meals indoor seating",
-  street_food: "outdoor stalls quick cheap local food",
+  StreetFood: "outdoor stalls quick cheap local food",
   bar: "drinks alcohol nightlife music",
   park: "green outdoor open space walking relaxing",
   market: "multiple vendors shopping local goods",
