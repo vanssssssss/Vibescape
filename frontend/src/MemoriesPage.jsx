@@ -12,19 +12,23 @@ export default function MemoriesPage({ user }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
 
-  if (!user?.id) {
-    return (
-      <div className="memories-page">
+if (!user?.id) {
+  return (
+    <div className="memories-page">
+      <div className="memories-wrapper">
+
         <div className="memories-header">
           <h2>Your Travel Memories</h2>
         </div>
 
         <p className="empty-text">
-          Please login to save memories ✨
+          Please login to save memories
         </p>
+
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   const fetchMemories = async () => {
     try {
@@ -64,7 +68,7 @@ export default function MemoriesPage({ user }) {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `http://localhost:3000/api/v1/memories/${selected.memory_id}`,
+        `http://localhost:3000/api/v1/memories/${memoryId}`,
         {
           method: "DELETE",
           headers: {
@@ -75,7 +79,7 @@ export default function MemoriesPage({ user }) {
 
       if (!res.ok) {
         setActionMessage("Failed to delete memory");
-        throw new Error("Failed to delete memory");
+        return;
       }
 
       // remove from state
@@ -83,7 +87,8 @@ export default function MemoriesPage({ user }) {
         prev.filter((m) => m.memory_id !== memoryId)
       );
 
-      setActionMessage(res.message);
+      const data = await res.json();
+      setActionMessage(data.message || "Memory deleted");
 
       setSelected(null);
       setShowDeleteConfirm(false);
@@ -110,41 +115,52 @@ export default function MemoriesPage({ user }) {
           </div>
         </div>
 
-        <div className="memories-grid">
-          {loading && <p className="empty-text">Loading memories...</p>}
-          {!loading && memories.length === 0 && (
-            <p className="empty-text">No memories yet. Start exploring and save one </p>
-          )}
-          {!loading && memories.map((m) => (
-            <div
-              key={m.memory_id}
-              className="memory-card"
-              onClick={() => {
-                setSelected({
-                  ...m,
-                  images: m.images || []
-                });
+        {loading && (
+          <div className="empty-state-card">
+            Loading memories...
+          </div>
+        )}
 
-                setImageIndex(0);
-                setNoteText(m.notes || "");
-                setEditingNote(false);
-              }}
-            >
-              <img
-                src={m.images?.[0] || "https://via.placeholder.com/300"}
-                alt={m.title}
-              />
+        {!loading && memories.length === 0 && (
+          <div className="empty-state-card">
+            No memories saved yet ✨
+          </div>
+        )}
 
-              <div className="memory-info">
-                <h3>{m.title || "Memory"}</h3>
-                <p className="date">
-                  {new Date(m.created_at).toLocaleDateString()}
-                </p>
-                <p className="preview-text">{m.notes}</p>
+        {memories.length > 0 && (
+          <div className="memories-grid">
+
+            {!loading && memories.map((m) => (
+              <div
+                key={m.memory_id}
+                className="memory-card"
+                onClick={() => {
+                  setSelected({
+                    ...m,
+                    images: m.images || []
+                  });
+
+                  setImageIndex(0);
+                  setNoteText(m.notes || "");
+                  setEditingNote(false);
+                }}
+              >
+                <img
+                  src={m.images?.[0] || "https://via.placeholder.com/300"}
+                  alt={m.title}
+                />
+
+                <div className="memory-info">
+                  <h3>{m.title || "Memory"}</h3>
+                  <p className="date">
+                    {new Date(m.created_at).toLocaleDateString()}
+                  </p>
+                  <p className="preview-text">{m.notes}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {selected && (
           <div className="memory-modal" onClick={() => setSelected(null)}>
@@ -261,7 +277,7 @@ export default function MemoriesPage({ user }) {
             <div className="delete-confirm-actions">
               <button
                 className="delete-btn"
-                onClick={handleDeleteMemory}
+                onClick={() => handleDeleteMemory(selected.memory_id)}
               >
                 Delete
               </button>

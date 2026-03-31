@@ -22,7 +22,8 @@ export async function filterPlacesbyTag(tags: { tag: VibeTag; score: number }[],
 
   const filteredPlaces = scoredPlaces
     .filter(p => p.relevanceScore > 0)
-    .sort((a, b) => b.relevanceScore - a.relevanceScore);
+    .sort((a, b) => b.relevanceScore - a.relevanceScore)
+    .slice(0, 15);
 
     return filteredPlaces;
 
