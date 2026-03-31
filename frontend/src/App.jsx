@@ -379,6 +379,13 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+  if (!userLocation) return;
+  if (!query.trim()) return;
+
+  handleSearchWithLocation(userLocation);
+}, [userLocation]);
+
   const handleGoHere = (place) => {
     const newLocation = {
       lat: place.latitude,
@@ -1569,33 +1576,53 @@ function App() {
                               <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "6px" }}>
                                 <div style={{ padding: "8px 10px", borderRadius: "12px", background: "rgba(255,255,255,0.55)", border: "1px solid rgba(0,0,0,0.06)" }}>
                                   <div style={{ fontWeight: 800, marginBottom: "6px" }}>Add to Memories</div>
-                                  <div style={{ padding: "6px", cursor: "pointer" }} onClick={() => handleAddNotes(p)}>📝 Add Notes</div>
-                                  <div style={{
-                                    padding: "6px",
-                                    cursor: addingPhoto ? "not-allowed" : "pointer",
-                                    opacity: addingPhoto ? 0.6 : 1
-                                  }} onClick={() => {
-                                    if (addingPhoto) return;
-                                    handleAddPhoto(p);
-                                  }}> {addingPhoto ? "Adding..." : "📷 Add Photos"}</div>
+                                  <div
+                                    style={{
+                                      padding: "6px",
+                                      cursor: isGuest ? "not-allowed" : "pointer",
+                                      opacity: isGuest ? 0.5 : 1
+                                    }}
+                                    onClick={() => {
+                                      if (isGuest) return;
+                                      handleAddNotes(p);
+                                    }}
+                                  >
+                                    📝 Add Notes
+                                  </div>
+                                  <div
+                                    style={{
+                                      padding: "6px",
+                                      cursor: isGuest || addingPhoto ? "not-allowed" : "pointer",
+                                      opacity: isGuest || addingPhoto ? 0.5 : 1
+                                    }}
+                                    onClick={() => {
+                                      if (isGuest || addingPhoto) return;
+                                      handleAddPhoto(p);
+                                    }}
+                                  >
+                                    {addingPhoto ? "Adding..." : "📷 Add Photos"}
+                                  </div>
                                 </div>
                                 <div
                                   style={{
                                     padding: "10px",
                                     fontWeight: 700,
                                     cursor:
-                                      placeState[p.id]?.status === "TO_VISIT" ||
+                                      isGuest ||
+                                        placeState[p.id]?.status === "TO_VISIT" ||
                                         placeState[p.id]?.status === "VISITED"
                                         ? "not-allowed"
                                         : "pointer",
                                     opacity:
-                                      placeState[p.id]?.status === "TO_VISIT" ||
+                                      isGuest ||
+                                        placeState[p.id]?.status === "TO_VISIT" ||
                                         placeState[p.id]?.status === "VISITED"
                                         ? 0.5
                                         : 1
                                   }}
                                   onClick={() => {
                                     if (
+                                      isGuest ||
                                       placeState[p.id]?.status === "TO_VISIT" ||
                                       placeState[p.id]?.status === "VISITED"
                                     ) return;
@@ -1612,40 +1639,33 @@ function App() {
                                 <div
                                   style={{
                                     padding: "10px",
-                                    cursor: placeState[p.id]?.status === "VISITED" ? "default" : "pointer",
                                     fontWeight: 700,
-                                    opacity: placeState[p.id]?.status === "VISITED" ? 0.6 : 1
+                                    cursor:
+                                      isGuest || placeState[p.id]?.status === "VISITED"
+                                        ? "not-allowed"
+                                        : "pointer",
+                                    opacity:
+                                      isGuest || placeState[p.id]?.status === "VISITED"
+                                        ? 0.5
+                                        : 1
                                   }}
-                                  onClick={() => handleMarkVisitedClick(p)}
+                                  onClick={() => {
+                                    if (isGuest || placeState[p.id]?.status === "VISITED") return;
+                                    handleMarkVisitedClick(p);
+                                  }}
                                 >
-                                  {placeState[p.id]?.status !== "VISITED" && (
-                                    <div
-                                      style={{ padding: "10px", cursor: "pointer", fontWeight: 700 }}
-                                      onClick={() => handleMarkVisitedClick(p)}
-                                    >
-                                      ✅ Mark as Visited
-                                    </div>
-                                  )}
-
-                                  {placeState[p.id]?.status === "VISITED" && (
-                                    <div
-                                      style={{
-                                        padding: "10px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "8px",
-                                        fontWeight: 700
-                                      }}
-                                    >
+                                  {placeState[p.id]?.status === "VISITED" ? (
+                                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                                       <span>✅ Visited!</span>
 
                                       <span
                                         style={{
-                                          cursor: placeState[p.id]?.rated ? "not-allowed" : "pointer",
-                                          opacity: placeState[p.id]?.rated ? 0.5 : 1
+                                          cursor: isGuest || placeState[p.id]?.rated ? "not-allowed" : "pointer",
+                                          opacity: isGuest || placeState[p.id]?.rated ? 0.5 : 1
                                         }}
-                                        onClick={() => {
-                                          if (placeState[p.id]?.rated) return;
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (isGuest || placeState[p.id]?.rated) return;
 
                                           setSelectedPlace(p);
                                           setShowRatingModal(true);
@@ -1655,12 +1675,21 @@ function App() {
                                       </span>
 
                                       <span
-                                        style={{ cursor: "pointer" }}
-                                        onClick={() => toggleFavorite(p)}
+                                        style={{
+                                          cursor: isGuest ? "not-allowed" : "pointer",
+                                          opacity: isGuest ? 0.5 : 1
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (isGuest) return;
+                                          toggleFavorite(p);
+                                        }}
                                       >
                                         {placeState[p.id]?.favorite ? "❤️" : "🤍"}
                                       </span>
                                     </div>
+                                  ) : (
+                                    "✅ Mark as Visited"
                                   )}
                                 </div>
                               </div>
