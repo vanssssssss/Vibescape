@@ -133,7 +133,8 @@ const features = [
     id: 4,
     tag: "Vibe Search",
     headline: "Describe the Mood,\nFind the Place",
-    sub: "Type 'cozy rainy evening read' or 'rooftop with city lights' — VibeScape's AI translates your feeling into real places on the map, ranked by how well they match your energy.",
+    //sub: "Type 'cozy rainy evening read' or 'rooftop with city lights' — VibeScape's AI translates your feeling into real places on the map, ranked by how well they match your energy.",
+    sub: "Type 'quiet temple' or 'lively café' or 'serene nature' or 'authentic market' or 'peaceful mall' — VibeScape finds real places on the map that match exactly the vibe you're looking for.",
     accent: "#7C3AED",
     lightAccent: "rgba(124,58,237,0.08)",
     borderAccent: "rgba(124,58,237,0.2)",
@@ -423,7 +424,8 @@ export default function FeaturesPage() {
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", maxWidth: "600px" }}>
             <input
-              placeholder="Start exploring…"
+              //placeholder="Start exploring…"
+              placeholder="Start exploring your vibes (e.g. lively places)"
               style={{
                 flex: 1,
                 padding: "14px 20px",
