@@ -23,7 +23,7 @@ export const TAG_DESCRIPTIONS: Record<VibeTag, string> = {
 
   // environment
   quiet: "low noise minimal disturbance calm",
-  lively: "energetic active vibrant atmosphere",
+  lively: "energetic active vibrant buzzy atmosphere",
   crowded: "many people dense busy noisy",
   peaceful: "calm soothing slow environment",
   romantic: "intimate dim lighting couple friendly",
