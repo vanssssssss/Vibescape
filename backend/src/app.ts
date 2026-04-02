@@ -5,7 +5,7 @@ import savedPlacesRouter from "./routes/savedPlaces.js";
 import memoriesRouter from "./routes/memories.js";
 import userInfoRouter from "./routes/userInfo.js";
 import geocodeRouter from "./routes/geocode.js";
-import adminRouter from "./routes/admin.js";    // ← new admin insert, resync, and tag management routes
+import adminRouter from "./routes/admin.js"; // ← new admin insert, resync, and tag management routes
 
 import cors from "cors";
 import "dotenv/config";
@@ -26,15 +26,16 @@ await initTagVectors();
 app.set("trust proxy", 1);
 startScheduler();
 
-
-app.use('/api/v1/search',searchPlaceRouter);
-app.use('/api/v1/rating', ratingRouter);
-app.use('/api/v1/auth',authRouter);
-app.use('/api/v1/memories',memoriesRouter);
-app.use('/api/v1/saved-places',savedPlacesRouter);
-app.use('/api/v1/users/me',userInfoRouter);
-app.use('/api/v1/geocode', geocodeRouter);
-app.use('/api/v1/admin', adminRouter);
-app.get('/',(req, res) => { res.send("API running")});
+app.use("/api/v1/search", searchPlaceRouter);
+app.use("/api/v1/rating", ratingRouter);
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/memories", memoriesRouter);
+app.use("/api/v1/saved-places", savedPlacesRouter);
+app.use("/api/v1/users/me", userInfoRouter);
+app.use("/api/v1/geocode", geocodeRouter);
+app.use("/api/v1/admin", adminRouter);
+app.get("/", (req, res) => {
+  res.send("API running");
+});
 
 export default app;

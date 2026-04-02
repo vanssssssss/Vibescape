@@ -47,5 +47,5 @@ export const TAG_DESCRIPTIONS: Record<VibeTag, string> = {
   rooftop: "top floor open view terrace seating",
   waterfront: "near lake river sea view",
   live_music: "live performance band music",
-  pet_friendly: "pets allowed animals welcome"
+  pet_friendly: "pets allowed animals welcome",
 };

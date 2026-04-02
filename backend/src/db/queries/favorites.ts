@@ -10,14 +10,14 @@ export async function addToFavorites(
   userId: string,
   placeId: string,
   placeName: string,
-  city: string
+  city: string,
 ) {
   const result = await pool.query(
     `INSERT INTO favorites (user_id, place_id, place_name, city, status)
      VALUES ($1, $2, $3, $4, 'TO_VISIT')
      ON CONFLICT (user_id, place_id) DO NOTHING
      RETURNING *`,
-    [userId, placeId, placeName, city]
+    [userId, placeId, placeName, city],
   );
   return result.rows[0] || null;
 }
@@ -27,14 +27,14 @@ export async function markAsVisited(
   userId: string,
   placeId: string,
   placeName: string,
-  city: string
+  city: string,
 ) {
   const result = await pool.query(
     `INSERT INTO favorites (user_id, place_id, place_name, city, status)
      VALUES ($1, $2, $3, $4, 'VISITED')
      ON CONFLICT (user_id, place_id) DO UPDATE SET status = 'VISITED'
      RETURNING *`,
-    [userId, placeId, placeName, city]
+    [userId, placeId, placeName, city],
   );
   return result.rows[0] || null;
 }
@@ -59,7 +59,7 @@ export async function getFavoritesByUser(userId: string, status?: string) {
 export async function removeFavorite(userId: string, placeId: string) {
   const result = await pool.query(
     `DELETE FROM favorites WHERE user_id = $1 AND place_id = $2 RETURNING *`,
-    [userId, placeId]
+    [userId, placeId],
   );
   return result.rows[0] || null;
 }

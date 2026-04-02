@@ -15,7 +15,7 @@ const LocationSearch = ({ onLocationSelect }) => {
       const location = {
         lat: parseFloat(data.lat),
         lng: parseFloat(data.lng),
-        name: data.displayName
+        name: data.displayName,
       };
 
       console.log("Selected Location:", location);
@@ -24,7 +24,6 @@ const LocationSearch = ({ onLocationSelect }) => {
 
       // Save to localStorage
       localStorage.setItem("user_location", JSON.stringify(location));
-
     } catch (error) {
       alert("Location not found");
     }

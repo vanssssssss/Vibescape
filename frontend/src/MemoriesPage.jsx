@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import "./MemoriesPage.css";
 
-
 export default function MemoriesPage({ user }) {
   const [selected, setSelected] = useState(null);
   const [imageIndex, setImageIndex] = useState(0);
@@ -12,36 +11,29 @@ export default function MemoriesPage({ user }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
 
-if (!user?.id) {
-  return (
-    <div className="memories-page">
-      <div className="memories-wrapper">
+  if (!user?.id) {
+    return (
+      <div className="memories-page">
+        <div className="memories-wrapper">
+          <div className="memories-header">
+            <h2>Your Travel Memories</h2>
+          </div>
 
-        <div className="memories-header">
-          <h2>Your Travel Memories</h2>
+          <p className="empty-text">Please login to save memories</p>
         </div>
-
-        <p className="empty-text">
-          Please login to save memories
-        </p>
-
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   const fetchMemories = async () => {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(
-        "http://localhost:3000/api/v1/memories",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch("http://localhost:3000/api/v1/memories", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const data = await res.json();
 
@@ -55,7 +47,6 @@ if (!user?.id) {
       }));
 
       setMemories(parsed);
-
     } catch (err) {
       console.error(err);
       setActionMessage("Failed to load memories");
@@ -75,7 +66,7 @@ if (!user?.id) {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!res.ok) {
@@ -84,9 +75,7 @@ if (!user?.id) {
       }
 
       // remove from state
-      setMemories((prev) =>
-        prev.filter((m) => m.memory_id !== memoryId)
-      );
+      setMemories((prev) => prev.filter((m) => m.memory_id !== memoryId));
 
       const data = await res.json();
       setActionMessage(data.message || "Memory deleted");
@@ -116,50 +105,44 @@ if (!user?.id) {
           </div>
         </div>
 
-        {loading && (
-          <div className="empty-state-card">
-            Loading memories...
-          </div>
-        )}
+        {loading && <div className="empty-state-card">Loading memories...</div>}
 
         {!loading && memories.length === 0 && (
-          <div className="empty-state-card">
-            No memories saved yet ✨
-          </div>
+          <div className="empty-state-card">No memories saved yet ✨</div>
         )}
 
         {memories.length > 0 && (
           <div className="memories-grid">
+            {!loading &&
+              memories.map((m) => (
+                <div
+                  key={m.memory_id}
+                  className="memory-card"
+                  onClick={() => {
+                    setSelected({
+                      ...m,
+                      images: m.images || [],
+                    });
 
-            {!loading && memories.map((m) => (
-              <div
-                key={m.memory_id}
-                className="memory-card"
-                onClick={() => {
-                  setSelected({
-                    ...m,
-                    images: m.images || []
-                  });
+                    setImageIndex(0);
+                    setNoteText(m.notes || "");
+                    setEditingNote(false);
+                  }}
+                >
+                  <img
+                    src={m.images?.[0] || "https://via.placeholder.com/300"}
+                    alt={m.title}
+                  />
 
-                  setImageIndex(0);
-                  setNoteText(m.notes || "");
-                  setEditingNote(false);
-                }}
-              >
-                <img
-                  src={m.images?.[0] || "https://via.placeholder.com/300"}
-                  alt={m.title}
-                />
-
-                <div className="memory-info">
-                  <h3>{m.title || "Memory"}</h3>
-                  <p className="date">
-                    {new Date(m.created_at).toLocaleDateString()}
-                  </p>
-                  <p className="preview-text">{m.notes}</p>
+                  <div className="memory-info">
+                    <h3>{m.title || "Memory"}</h3>
+                    <p className="date">
+                      {new Date(m.created_at).toLocaleDateString()}
+                    </p>
+                    <p className="preview-text">{m.notes}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
 
@@ -170,7 +153,6 @@ if (!user?.id) {
                 <h3>{selected.title}</h3>
 
                 <div className="modal-actions">
-
                   <button
                     className="delete-memory-btn"
                     onClick={() => setShowDeleteConfirm(true)}
@@ -184,12 +166,14 @@ if (!user?.id) {
                   >
                     ×
                   </button>
-
                 </div>
               </div>
               <div className="modal-images">
                 <img
-                  src={selected.images?.[imageIndex] || "https://via.placeholder.com/400"}
+                  src={
+                    selected.images?.[imageIndex] ||
+                    "https://via.placeholder.com/400"
+                  }
                   alt={selected.title}
                 />
 
@@ -208,7 +192,6 @@ if (!user?.id) {
               </div>
 
               <div className="modal-text">
-
                 <p className="modal-date">
                   {new Date(selected.created_at).toLocaleDateString()}
                 </p>
@@ -235,7 +218,7 @@ if (!user?.id) {
                                 Authorization: `Bearer ${token}`,
                               },
                               body: JSON.stringify({ notes: noteText }),
-                            }
+                            },
                           );
 
                           setSelected({ ...selected, notes: noteText });
@@ -265,7 +248,6 @@ if (!user?.id) {
                     </button>
                   </>
                 )}
-
               </div>
             </div>
           </div>
@@ -308,7 +290,7 @@ if (!user?.id) {
             fontWeight: "700",
             fontSize: "14px",
             zIndex: 9999,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.2)"
+            boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
           }}
           onClick={() => setActionMessage("")}
         >
@@ -318,4 +300,3 @@ if (!user?.id) {
     </div>
   );
 }
-

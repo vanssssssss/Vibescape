@@ -1,6 +1,6 @@
-import {type VibeTag } from "../types/vibe.js";
+import { type VibeTag } from "../types/vibe.js";
 
-export const wordsToTag = new Map<string, VibeTag> ([
+export const wordsToTag = new Map<string, VibeTag>([
   // ===== intent =====
   ["eat", "eat"],
   ["food", "eat"],
@@ -145,4 +145,4 @@ export const wordsToTag = new Map<string, VibeTag> ([
 
   ["pet", "pet_friendly"],
   ["dogs", "pet_friendly"],
-])
+]);

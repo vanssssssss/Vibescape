@@ -33,7 +33,9 @@ export const createTag = async (req: Request, res: Response) => {
 
   try {
     const tagId = await insertTagAndBacklink(tag_name);
-    return res.status(201).json({ tag_id: tagId, tag_name: tag_name.trim().toLowerCase() });
+    return res
+      .status(201)
+      .json({ tag_id: tagId, tag_name: tag_name.trim().toLowerCase() });
   } catch (err: any) {
     console.error("createTag error:", err.message);
     return res.status(500).json({ error: "Internal server error" });
@@ -48,13 +50,17 @@ export const createTagsBulk = async (req: Request, res: Response) => {
   const { tags } = req.body as { tags?: unknown };
 
   if (!Array.isArray(tags) || tags.length === 0) {
-    return res.status(400).json({ error: "tags must be a non-empty array of strings" });
+    return res
+      .status(400)
+      .json({ error: "tags must be a non-empty array of strings" });
   }
 
   // Validate all elements are strings
   const invalid = tags.filter((t) => typeof t !== "string" || !t.trim());
   if (invalid.length > 0) {
-    return res.status(400).json({ error: "All tags must be non-empty strings" });
+    return res
+      .status(400)
+      .json({ error: "All tags must be non-empty strings" });
   }
 
   try {

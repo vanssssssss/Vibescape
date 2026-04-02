@@ -13,11 +13,20 @@ export const addFavorite = async (req: Request, res: Response) => {
   const { user_id, place_id, place_name, city } = req.body;
 
   if (!user_id || !place_id || !place_name) {
-    return res.status(400).json({ error: "Missing required fields: user_id, place_id, place_name" });
+    return res
+      .status(400)
+      .json({
+        error: "Missing required fields: user_id, place_id, place_name",
+      });
   }
 
   try {
-    const favorite = await addToFavorites(user_id, place_id, place_name, city || "");
+    const favorite = await addToFavorites(
+      user_id,
+      place_id,
+      place_name,
+      city || "",
+    );
 
     if (!favorite) {
       return res.status(409).json({ message: "Place already in favorites" });
@@ -40,11 +49,20 @@ export const markVisited = async (req: Request, res: Response) => {
   const { user_id, place_id, place_name, city } = req.body;
 
   if (!user_id || !place_id || !place_name) {
-    return res.status(400).json({ error: "Missing required fields: user_id, place_id, place_name" });
+    return res
+      .status(400)
+      .json({
+        error: "Missing required fields: user_id, place_id, place_name",
+      });
   }
 
   try {
-    const favorite = await markAsVisited(user_id, place_id, place_name, city || "");
+    const favorite = await markAsVisited(
+      user_id,
+      place_id,
+      place_name,
+      city || "",
+    );
 
     return res.status(200).json({
       message: "Place marked as Visited",
@@ -59,7 +77,7 @@ export const markVisited = async (req: Request, res: Response) => {
 // GET /api/v1/favorites/:user_id
 // Query param: ?status=TO_VISIT | VISITED (optional)
 export const getFavorites = async (req: Request, res: Response) => {
-  const { user_id }  = req.params;
+  const { user_id } = req.params;
   const { status } = req.query;
 
   if (!user_id) {
@@ -68,11 +86,16 @@ export const getFavorites = async (req: Request, res: Response) => {
 
   // Validate status if provided
   if (status && status !== "TO_VISIT" && status !== "VISITED") {
-    return res.status(400).json({ error: "status must be TO_VISIT or VISITED" });
+    return res
+      .status(400)
+      .json({ error: "status must be TO_VISIT or VISITED" });
   }
 
   try {
-    const favorites = await getFavoritesByUser(user_id as string, status as string | undefined);
+    const favorites = await getFavoritesByUser(
+      user_id as string,
+      status as string | undefined,
+    );
 
     return res.status(200).json({ favorites });
   } catch (err: any) {
@@ -87,7 +110,9 @@ export const deleteFavorite = async (req: Request, res: Response) => {
   const { user_id, place_id } = req.body;
 
   if (!user_id || !place_id) {
-    return res.status(400).json({ error: "Missing required fields: user_id, place_id" });
+    return res
+      .status(400)
+      .json({ error: "Missing required fields: user_id, place_id" });
   }
 
   try {
@@ -97,7 +122,9 @@ export const deleteFavorite = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Favorite not found" });
     }
 
-    return res.status(200).json({ message: "Favorite removed", favorite: removed });
+    return res
+      .status(200)
+      .json({ message: "Favorite removed", favorite: removed });
   } catch (err: any) {
     console.error("deleteFavorite error:", err.message);
     return res.status(500).json({ error: "Internal server error" });

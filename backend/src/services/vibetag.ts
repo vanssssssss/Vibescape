@@ -3,7 +3,7 @@ import levenshtein from "fast-levenshtein";
 import { mapUnknownWord } from "../nlp/mapUnknown.js";
 import { wordsToTag } from "./synonmys.js";
 
-export function findClosest(word: string,keys: string[]): string | null {
+export function findClosest(word: string, keys: string[]): string | null {
   let bestMatch: string | null = null;
   let bestScore = Infinity;
 
@@ -16,50 +16,70 @@ export function findClosest(word: string,keys: string[]): string | null {
     }
   }
 
-  const similarity = 1 - bestScore / Math.max(word.length, bestMatch?.length || 1);
+  const similarity =
+    1 - bestScore / Math.max(word.length, bestMatch?.length || 1);
 
   if (similarity >= 0.7) {
     return bestMatch;
   }
 
   return null;
-} 
+}
 
 const STOPWORDS = new Set([
-  "the", "is", "at", "which", "on", "a", "an", "to", "for", "with", "and", "near", "me", "i"
+  "the",
+  "is",
+  "at",
+  "which",
+  "on",
+  "a",
+  "an",
+  "to",
+  "for",
+  "with",
+  "and",
+  "near",
+  "me",
+  "i",
 ]);
 
-export async function parseVibe(sentence : string) : Promise<{ tag: VibeTag; score: number }[]> {
-    const words = sentence.toLowerCase().split(/\s+/).map(w => w.replace(/[^a-z]/g, "")).filter(Boolean);
+export async function parseVibe(
+  sentence: string,
+): Promise<{ tag: VibeTag; score: number }[]> {
+  const words = sentence
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => w.replace(/[^a-z]/g, ""))
+    .filter(Boolean);
 
-    const tagSet = new Set<VibeTag>();
-    const scores = new Map<VibeTag, number>();
-    const keys = Array.from(wordsToTag.keys());
+  const tagSet = new Set<VibeTag>();
+  const scores = new Map<VibeTag, number>();
+  const keys = Array.from(wordsToTag.keys());
 
-    for(const w of words){
-        if (STOPWORDS.has(w)) continue;
-        if (w.length < 3) continue;
+  for (const w of words) {
+    if (STOPWORDS.has(w)) continue;
+    if (w.length < 3) continue;
 
-        let tag = wordsToTag.get(w) ?? null;
+    let tag = wordsToTag.get(w) ?? null;
 
-        if (!tag) {
-            const closest = findClosest(w,keys);
-            if (closest) {
-                tag = wordsToTag.get(closest)??null;
-            }
-        }
-
-        if (tag){
-          scores.set(tag,(scores.get(tag) || 0) + 1);
-          continue;
-        }
-        tag = await mapUnknownWord(w);
-        
-        if(tag){
-          scores.set(tag,(scores.get(tag) || 0) + 0.7);
-          continue;
-        }
+    if (!tag) {
+      const closest = findClosest(w, keys);
+      if (closest) {
+        tag = wordsToTag.get(closest) ?? null;
+      }
     }
 
-    return Array.from(scores.entries()).map(([tag,score]) => ({ tag,score }));
+    if (tag) {
+      scores.set(tag, (scores.get(tag) || 0) + 1);
+      continue;
+    }
+    tag = await mapUnknownWord(w);
+
+    if (tag) {
+      scores.set(tag, (scores.get(tag) || 0) + 0.7);
+      continue;
+    }
+  }
+
+  return Array.from(scores.entries()).map(([tag, score]) => ({ tag, score }));
 }

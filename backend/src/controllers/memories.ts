@@ -19,7 +19,7 @@ export const createMemory = async (req: AuthRequest, res: Response) => {
 
     if (!place_id) {
       return res.status(400).json({
-        message: "place_id is required"
+        message: "place_id is required",
       });
     }
 
@@ -34,18 +34,17 @@ export const createMemory = async (req: AuthRequest, res: Response) => {
         place_id,
         title || null,
         notes || null,
-        JSON.stringify([])   // empty images array
-      ]
+        JSON.stringify([]), // empty images array
+      ],
     );
 
     return res.status(201).json(result.rows[0]);
-
   } catch (error) {
     return res.status(500).json({
-      message: "Failed to create memory"
+      message: "Failed to create memory",
     });
   }
-}
+};
 
 export const getAllMemories = async (req: AuthRequest, res: Response) => {
   try {
@@ -62,18 +61,17 @@ export const getAllMemories = async (req: AuthRequest, res: Response) => {
       WHERE user_id = $1
       ORDER BY created_at DESC
       `,
-      [userId]
+      [userId],
     );
 
     return res.status(200).json(result.rows);
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Failed to fetch memories"
+      message: "Failed to fetch memories",
     });
   }
-}
+};
 
 export const addImage = async (req: AuthRequest, res: Response) => {
   try {
@@ -87,7 +85,7 @@ export const addImage = async (req: AuthRequest, res: Response) => {
 
     if (!image_url) {
       return res.status(400).json({
-        message: "image_url is required"
+        message: "image_url is required",
       });
     }
 
@@ -97,18 +95,18 @@ export const addImage = async (req: AuthRequest, res: Response) => {
       FROM memories
       WHERE memory_id = $1
       `,
-      [memoryId]
+      [memoryId],
     );
 
     if (memory.rowCount === 0) {
       return res.status(404).json({
-        message: "Memory not found"
+        message: "Memory not found",
       });
     }
 
     if (memory.rows[0].user_id !== userId) {
       return res.status(403).json({
-        message: "Forbidden"
+        message: "Forbidden",
       });
     }
 
@@ -126,20 +124,19 @@ export const addImage = async (req: AuthRequest, res: Response) => {
       SET photos = $1
       WHERE memory_id = $2
       `,
-      [JSON.stringify(currentPhotos), memoryId]
+      [JSON.stringify(currentPhotos), memoryId],
     );
 
     return res.status(200).json({
-      message: "Image added successfully"
+      message: "Image added successfully",
     });
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Failed to add image"
+      message: "Failed to add image",
     });
   }
-}
+};
 
 export const addNotes = async (req: AuthRequest, res: Response) => {
   try {
@@ -157,21 +154,20 @@ export const addNotes = async (req: AuthRequest, res: Response) => {
       FROM memories
       WHERE memory_id = $1
       `,
-      [memoryId]
+      [memoryId],
     );
 
     if (memory.rowCount === 0) {
       return res.status(404).json({
-        message: "Memory not found"
+        message: "Memory not found",
       });
     }
 
     if (memory.rows[0].user_id !== userId) {
       return res.status(403).json({
-        message: "Forbidden"
+        message: "Forbidden",
       });
     }
-
 
     const result = await pool.query(
       `
@@ -182,18 +178,17 @@ export const addNotes = async (req: AuthRequest, res: Response) => {
       WHERE memory_id = $3
       RETURNING *
       `,
-      [notes || null, title || null, memoryId]
+      [notes || null, title || null, memoryId],
     );
 
     return res.status(200).json(result.rows[0]);
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Failed to update memory"
+      message: "Failed to update memory",
     });
   }
-}
+};
 
 export const imagekitAuth = (req: Request, res: Response) => {
   const authParams = imagekit.getAuthenticationParameters();
@@ -201,7 +196,7 @@ export const imagekitAuth = (req: Request, res: Response) => {
 };
 
 export const deleteMemory = async (req: AuthRequest, res: Response) => {
-  console.log("Delete memory")
+  console.log("Delete memory");
   try {
     const { memoryId } = req.params;
     if (!req.user) {
@@ -214,7 +209,7 @@ export const deleteMemory = async (req: AuthRequest, res: Response) => {
       `DELETE FROM memories 
        WHERE memory_id = $1 AND user_id = $2
        RETURNING memory_id`,
-      [memoryId, userId]
+      [memoryId, userId],
     );
 
     if (result.rowCount === 0) {

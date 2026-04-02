@@ -3,10 +3,10 @@ export function cosine(a: number[], b: number[]): number {
     throw new Error("Vectors must be of same length");
   }
 
-  let dot = 0;      // dot product
-  let magA = 0;     // magnitude of A
-  let magB = 0;     // magnitude of B
-  
+  let dot = 0; // dot product
+  let magA = 0; // magnitude of A
+  let magB = 0; // magnitude of B
+
   for (let i = 0; i < a.length; i++) {
     const x = a[i]!;
     const y = b[i]!;

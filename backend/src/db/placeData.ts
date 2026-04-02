@@ -1,8 +1,13 @@
 import type { Place } from "../types/place.js";
 import { pool } from "./db.js";
 
-export async function getAllPlaces(lat: Number, lon: Number, radius: Number) : Promise<Place[]> {
-    const result = await pool.query(`
+export async function getAllPlaces(
+  lat: Number,
+  lon: Number,
+  radius: Number,
+): Promise<Place[]> {
+  const result = await pool.query(
+    `
         SELECT
         p.place_id                  AS id,
         p.place_name                AS name,
@@ -35,6 +40,8 @@ export async function getAllPlaces(lat: Number, lon: Number, radius: Number) : P
           pr.total_ratings
 
       ORDER BY distance ASC
-    `,[lon, lat, radius]);
-    return result.rows;
+    `,
+    [lon, lat, radius],
+  );
+  return result.rows;
 }

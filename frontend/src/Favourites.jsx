@@ -34,7 +34,10 @@ export default function Favourites({ user }) {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${url}`, {
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
       const data = await res.json();
       setPlaces(data.data || []);
@@ -53,11 +56,11 @@ export default function Favourites({ user }) {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          place_id: place.place_id
-        })
+          place_id: place.place_id,
+        }),
       });
 
       const data = await res.json();
@@ -70,12 +73,9 @@ export default function Favourites({ user }) {
       // safer state update
       setPlaces((prev) =>
         prev.map((p) =>
-          p.place_id === place.place_id
-            ? { ...p, ...data.data }
-            : p
-        )
+          p.place_id === place.place_id ? { ...p, ...data.data } : p,
+        ),
       );
-
     } catch (err) {
       console.error(err);
       setActionMessage("Failed to toggle favorite. Please try again.");
@@ -94,13 +94,17 @@ export default function Favourites({ user }) {
 
   /* ---------- MARK AS VISITED ---------- */
   const handleMarkVisited = async (place) => {
-    if (!user?.id) return setActionMessage("Please log in to update saved places.");
+    if (!user?.id)
+      return setActionMessage("Please log in to update saved places.");
     setActionLoading(place.place_id);
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${API}/visited`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           place_id: place.place_id,
         }),
@@ -112,8 +116,8 @@ export default function Favourites({ user }) {
       if (!res.ok) throw new Error("Failed to update");
       setPlaces((prev) =>
         prev.map((p) =>
-          p.place_id === place.place_id ? { ...p, status: "VISITED" } : p
-        )
+          p.place_id === place.place_id ? { ...p, status: "VISITED" } : p,
+        ),
       );
     } catch {
       setActionMessage("Could not update. Please try again.");
@@ -131,8 +135,8 @@ export default function Favourites({ user }) {
       const res = await fetch(`${API}/${place.place_id}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const data = await res.json();
@@ -171,10 +175,30 @@ export default function Favourites({ user }) {
         <h2 className="fav-title">Saved Places</h2>
 
         <div className="fav-filters">
-          <button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>All</button>
-          <button className={filter === "tovisit" ? "active" : ""} onClick={() => setFilter("tovisit")}>To Visit</button>
-          <button className={filter === "visited" ? "active" : ""} onClick={() => setFilter("visited")}>Visited</button>
-          <button className={filter === "favorites" ? "active" : ""} onClick={() => setFilter("favorites")}>Favorites</button>
+          <button
+            className={filter === "all" ? "active" : ""}
+            onClick={() => setFilter("all")}
+          >
+            All
+          </button>
+          <button
+            className={filter === "tovisit" ? "active" : ""}
+            onClick={() => setFilter("tovisit")}
+          >
+            To Visit
+          </button>
+          <button
+            className={filter === "visited" ? "active" : ""}
+            onClick={() => setFilter("visited")}
+          >
+            Visited
+          </button>
+          <button
+            className={filter === "favorites" ? "active" : ""}
+            onClick={() => setFilter("favorites")}
+          >
+            Favorites
+          </button>
         </div>
 
         <div className="fav-list">
@@ -184,50 +208,58 @@ export default function Favourites({ user }) {
             <p className="empty-text">No places here yet ✨</p>
           )}
 
-          {!loading && filteredPlaces.map((place) => (
-            <div key={place.id} className={`fav-card ${place.status === "VISITED" ? "visited" : ""}`}>
-              <div className="fav-left">
-                <h3>{place.place_name}</h3>
-                <span className="fav-city">{place.city}</span>
-                <span className="fav-date">{new Date(place.created_at).toLocaleDateString()}</span>
-              </div>
+          {!loading &&
+            filteredPlaces.map((place) => (
+              <div
+                key={place.id}
+                className={`fav-card ${place.status === "VISITED" ? "visited" : ""}`}
+              >
+                <div className="fav-left">
+                  <h3>{place.place_name}</h3>
+                  <span className="fav-city">{place.city}</span>
+                  <span className="fav-date">
+                    {new Date(place.created_at).toLocaleDateString()}
+                  </span>
+                </div>
 
-              <div className="fav-actions">
-                {place.status === "TO_VISIT" ? (
+                <div className="fav-actions">
+                  {place.status === "TO_VISIT" ? (
+                    <button
+                      className="visit-btn"
+                      disabled={actionLoading === place.place_id}
+                      onClick={() => handleMarkVisited(place)}
+                    >
+                      {actionLoading === place.place_id
+                        ? "Saving…"
+                        : "Mark as Visited"}
+                    </button>
+                  ) : (
+                    <button className="visit-btn visited-btn" disabled>
+                      Visited
+                    </button>
+                  )}
+
+                  {place.status === "VISITED" && (
+                    <button
+                      className="fav-btn"
+                      disabled={actionLoading === place.place_id}
+                      onClick={() => handleToggleFavorite(place)}
+                    >
+                      {place.favorite_at ? "❤️" : "🤍"}
+                    </button>
+                  )}
+
                   <button
-                    className="visit-btn"
+                    className="remove-btn"
                     disabled={actionLoading === place.place_id}
-                    onClick={() => handleMarkVisited(place)}
+                    onClick={() => handleRemove(place)}
+                    title="Remove"
                   >
-                    {actionLoading === place.place_id ? "Saving…" : "Mark as Visited"}
+                    ✕
                   </button>
-                ) : (
-                  <button className="visit-btn visited-btn" disabled>
-                    Visited
-                  </button>
-                )}
-
-                {place.status === "VISITED" && (
-                  <button
-                    className="fav-btn"
-                    disabled={actionLoading === place.place_id}
-                    onClick={() => handleToggleFavorite(place)}
-                  >
-                    {place.favorite_at ? "❤️" : "🤍"}
-                  </button>
-                )}
-
-                <button
-                  className="remove-btn"
-                  disabled={actionLoading === place.place_id}
-                  onClick={() => handleRemove(place)}
-                  title="Remove"
-                >
-                  ✕
-                </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
       {actionMessage && (
@@ -244,7 +276,7 @@ export default function Favourites({ user }) {
             fontWeight: "700",
             fontSize: "14px",
             zIndex: 9999,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.2)"
+            boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
           }}
           onClick={() => setActionMessage("")}
         >

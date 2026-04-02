@@ -1,21 +1,51 @@
 export const VIBE_TAG = [
   // intent
-  "eat", "explore", "relax", "work", "socialize", "date", "party",
+  "eat",
+  "explore",
+  "relax",
+  "work",
+  "socialize",
+  "date",
+  "party",
 
   // place types
-  "cafe", "restaurant", "StreetFood", "bar", "park", "market", "mall", "museum", "temple",
+  "cafe",
+  "restaurant",
+  "StreetFood",
+  "bar",
+  "park",
+  "market",
+  "mall",
+  "museum",
+  "temple",
 
   // environment
-  "quiet", "lively", "crowded", "peaceful", "romantic", "family_friendly",
+  "quiet",
+  "lively",
+  "crowded",
+  "peaceful",
+  "romantic",
+  "family_friendly",
 
   // aesthetic / vibe
-  "modern", "rustic", "historic", "luxury", "local", "artsy",
+  "modern",
+  "rustic",
+  "historic",
+  "luxury",
+  "local",
+  "artsy",
 
   // cost
-  "budget", "midrange", "expensive",
+  "budget",
+  "midrange",
+  "expensive",
 
   // features
-  "nature", "rooftop", "waterfront", "live_music", "pet_friendly"
+  "nature",
+  "rooftop",
+  "waterfront",
+  "live_music",
+  "pet_friendly",
 ] as const; //made it readonly. only these value of string are allowed.
 
-export type VibeTag = typeof VIBE_TAG[number];
+export type VibeTag = (typeof VIBE_TAG)[number];

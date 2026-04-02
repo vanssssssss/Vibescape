@@ -171,7 +171,7 @@
   padding: 12px 14px;
 
   border-radius: 12px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
 
   font-size: 14px;
   line-height: 1.5;
@@ -179,12 +179,14 @@
   resize: vertical;
 
   outline: none;
-  transition: border 0.2s, box-shadow 0.2s;
+  transition:
+    border 0.2s,
+    box-shadow 0.2s;
 }
 
 .note-editor:focus {
   border-color: #6c4cff;
-  box-shadow: 0 0 0 2px rgba(108,76,255,0.15);
+  box-shadow: 0 0 0 2px rgba(108, 76, 255, 0.15);
 }
 
 .note-actions button {
@@ -206,11 +208,11 @@
 }
 
 .note-actions button:last-child {
-  background: #F3F4F6;
+  background: #f3f4f6;
 }
 
 .note-actions button:last-child:hover {
-  background: #E5E7EB;
+  background: #e5e7eb;
 }
 
 .add-note-btn {
@@ -235,107 +237,107 @@
 }
 
 .memories-wrapper {
-  background:  #f2f3f5;
+  background: #f2f3f5;
   border-radius: 22px;
   padding: 28px;
-  box-shadow: 0 22px 48px rgba(0,0,0,.15);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.15);
 }
 
-.modal-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.modal-actions{
-  display:flex;
-  align-items:center;
-  gap:10px;
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.delete-memory-btn{
-  background:none;
-  border:none;
-  font-size:18px;
-  cursor:pointer;
-  color:#ff4d4f;
-  padding:5px;
+.delete-memory-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #ff4d4f;
+  padding: 5px;
 }
 
-.delete-memory-btn:hover{
-  transform:scale(1.1);
+.delete-memory-btn:hover {
+  transform: scale(1.1);
 }
 
-.delete-confirm-overlay{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.6);
+.delete-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
 
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-  z-index:999999;
+  z-index: 999999;
 }
 
-.delete-confirm-box{
-  background:white;
-  padding:24px 28px;
-  border-radius:16px;
-  width:260px;
-  text-align:center;
-  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+.delete-confirm-box {
+  background: white;
+  padding: 24px 28px;
+  border-radius: 16px;
+  width: 260px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-.delete-confirm-box p{
-  font-size:16px;
-  font-weight:600;
-  margin-bottom:18px;
+.delete-confirm-box p {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 18px;
 }
 
-.delete-confirm-actions{
-  display:flex;
-  justify-content:center;
-  gap:12px;
+.delete-confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
 }
 
-.delete-btn{
-  background:#6c3df4;
-  color:white;
-  border:none;
-  padding:8px 16px;
-  border-radius:10px;
-  font-weight:600;
-  cursor:pointer;
-  transition:0.2s;
+.delete-btn {
+  background: #6c3df4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.delete-btn:hover{
-  background:#9d2226;
+.delete-btn:hover {
+  background: #9d2226;
 }
 
-.cancel-btn{
-  background:#f3f3f3;
-  border:none;
-  padding:8px 16px;
-  border-radius:10px;
-  font-weight:600;
-  cursor:pointer;
+.cancel-btn {
+  background: #f3f3f3;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.cancel-btn:hover{
-  background:#928f8f;
+.cancel-btn:hover {
+  background: #928f8f;
 }
 
 .empty-text {
   grid-column: 1 / -1;
-  text-align:center;
+  text-align: center;
 }
 
-.empty-state-card{
+.empty-state-card {
   background: white;
   border-radius: 20px;
   padding: 60px 20px;

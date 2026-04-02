@@ -41,11 +41,11 @@ import type { BBox } from "../types/bbox.js";
 
 const JAIPUR_TILES: BBox[] = [
   { south: 26.75, west: 75.65, north: 26.875, east: 75.825 }, // SW
-  { south: 26.75, west: 75.825, north: 26.875, east: 76.00 }, // SE
-  { south: 26.875, west: 75.65, north: 27.00, east: 75.825 }, // NW-bottom
-  { south: 26.875, west: 75.825, north: 27.00, east: 76.00 }, // NE-bottom
-  { south: 27.00, west: 75.65, north: 27.10, east: 75.825 },  // NW-top
-  { south: 27.00, west: 75.825, north: 27.10, east: 76.00 },  // NE-top
+  { south: 26.75, west: 75.825, north: 26.875, east: 76.0 }, // SE
+  { south: 26.875, west: 75.65, north: 27.0, east: 75.825 }, // NW-bottom
+  { south: 26.875, west: 75.825, north: 27.0, east: 76.0 }, // NE-bottom
+  { south: 27.0, west: 75.65, north: 27.1, east: 75.825 }, // NW-top
+  { south: 27.0, west: 75.825, north: 27.1, east: 76.0 }, // NE-top
 ];
 
 // for (const tile of JAIPUR_TILES) {
@@ -63,13 +63,15 @@ async function runIngestion(): Promise<void> {
       const count = await fetchAndStoreOSMPlaces(tile);
       total += count;
 
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 2000));
     }
 
     console.log(`[Scheduler] Ingestion complete — ${total} places processed.`);
   } catch (err: any) {
     // NEVER let this crash the server — log and wait for next run
-    console.error(`[Scheduler] Ingestion failed (will retry tomorrow): ${err.message}`);
+    console.error(
+      `[Scheduler] Ingestion failed (will retry tomorrow): ${err.message}`,
+    );
   }
 }
 
@@ -85,5 +87,7 @@ export function startScheduler(): void {
     runIngestion();
   });
 
-  console.log("[Scheduler] Cron registered — next auto-refresh at 3:00 AM daily.");
+  console.log(
+    "[Scheduler] Cron registered — next auto-refresh at 3:00 AM daily.",
+  );
 }

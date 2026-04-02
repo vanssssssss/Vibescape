@@ -26,7 +26,7 @@ export function useProximityWatch({
       const { latitude, longitude } = coords;
       try {
         const res = await fetch(
-          `http://localhost:3000/api/location/nearby?lat=${latitude}&lng=${longitude}&radius=${radius}`
+          `http://localhost:3000/api/location/nearby?lat=${latitude}&lng=${longitude}&radius=${radius}`,
         );
         if (!res.ok) return;
         const data = await res.json();
@@ -40,7 +40,7 @@ export function useProximityWatch({
         console.error("[useProximityWatch] fetch error:", err);
       }
     },
-    [radius, onNearbyPlace]
+    [radius, onNearbyPlace],
   );
 
   useEffect(() => {

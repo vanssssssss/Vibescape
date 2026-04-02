@@ -1,6 +1,5 @@
-import {Pool} from "pg";
+import { Pool } from "pg";
 import "dotenv/config";
-
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -9,8 +8,8 @@ if (!process.env.DATABASE_URL) {
 }
 
 export const pool = new Pool({
-    connectionString:connectionString,
-    ssl: {rejectUnauthorized:false},
+  connectionString: connectionString,
+  ssl: { rejectUnauthorized: false },
 });
 
 (async () => {
@@ -21,6 +20,4 @@ export const pool = new Pool({
     console.error("DB connection failed");
     console.error(err);
   }
-})
-
-();
+})();

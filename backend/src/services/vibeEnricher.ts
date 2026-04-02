@@ -16,14 +16,13 @@
  */
 
 import { VIBE_TAG } from "../types/vibe.js";
-type VibeTag = typeof VIBE_TAG[number];
+type VibeTag = (typeof VIBE_TAG)[number];
 
 // ── Mapping: OSM key+value → vibe tags ───────────────────────
 //   Format: "key=value" → VibeTag[]
 //   Use "*" as wildcard for value: "historic=*" matches any value.
 
 const OSM_TAG_TO_VIBES: Record<string, string[]> = {
-
   // FOOD
   "amenity=cafe": ["cafe", "eat", "work", "socialize", "midrange"],
   "amenity=restaurant": ["restaurant", "eat", "socialize", "midrange"],
@@ -67,19 +66,34 @@ const OSM_TAG_TO_VIBES: Record<string, string[]> = {
 // If OSM tags don't give us enough signal, scan the place name.
 const NAME_KEYWORDS: Array<{ words: string[]; vibes: string[] }> = [
   { words: ["cafe", "coffee", "roaster", "brew", "tapri"], vibes: ["cafe"] },
-  { words: ["park", "garden", "bagh", "udyan", "van"], vibes: ["park", "nature"] },
+  {
+    words: ["park", "garden", "bagh", "udyan", "van"],
+    vibes: ["park", "nature"],
+  },
   { words: ["fort", "mahal", "palace", "haveli"], vibes: ["historic"] },
   { words: ["mandir", "temple", "shrine", "devi", "mata"], vibes: ["temple"] },
-  { words: ["bazaar", "bazar", "market", "chowk", "mandi"], vibes: ["market", "StreetFood"] },
+  {
+    words: ["bazaar", "bazar", "market", "chowk", "mandi"],
+    vibes: ["market", "StreetFood"],
+  },
   { words: ["museum", "gallery"], vibes: ["museum"] },
   { words: ["mall", "multiplex"], vibes: ["mall"] },
   { words: ["rooftop", "terrace"], vibes: ["rooftop"] },
-  { words: ["dhaba", "thali", "restaurant", "bhojnalay"], vibes: ["restaurant"] },
-  { words: ["lake", "talab", "sagar", "waterfront"], vibes: ["waterfront", "romantic"] },
+  {
+    words: ["dhaba", "thali", "restaurant", "bhojnalay"],
+    vibes: ["restaurant"],
+  },
+  {
+    words: ["lake", "talab", "sagar", "waterfront"],
+    vibes: ["waterfront", "romantic"],
+  },
   { words: ["cafe", "coffee", "brew"], vibes: ["cafe", "eat"] },
   { words: ["rooftop", "terrace"], vibes: ["rooftop", "romantic"] },
   { words: ["fort", "mahal", "palace", "haveli"], vibes: ["historic"] },
-  { words: ["lake", "talab", "sagar"], vibes: ["waterfront", "romantic", "date"] },
+  {
+    words: ["lake", "talab", "sagar"],
+    vibes: ["waterfront", "romantic", "date"],
+  },
   { words: ["park", "garden", "bagh"], vibes: ["park", "nature", "relax"] },
 
   { words: ["bazaar", "bazar", "market"], vibes: ["market", "local"] },
@@ -90,7 +104,6 @@ const NAME_KEYWORDS: Array<{ words: string[]; vibes: string[] }> = [
 ];
 
 const FEATURE_TAGS: Record<string, VibeTag[]> = {
-
   "wifi=yes": ["work"],
   "internet_access=wlan": ["work"],
 
@@ -109,43 +122,41 @@ const FEATURE_TAGS: Record<string, VibeTag[]> = {
  * Given a raw OSM tags object (e.g. { amenity: "cafe", name: "Tapri" })
  * returns a deduplicated array of VibeTag strings.
  */
-export function assignVibesFromOSMTags(osmTags: Record<string, string>): string[] {
+export function assignVibesFromOSMTags(
+  osmTags: Record<string, string>,
+): string[] {
   const vibeSet = new Set<string>();
 
   // 1. Primary: exact key=value lookup
   for (const [key, value] of Object.entries(osmTags)) {
-
     const exact = `${key}=${value}`;
     const wildcard = `${key}=*`;
 
     // primary mapping
     const mainVibes = OSM_TAG_TO_VIBES[exact] || OSM_TAG_TO_VIBES[wildcard];
     if (mainVibes) {
-      mainVibes.forEach(v => vibeSet.add(v));
+      mainVibes.forEach((v) => vibeSet.add(v));
     }
 
     // feature mapping
     const featureVibes = FEATURE_TAGS[exact] || FEATURE_TAGS[wildcard];
     if (featureVibes) {
-      featureVibes.forEach(v => vibeSet.add(v));
+      featureVibes.forEach((v) => vibeSet.add(v));
     }
-
   }
 
   // 2. Fallback: scan place name with keyword heuristics
   // if (vibeSet.size === 0) {
-    const nameLower = (osmTags.name ?? "").toLowerCase();
-    for (const { words, vibes } of NAME_KEYWORDS) {
-      if (words.some((w) => nameLower.includes(w))) {
-        vibes.forEach((v) => vibeSet.add(v));
-      }
+  const nameLower = (osmTags.name ?? "").toLowerCase();
+  for (const { words, vibes } of NAME_KEYWORDS) {
+    if (words.some((w) => nameLower.includes(w))) {
+      vibes.forEach((v) => vibeSet.add(v));
     }
+  }
   // }
 
   // 3. Last resort: mark as "lively" if popular tourism spot
-  if (vibeSet.size === 0 && osmTags.tourism)
-    vibeSet.add("lively");
-
+  if (vibeSet.size === 0 && osmTags.tourism) vibeSet.add("lively");
 
   return [...vibeSet];
 }

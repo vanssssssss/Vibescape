@@ -50,7 +50,7 @@ export interface ResyncReport {
 
 // ── 1. Insert a place and populate place_tag from vibes[] ─────────
 export async function insertPlaceWithVibes(
-  params: InsertPlaceParams
+  params: InsertPlaceParams,
 ): Promise<number> {
   const client = await pool.connect();
   try {
@@ -71,7 +71,7 @@ export async function insertPlaceWithVibes(
         params.vibes,
         params.source ?? "manual",
         params.osm_id ?? null,
-      ]
+      ],
     );
 
     const placeId = insertResult.rows[0]!.place_id;
@@ -79,13 +79,13 @@ export async function insertPlaceWithVibes(
     // 1b. Populate place_tag rows from the vibes[] we just stored
     const syncResult = await client.query<{ fn_vibes_to_place_tag: number }>(
       "SELECT fn_vibes_to_place_tag($1)",
-      [placeId]
+      [placeId],
     );
 
     const synced = syncResult.rows[0]?.fn_vibes_to_place_tag ?? 0;
     console.log(
       `[placeTagSync] Inserted place_id=${placeId} ` +
-      `"${params.place_name}" — synced ${synced} tag(s)`
+        `"${params.place_name}" — synced ${synced} tag(s)`,
     );
 
     await client.query("COMMIT");
@@ -112,7 +112,7 @@ export async function insertTagAndBacklink(tagName: string): Promise<number> {
        VALUES ($1)
        ON CONFLICT (tag_name) DO UPDATE SET tag_name = EXCLUDED.tag_name
        RETURNING tag_id`,
-      [normalised]
+      [normalised],
     );
 
     const tagId = tagResult.rows[0]!.tag_id;
@@ -120,13 +120,13 @@ export async function insertTagAndBacklink(tagName: string): Promise<number> {
     // 2b. Link to all places whose vibes[] already contains this name
     const syncResult = await client.query<{ fn_tag_to_places: number }>(
       "SELECT fn_tag_to_places($1)",
-      [tagId]
+      [tagId],
     );
 
     const linked = syncResult.rows[0]?.fn_tag_to_places ?? 0;
     console.log(
       `[placeTagSync] Inserted/found tag_id=${tagId} ` +
-      `"${normalised}" — linked to ${linked} place(s)`
+        `"${normalised}" — linked to ${linked} place(s)`,
     );
 
     await client.query("COMMIT");
@@ -140,7 +140,9 @@ export async function insertTagAndBacklink(tagName: string): Promise<number> {
 }
 
 // ── 3. Bulk insert tags (e.g. admin tag expansion) ────────────────
-export async function bulkInsertTags(tagNames: string[]): Promise<BulkTagResult> {
+export async function bulkInsertTags(
+  tagNames: string[],
+): Promise<BulkTagResult> {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -157,12 +159,14 @@ export async function bulkInsertTags(tagNames: string[]): Promise<BulkTagResult>
          VALUES ($1)
          ON CONFLICT (tag_name) DO NOTHING
          RETURNING tag_id`,
-        [normalised]
+        [normalised],
       );
 
       // rows is empty if the tag already existed
       if (tagResult.rows.length === 0) {
-        console.log(`[placeTagSync] Tag "${normalised}" already exists — skipped`);
+        console.log(
+          `[placeTagSync] Tag "${normalised}" already exists — skipped`,
+        );
         continue;
       }
 
@@ -172,7 +176,7 @@ export async function bulkInsertTags(tagNames: string[]): Promise<BulkTagResult>
       // Back-link to all matching places
       const syncResult = await client.query<{ fn_tag_to_places: number }>(
         "SELECT fn_tag_to_places($1)",
-        [tagId]
+        [tagId],
       );
 
       const linked = syncResult.rows[0]?.fn_tag_to_places ?? 0;
@@ -180,7 +184,7 @@ export async function bulkInsertTags(tagNames: string[]): Promise<BulkTagResult>
 
       console.log(
         `[placeTagSync] bulk: tag_id=${tagId} "${normalised}" ` +
-        `linked to ${linked} place(s)`
+          `linked to ${linked} place(s)`,
       );
     }
 
@@ -200,15 +204,15 @@ export async function fullResync(chunkSize = 500): Promise<ResyncReport> {
 
   const result = await pool.query<{ report: ResyncReport }>(
     "SELECT resync_all_places($1) AS report",
-    [chunkSize]
+    [chunkSize],
   );
 
   const report = result.rows[0]!.report;
   console.log(
     `[placeTagSync] fullResync done — ` +
-    `places=${report.total_places}, ` +
-    `place_tag inserted=${report.place_tag_inserted}, ` +
-    `vibes updated=${report.vibes_updated}`
+      `places=${report.total_places}, ` +
+      `place_tag inserted=${report.place_tag_inserted}, ` +
+      `vibes updated=${report.vibes_updated}`,
   );
   return report;
 }

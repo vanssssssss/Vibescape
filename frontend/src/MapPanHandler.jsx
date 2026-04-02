@@ -32,9 +32,9 @@ export default function MapPanHandler({ onBBoxChange }) {
         const bounds = map.getBounds();
         const bbox = {
           south: bounds.getSouth(),
-          west:  bounds.getWest(),
+          west: bounds.getWest(),
           north: bounds.getNorth(),
-          east:  bounds.getEast(),
+          east: bounds.getEast(),
         };
         onBBoxChange(bbox);
       }, 300);
@@ -46,9 +46,9 @@ export default function MapPanHandler({ onBBoxChange }) {
     const bounds = map.getBounds();
     onBBoxChange({
       south: bounds.getSouth(),
-      west:  bounds.getWest(),
+      west: bounds.getWest(),
       north: bounds.getNorth(),
-      east:  bounds.getEast(),
+      east: bounds.getEast(),
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { geocodeLocation, getNearbyPlaces } from "../controllers/locationController.js";
+import {
+  geocodeLocation,
+  getNearbyPlaces,
+} from "../controllers/locationController.js";
 
 const router = Router();
 

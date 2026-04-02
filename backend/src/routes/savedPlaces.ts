@@ -5,7 +5,13 @@ import { Router } from "express";
 //   getFavorites,
 //   deleteFavorite,
 // } from "../controllers/favorites.js";
-import {addToToBeVisted,markVisited,toggleFavorites,getPlace,deletePlace} from "../controllers/savedPlaces.js";
+import {
+  addToToBeVisted,
+  markVisited,
+  toggleFavorites,
+  getPlace,
+  deletePlace,
+} from "../controllers/savedPlaces.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const router = Router();
@@ -20,10 +26,10 @@ const router = Router();
 // router.patch("/visited",verifyToken, markVisited);
 // router.delete("/remove",verifyToken, deleteFavorite);
 
-router.route('/').post(verifyToken,addToToBeVisted);
-router.route('/visited').patch(verifyToken,markVisited);
-router.route('/favorites').patch(verifyToken,toggleFavorites);
-router.route('/:place_id').delete(verifyToken,deletePlace);
-router.route('/').get(verifyToken,getPlace);
+router.route("/").post(verifyToken, addToToBeVisted);
+router.route("/visited").patch(verifyToken, markVisited);
+router.route("/favorites").patch(verifyToken, toggleFavorites);
+router.route("/:place_id").delete(verifyToken, deletePlace);
+router.route("/").get(verifyToken, getPlace);
 
 export default router;

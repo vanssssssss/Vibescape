@@ -13,38 +13,140 @@ const features = [
     emoji: "🌍",
     mockups: [
       {
-        rotate: "-4deg", top: "10%", right: "4%", width: "200px",
+        rotate: "-4deg",
+        top: "10%",
+        right: "4%",
+        width: "200px",
         content: (
-          <div style={{ background: "#fff", borderRadius: "16px", padding: "14px", border: "1px solid #E5E7EB", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}>
-            <div style={{ color: "#7C3AED", fontSize: "10px", fontWeight: 700, marginBottom: "8px", letterSpacing: "1px" }}>VIBE SEARCH</div>
-            <div style={{ background: "#F3F4F6", borderRadius: "10px", padding: "8px 12px", color: "#374151", fontSize: "12px", border: "1px solid #E5E7EB" }}>
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "16px",
+              padding: "14px",
+              border: "1px solid #E5E7EB",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            }}
+          >
+            <div
+              style={{
+                color: "#7C3AED",
+                fontSize: "10px",
+                fontWeight: 700,
+                marginBottom: "8px",
+                letterSpacing: "1px",
+              }}
+            >
+              VIBE SEARCH
+            </div>
+            <div
+              style={{
+                background: "#F3F4F6",
+                borderRadius: "10px",
+                padding: "8px 12px",
+                color: "#374151",
+                fontSize: "12px",
+                border: "1px solid #E5E7EB",
+              }}
+            >
               "cozy corner with good coffee ☕"
             </div>
-            <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "5px" }}>
-              {["Brewed Awakening Café", "The Study Nook", "Whispering Pages"].map((n, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "5px 8px", borderRadius: "8px", background: "#F9FAFB" }}>
-                  <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#7C3AED", flexShrink: 0 }} />
-                  <span style={{ color: "#374151", fontSize: "11px" }}>{n}</span>
+            <div
+              style={{
+                marginTop: "10px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "5px",
+              }}
+            >
+              {[
+                "Brewed Awakening Café",
+                "The Study Nook",
+                "Whispering Pages",
+              ].map((n, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "5px 8px",
+                    borderRadius: "8px",
+                    background: "#F9FAFB",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "6px",
+                      height: "6px",
+                      borderRadius: "50%",
+                      background: "#7C3AED",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ color: "#374151", fontSize: "11px" }}>
+                    {n}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
-        )
+        ),
       },
       {
-        rotate: "4deg", top: "55%", right: "10%", width: "160px",
+        rotate: "4deg",
+        top: "55%",
+        right: "10%",
+        width: "160px",
         content: (
-          <div style={{ background: "#7C3AED", borderRadius: "14px", padding: "12px", boxShadow: "0 8px 24px rgba(124,58,237,0.3)" }}>
-            <div style={{ color: "rgba(255,255,255,0.75)", fontSize: "10px", marginBottom: "2px" }}>MATCH SCORE</div>
-            <div style={{ color: "white", fontSize: "26px", fontWeight: 900 }}>94%</div>
-            <div style={{ color: "rgba(255,255,255,0.8)", fontSize: "11px", marginBottom: "8px" }}>Vibe compatibility</div>
-            <div style={{ background: "rgba(255,255,255,0.25)", borderRadius: "6px", height: "5px" }}>
-              <div style={{ background: "white", borderRadius: "6px", height: "5px", width: "94%" }} />
+          <div
+            style={{
+              background: "#7C3AED",
+              borderRadius: "14px",
+              padding: "12px",
+              boxShadow: "0 8px 24px rgba(124,58,237,0.3)",
+            }}
+          >
+            <div
+              style={{
+                color: "rgba(255,255,255,0.75)",
+                fontSize: "10px",
+                marginBottom: "2px",
+              }}
+            >
+              MATCH SCORE
+            </div>
+            <div style={{ color: "white", fontSize: "26px", fontWeight: 900 }}>
+              94%
+            </div>
+            <div
+              style={{
+                color: "rgba(255,255,255,0.8)",
+                fontSize: "11px",
+                marginBottom: "8px",
+              }}
+            >
+              Vibe compatibility
+            </div>
+            <div
+              style={{
+                background: "rgba(255,255,255,0.25)",
+                borderRadius: "6px",
+                height: "5px",
+              }}
+            >
+              <div
+                style={{
+                  background: "white",
+                  borderRadius: "6px",
+                  height: "5px",
+                  width: "94%",
+                }}
+              />
             </div>
           </div>
-        )
-      }
-    ]
+        ),
+      },
+    ],
   },
   {
     id: 2,
@@ -57,32 +159,92 @@ const features = [
     emoji: "📸",
     mockups: [
       {
-        rotate: "3deg", top: "8%", right: "4%", width: "195px",
+        rotate: "3deg",
+        top: "8%",
+        right: "4%",
+        width: "195px",
         content: (
-          <div style={{ borderRadius: "16px", overflow: "hidden", border: "1px solid #E5E7EB", background: "#fff", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}>
-            <div style={{ height: "90px", background: "linear-gradient(135deg, #D1FAE5, #A7F3D0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px" }}>🏔️</div>
+          <div
+            style={{
+              borderRadius: "16px",
+              overflow: "hidden",
+              border: "1px solid #E5E7EB",
+              background: "#fff",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            }}
+          >
+            <div
+              style={{
+                height: "90px",
+                background: "linear-gradient(135deg, #D1FAE5, #A7F3D0)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "32px",
+              }}
+            >
+              🏔️
+            </div>
             <div style={{ padding: "10px 12px" }}>
-              <div style={{ color: "#10B981", fontSize: "10px", fontWeight: 700, marginBottom: "3px" }}>MEMORY · JAN 2025</div>
-              <div style={{ color: "#111827", fontSize: "13px", fontWeight: 700 }}>Sunset Ridge Trail</div>
-              <div style={{ color: "#6B7280", fontSize: "11px", marginTop: "4px" }}>"Best golden hour I've ever seen!"</div>
+              <div
+                style={{
+                  color: "#10B981",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  marginBottom: "3px",
+                }}
+              >
+                MEMORY · JAN 2025
+              </div>
+              <div
+                style={{ color: "#111827", fontSize: "13px", fontWeight: 700 }}
+              >
+                Sunset Ridge Trail
+              </div>
+              <div
+                style={{ color: "#6B7280", fontSize: "11px", marginTop: "4px" }}
+              >
+                "Best golden hour I've ever seen!"
+              </div>
             </div>
           </div>
-        )
+        ),
       },
       {
-        rotate: "-4deg", top: "55%", right: "10%", width: "155px",
+        rotate: "-4deg",
+        top: "55%",
+        right: "10%",
+        width: "155px",
         content: (
-          <div style={{ background: "#fff", borderRadius: "12px", padding: "10px 12px", border: "1px solid #E5E7EB", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}>
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "12px",
+              padding: "10px 12px",
+              border: "1px solid #E5E7EB",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            }}
+          >
             <div style={{ display: "flex", gap: "5px", marginBottom: "6px" }}>
               {["#D1FAE5", "#6EE7B7", "#10B981"].map((c, i) => (
-                <div key={i} style={{ flex: 1, height: "44px", borderRadius: "8px", background: c }} />
+                <div
+                  key={i}
+                  style={{
+                    flex: 1,
+                    height: "44px",
+                    borderRadius: "8px",
+                    background: c,
+                  }}
+                />
               ))}
             </div>
-            <div style={{ color: "#374151", fontSize: "11px" }}>📍 3 photos saved</div>
+            <div style={{ color: "#374151", fontSize: "11px" }}>
+              📍 3 photos saved
+            </div>
           </div>
-        )
-      }
-    ]
+        ),
+      },
+    ],
   },
   {
     id: 3,
@@ -95,39 +257,142 @@ const features = [
     emoji: "⭐",
     mockups: [
       {
-        rotate: "-3deg", top: "8%", right: "4%", width: "200px",
+        rotate: "-3deg",
+        top: "8%",
+        right: "4%",
+        width: "200px",
         content: (
-          <div style={{ background: "#fff", borderRadius: "16px", padding: "14px", border: "1px solid #E5E7EB", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}>
-            <div style={{ color: "#F59E0B", fontSize: "10px", fontWeight: 700, marginBottom: "10px", letterSpacing: "1px" }}>TO VISIT</div>
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "16px",
+              padding: "14px",
+              border: "1px solid #E5E7EB",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            }}
+          >
+            <div
+              style={{
+                color: "#F59E0B",
+                fontSize: "10px",
+                fontWeight: 700,
+                marginBottom: "10px",
+                letterSpacing: "1px",
+              }}
+            >
+              TO VISIT
+            </div>
             {[
               { name: "Amber Fort", visited: false },
               { name: "Jantar Mantar", visited: true },
               { name: "Hawa Mahal", visited: false },
             ].map((p, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "7px 8px", borderRadius: "10px", marginBottom: "5px", background: "#F9FAFB", border: `1px solid ${p.visited ? "rgba(16,185,129,0.2)" : "#F3F4F6"}` }}>
-                <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: p.visited ? "#10B981" : "#FEF3C7", border: `2px solid ${p.visited ? "#10B981" : "#F59E0B"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  {p.visited && <span style={{ color: "white", fontSize: "9px" }}>✓</span>}
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "7px 8px",
+                  borderRadius: "10px",
+                  marginBottom: "5px",
+                  background: "#F9FAFB",
+                  border: `1px solid ${p.visited ? "rgba(16,185,129,0.2)" : "#F3F4F6"}`,
+                }}
+              >
+                <div
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "50%",
+                    background: p.visited ? "#10B981" : "#FEF3C7",
+                    border: `2px solid ${p.visited ? "#10B981" : "#F59E0B"}`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {p.visited && (
+                    <span style={{ color: "white", fontSize: "9px" }}>✓</span>
+                  )}
                 </div>
-                <span style={{ color: p.visited ? "#10B981" : "#374151", fontSize: "11px", textDecoration: p.visited ? "line-through" : "none", opacity: p.visited ? 0.7 : 1 }}>{p.name}</span>
-                {!p.visited && <span style={{ marginLeft: "auto", fontSize: "12px" }}>⭐</span>}
+                <span
+                  style={{
+                    color: p.visited ? "#10B981" : "#374151",
+                    fontSize: "11px",
+                    textDecoration: p.visited ? "line-through" : "none",
+                    opacity: p.visited ? 0.7 : 1,
+                  }}
+                >
+                  {p.name}
+                </span>
+                {!p.visited && (
+                  <span style={{ marginLeft: "auto", fontSize: "12px" }}>
+                    ⭐
+                  </span>
+                )}
               </div>
             ))}
           </div>
-        )
+        ),
       },
       {
-        rotate: "5deg", top: "55%", right: "10%", width: "150px",
+        rotate: "5deg",
+        top: "55%",
+        right: "10%",
+        width: "150px",
         content: (
-          <div style={{ background: "#fff", borderRadius: "12px", padding: "12px", border: "1px solid #E5E7EB", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}>
-            <div style={{ fontSize: "20px", fontWeight: 900, color: "#F59E0B" }}>12 <span style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: 400 }}>saved</span></div>
-            <div style={{ fontSize: "20px", fontWeight: 900, color: "#10B981" }}>7 <span style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: 400 }}>visited</span></div>
-            <div style={{ marginTop: "8px", height: "4px", borderRadius: "4px", background: "#F3F4F6" }}>
-              <div style={{ height: "4px", borderRadius: "4px", width: "58%", background: "linear-gradient(90deg, #F59E0B, #10B981)" }} />
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "12px",
+              padding: "12px",
+              border: "1px solid #E5E7EB",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            }}
+          >
+            <div
+              style={{ fontSize: "20px", fontWeight: 900, color: "#F59E0B" }}
+            >
+              12{" "}
+              <span
+                style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: 400 }}
+              >
+                saved
+              </span>
+            </div>
+            <div
+              style={{ fontSize: "20px", fontWeight: 900, color: "#10B981" }}
+            >
+              7{" "}
+              <span
+                style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: 400 }}
+              >
+                visited
+              </span>
+            </div>
+            <div
+              style={{
+                marginTop: "8px",
+                height: "4px",
+                borderRadius: "4px",
+                background: "#F3F4F6",
+              }}
+            >
+              <div
+                style={{
+                  height: "4px",
+                  borderRadius: "4px",
+                  width: "58%",
+                  background: "linear-gradient(90deg, #F59E0B, #10B981)",
+                }}
+              />
             </div>
           </div>
-        )
-      }
-    ]
+        ),
+      },
+    ],
   },
   {
     id: 4,
@@ -141,35 +406,129 @@ const features = [
     emoji: "🔍",
     mockups: [
       {
-        rotate: "4deg", top: "8%", right: "4%", width: "190px",
+        rotate: "4deg",
+        top: "8%",
+        right: "4%",
+        width: "190px",
         content: (
-          <div style={{ background: "#fff", borderRadius: "16px", overflow: "hidden", border: "1px solid #E5E7EB", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}>
-            <div style={{ height: "75px", background: "linear-gradient(135deg, #EDE9FE, #DDD6FE)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px" }}>🗺️</div>
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "16px",
+              overflow: "hidden",
+              border: "1px solid #E5E7EB",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            }}
+          >
+            <div
+              style={{
+                height: "75px",
+                background: "linear-gradient(135deg, #EDE9FE, #DDD6FE)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "28px",
+              }}
+            >
+              🗺️
+            </div>
             <div style={{ padding: "10px 12px" }}>
-              <div style={{ color: "#7C3AED", fontSize: "10px", fontWeight: 700, marginBottom: "3px" }}>AI MATCH · 5 RESULTS</div>
-              <div style={{ color: "#111827", fontSize: "12px", fontWeight: 700 }}>"rooftop city vibes 🌃"</div>
-              <div style={{ display: "flex", gap: "4px", marginTop: "6px", flexWrap: "wrap" }}>
-                {["Terrace", "Rooftop", "Night"].map(t => (
-                  <span key={t} style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "20px", background: "#EDE9FE", color: "#7C3AED", border: "1px solid rgba(124,58,237,0.2)" }}>{t}</span>
+              <div
+                style={{
+                  color: "#7C3AED",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  marginBottom: "3px",
+                }}
+              >
+                AI MATCH · 5 RESULTS
+              </div>
+              <div
+                style={{ color: "#111827", fontSize: "12px", fontWeight: 700 }}
+              >
+                "rooftop city vibes 🌃"
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "4px",
+                  marginTop: "6px",
+                  flexWrap: "wrap",
+                }}
+              >
+                {["Terrace", "Rooftop", "Night"].map((t) => (
+                  <span
+                    key={t}
+                    style={{
+                      fontSize: "9px",
+                      padding: "2px 6px",
+                      borderRadius: "20px",
+                      background: "#EDE9FE",
+                      color: "#7C3AED",
+                      border: "1px solid rgba(124,58,237,0.2)",
+                    }}
+                  >
+                    {t}
+                  </span>
                 ))}
               </div>
             </div>
           </div>
-        )
+        ),
       },
       {
-        rotate: "-5deg", top: "55%", right: "10%", width: "165px",
+        rotate: "-5deg",
+        top: "55%",
+        right: "10%",
+        width: "165px",
         content: (
-          <div style={{ background: "#7C3AED", borderRadius: "12px", padding: "12px", boxShadow: "0 8px 24px rgba(124,58,237,0.3)" }}>
-            <div style={{ color: "rgba(255,255,255,0.75)", fontSize: "10px", marginBottom: "2px" }}>NEARBY</div>
-            <div style={{ color: "white", fontSize: "14px", fontWeight: 800 }}>Sky Garden Bar</div>
-            <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "10px", marginBottom: "8px" }}>0.8 km · 4.7 ⭐ · Open now</div>
-            <div style={{ padding: "5px 8px", borderRadius: "8px", background: "rgba(255,255,255,0.2)", color: "white", fontSize: "10px", textAlign: "center", fontWeight: 700 }}>View on Map →</div>
+          <div
+            style={{
+              background: "#7C3AED",
+              borderRadius: "12px",
+              padding: "12px",
+              boxShadow: "0 8px 24px rgba(124,58,237,0.3)",
+            }}
+          >
+            <div
+              style={{
+                color: "rgba(255,255,255,0.75)",
+                fontSize: "10px",
+                marginBottom: "2px",
+              }}
+            >
+              NEARBY
+            </div>
+            <div style={{ color: "white", fontSize: "14px", fontWeight: 800 }}>
+              Sky Garden Bar
+            </div>
+            <div
+              style={{
+                color: "rgba(255,255,255,0.7)",
+                fontSize: "10px",
+                marginBottom: "8px",
+              }}
+            >
+              0.8 km · 4.7 ⭐ · Open now
+            </div>
+            <div
+              style={{
+                padding: "5px 8px",
+                borderRadius: "8px",
+                background: "rgba(255,255,255,0.2)",
+                color: "white",
+                fontSize: "10px",
+                textAlign: "center",
+                fontWeight: 700,
+              }}
+            >
+              View on Map →
+            </div>
           </div>
-        )
-      }
-    ]
-  }
+        ),
+      },
+    ],
+  },
 ];
 
 export default function FeaturesPage() {
@@ -181,7 +540,10 @@ export default function FeaturesPage() {
   const go = (idx) => {
     if (animating || idx === active) return;
     setAnimating(true);
-    setTimeout(() => { setActive(idx); setAnimating(false); }, 300);
+    setTimeout(() => {
+      setActive(idx);
+      setAnimating(false);
+    }, 300);
   };
 
   const resetTimer = () => {
@@ -189,7 +551,7 @@ export default function FeaturesPage() {
     timerRef.current = setInterval(() => {
       setAnimating(true);
       setTimeout(() => {
-        setActive(prev => (prev + 1) % features.length);
+        setActive((prev) => (prev + 1) % features.length);
         setAnimating(false);
       }, 300);
     }, 4500);
@@ -409,11 +771,18 @@ export default function FeaturesPage() {
       `}</style>
 
       <div className="fp-wrap">
-
         {/* Header */}
         <div className="fp-header">
           <div className="fp-eyebrow">
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#7C3AED", display: "inline-block" }} />
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "#7C3AED",
+                display: "inline-block",
+              }}
+            />
             What Makes VibeScape Special
           </div>
           <h2 className="fp-title">
@@ -421,8 +790,22 @@ export default function FeaturesPage() {
           </h2>
         </div>
         {/* Explore Button */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", maxWidth: "600px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "24px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              width: "100%",
+              maxWidth: "600px",
+            }}
+          >
             <input
               //placeholder="Start exploring…"
               placeholder="Start exploring your vibes (e.g. lively places)"
@@ -436,7 +819,7 @@ export default function FeaturesPage() {
                 color: "#9CA3AF",
                 outline: "none",
                 cursor: "default",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             />
             <button
@@ -453,7 +836,7 @@ export default function FeaturesPage() {
                 justifyContent: "center",
                 fontSize: "20px",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                flexShrink: 0
+                flexShrink: 0,
               }}
             >
               🔍
@@ -464,20 +847,31 @@ export default function FeaturesPage() {
         {/* Main Card */}
         <div className="fp-card" style={{ borderColor: f.borderAccent }}>
           <div className="fp-body">
-
             {/* Left */}
             <div className="fp-left">
               <div
                 key={`tag-${active}`}
                 className="fp-tag-pill fp-content-in"
-                style={{ background: f.lightAccent, color: f.accent, border: `1px solid ${f.borderAccent}` }}
+                style={{
+                  background: f.lightAccent,
+                  color: f.accent,
+                  border: `1px solid ${f.borderAccent}`,
+                }}
               >
                 {f.emoji} {f.tag}
               </div>
-              <div key={`h-${active}`} className="fp-headline fp-content-in" style={{ animationDelay: "0.05s" }}>
+              <div
+                key={`h-${active}`}
+                className="fp-headline fp-content-in"
+                style={{ animationDelay: "0.05s" }}
+              >
                 {f.headline}
               </div>
-              <p key={`s-${active}`} className="fp-sub fp-content-in" style={{ animationDelay: "0.1s" }}>
+              <p
+                key={`s-${active}`}
+                className="fp-sub fp-content-in"
+                style={{ animationDelay: "0.1s" }}
+              >
                 {f.sub}
               </p>
               <div className="fp-dots">
@@ -486,7 +880,10 @@ export default function FeaturesPage() {
                     key={i}
                     className={`fp-dot${i === active ? " active" : ""}`}
                     style={{ background: i === active ? f.accent : undefined }}
-                    onClick={() => { go(i); resetTimer(); }}
+                    onClick={() => {
+                      go(i);
+                      resetTimer();
+                    }}
                   />
                 ))}
               </div>
@@ -494,33 +891,50 @@ export default function FeaturesPage() {
 
             {/* Right: floating mockups */}
             <div className="fp-right">
-              <div style={{
-                position: "absolute", inset: 0, pointerEvents: "none",
-                background: `radial-gradient(circle at 65% 40%, ${f.lightAccent}, transparent 65%)`,
-              }} />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  pointerEvents: "none",
+                  background: `radial-gradient(circle at 65% 40%, ${f.lightAccent}, transparent 65%)`,
+                }}
+              />
 
               {[
                 { top: "14%", left: "6%", size: 9 },
                 { top: "68%", left: "16%", size: 6 },
                 { top: "40%", left: "3%", size: 12 },
               ].map((d, i) => (
-                <div key={i} className="fp-diamond" style={{ top: d.top, left: d.left, width: d.size, height: d.size, background: f.accent }} />
+                <div
+                  key={i}
+                  className="fp-diamond"
+                  style={{
+                    top: d.top,
+                    left: d.left,
+                    width: d.size,
+                    height: d.size,
+                    background: f.accent,
+                  }}
+                />
               ))}
 
-              {!animating && f.mockups.map((m, i) => (
-                <div
-                  key={`${active}-${i}`}
-                  className="fp-mockup fp-mockup-in"
-                  style={{
-                    top: m.top, right: m.right, width: m.width,
-                    transform: `rotate(${m.rotate})`,
-                    zIndex: i === 0 ? 2 : 1,
-                    animationDelay: `${i * 0.1}s`,
-                  }}
-                >
-                  {m.content}
-                </div>
-              ))}
+              {!animating &&
+                f.mockups.map((m, i) => (
+                  <div
+                    key={`${active}-${i}`}
+                    className="fp-mockup fp-mockup-in"
+                    style={{
+                      top: m.top,
+                      right: m.right,
+                      width: m.width,
+                      transform: `rotate(${m.rotate})`,
+                      zIndex: i === 0 ? 2 : 1,
+                      animationDelay: `${i * 0.1}s`,
+                    }}
+                  >
+                    {m.content}
+                  </div>
+                ))}
             </div>
           </div>
 
@@ -530,15 +944,20 @@ export default function FeaturesPage() {
               <button
                 key={i}
                 className={`fp-tab${i === active ? " active" : ""}`}
-                onClick={() => { go(i); resetTimer(); }}
+                onClick={() => {
+                  go(i);
+                  resetTimer();
+                }}
               >
-                <div className="fp-tab-dot" style={{ background: i === active ? feat.accent : "#D1D5DB" }} />
+                <div
+                  className="fp-tab-dot"
+                  style={{ background: i === active ? feat.accent : "#D1D5DB" }}
+                />
                 <span className="fp-tab-label">{feat.tag}</span>
               </button>
             ))}
           </div>
         </div>
-
       </div>
     </>
   );

@@ -21,7 +21,7 @@ interface AuthRequest extends Request {
 
 //   if (!req.user) {
 //     return res.status(401).json({ message: "Unauthorized" });
-//   } 
+//   }
 
 //   const user_id = req.user.id;
 
@@ -54,7 +54,7 @@ interface AuthRequest extends Request {
 
 //   if (!req.user) {
 //     return res.status(401).json({ message: "Unauthorized" });
-//   } 
+//   }
 
 //   const user_id = req.user.id;
 
@@ -82,7 +82,7 @@ interface AuthRequest extends Request {
 
 //   if (!req.user) {
 //     return res.status(401).json({ message: "Unauthorized" });
-//   } 
+//   }
 
 //   const user_id = req.user.id;
 
@@ -112,7 +112,7 @@ interface AuthRequest extends Request {
 
 //   if (!req.user) {
 //     return res.status(401).json({ message: "Unauthorized" });
-//   } 
+//   }
 
 //   const user_id = req.user.id;
 
@@ -160,7 +160,7 @@ export const addToToBeVisted = async (req: AuthRequest, res: Response) => {
 
       RETURNING *;
       `,
-      [userId, place_id]
+      [userId, place_id],
     );
 
     if (result.rows.length > 0) {
@@ -175,7 +175,7 @@ export const addToToBeVisted = async (req: AuthRequest, res: Response) => {
       SELECT * FROM user_place
       WHERE user_id = $1 AND place_id = $2
       `,
-      [userId, place_id]
+      [userId, place_id],
     );
 
     const place = existing.rows[0];
@@ -194,7 +194,7 @@ export const addToToBeVisted = async (req: AuthRequest, res: Response) => {
   } catch (err: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 export const markVisited = async (req: AuthRequest, res: Response) => {
   console.log("mark as visited");
@@ -211,11 +211,10 @@ export const markVisited = async (req: AuthRequest, res: Response) => {
   const userId = req.user.id;
 
   try {
-
     const existing = await pool.query(
       `SELECT status FROM user_place
        WHERE user_id = $1 AND place_id = $2`,
-      [userId, place_id]
+      [userId, place_id],
     );
 
     // already visited
@@ -235,17 +234,19 @@ export const markVisited = async (req: AuthRequest, res: Response) => {
       DO UPDATE SET status = 'VISITED'
       RETURNING *;
       `,
-      [userId, place_id]
+      [userId, place_id],
     );
 
     return res.status(200).json({
-      message: existing.rows.length ? "Upgraded to VISITED" : "Marked as VISITED",
+      message: existing.rows.length
+        ? "Upgraded to VISITED"
+        : "Marked as VISITED",
       data: result.rows[0],
     });
   } catch (err: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 export const toggleFavorites = async (req: AuthRequest, res: Response) => {
   console.log("toggle favorite");
@@ -275,7 +276,7 @@ export const toggleFavorites = async (req: AuthRequest, res: Response) => {
         AND status = 'VISITED'
       RETURNING *;
       `,
-      [userId, place_id]
+      [userId, place_id],
     );
 
     // console.log(result.rows);
@@ -293,7 +294,7 @@ export const toggleFavorites = async (req: AuthRequest, res: Response) => {
   } catch (err: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 export const getPlace = async (req: AuthRequest, res: Response) => {
   console.log("get saved places");
@@ -304,11 +305,7 @@ export const getPlace = async (req: AuthRequest, res: Response) => {
   const { status, favorite } = req.query;
   const userId = req.user.id;
 
-  if (
-    status &&
-    status !== "TO_VISIT" &&
-    status !== "VISITED"
-  ) {
+  if (status && status !== "TO_VISIT" && status !== "VISITED") {
     return res.status(400).json({
       message: "Invalid status",
     });
@@ -360,7 +357,7 @@ export const getPlace = async (req: AuthRequest, res: Response) => {
     console.error(err);
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 export const deletePlace = async (req: AuthRequest, res: Response) => {
   console.log("delete saved place");
@@ -384,7 +381,7 @@ export const deletePlace = async (req: AuthRequest, res: Response) => {
         AND place_id = $2
       RETURNING *;
       `,
-      [userId, place_id]
+      [userId, place_id],
     );
 
     if (result.rows.length === 0) {
@@ -400,5 +397,4 @@ export const deletePlace = async (req: AuthRequest, res: Response) => {
   } catch (err: any) {
     return res.status(500).json({ message: "Internal server error" });
   }
-
-}
+};

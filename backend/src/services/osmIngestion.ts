@@ -23,7 +23,7 @@
 
 import { pool } from "../db/db.js";
 import { assignVibesFromOSMTags } from "./vibeEnricher.js";
-import { fullResync } from "./placeTagSync.js";   // re sync of data integrity after bulk upsert
+import { fullResync } from "./placeTagSync.js"; // re sync of data integrity after bulk upsert
 import type { BBox } from "../types/bbox.js";
 
 // ── 1. Overpass endpoints (tried in order) ───────────────────
@@ -75,7 +75,7 @@ interface OSMElement {
  * Throws only when every endpoint has failed.
  */
 async function fetchFromOverpass(
-  query: string
+  query: string,
 ): Promise<{ elements: OSMElement[] }> {
   const errors: string[] = [];
 
@@ -103,7 +103,6 @@ async function fetchFromOverpass(
       console.log(`[OSM] Success from ${endpoint}`);
       console.log("OSM elements returned:", data.elements.length);
       return data;
-
     } catch (err: any) {
       const msg = `${endpoint} — ${err.message}`;
       console.warn(`[OSM] Request failed: ${msg}`);
@@ -114,7 +113,7 @@ async function fetchFromOverpass(
 
   // All endpoints exhausted
   throw new Error(
-    `[OSM] All Overpass endpoints failed:\n  ${errors.join("\n  ")}`
+    `[OSM] All Overpass endpoints failed:\n  ${errors.join("\n  ")}`,
   );
 }
 
@@ -134,10 +133,10 @@ interface PlaceRow {
 // MODIFIED: accepts a client so we can use the skip_vibe_sync guard
 async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
   let inserted = 0;
- 
+
   for (let i = 0; i < rows.length; i += BATCH_SIZE) {
     const chunk = rows.slice(i, i + BATCH_SIZE);
- 
+
     const valuePlaceholders = chunk
       .map((_, j) => {
         const base = j * 6;
@@ -148,7 +147,7 @@ async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
         );
       })
       .join(", ");
- 
+
     const params: unknown[] = [];
     for (const row of chunk) {
       params.push(
@@ -157,10 +156,10 @@ async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
         JSON.stringify(row.tags),
         row.vibes,
         row.lon,
-        row.lat
+        row.lat,
       );
     }
- 
+
     const sql = `
       INSERT INTO places
         (osm_id, place_name, osm_tags, vibes, location, last_updated, source)
@@ -172,16 +171,16 @@ async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
         vibes        = EXCLUDED.vibes,
         last_updated = NOW()
     `;
- 
+
     try {
       await pool.query(sql, params);
       inserted += chunk.length;
     } catch (err: any) {
       // Batch failed — retry row by row so one bad row doesn't block the rest
       console.warn(
-        `[OSM] Batch of ${chunk.length} failed (${err.message}), retrying row-by-row...`
+        `[OSM] Batch of ${chunk.length} failed (${err.message}), retrying row-by-row...`,
       );
- 
+
       for (const row of chunk) {
         try {
           await pool.query(
@@ -202,19 +201,19 @@ async function batchUpsertPlaces(rows: PlaceRow[]): Promise<number> {
               row.vibes,
               row.lon,
               row.lat,
-            ]
+            ],
           );
           inserted++;
         } catch (rowErr: any) {
           console.error(
             `[OSM] Insert FAILED for osm_id=${row.osmId} ` +
-              `name="${row.name}": ${rowErr.message}`
+              `name="${row.name}": ${rowErr.message}`,
           );
         }
       }
     }
   }
- 
+
   return inserted;
 }
 
@@ -295,7 +294,7 @@ out tags center;
 
   const inserted = await batchUpsertPlaces(rows);
   console.log(`[OSM] Done — inserted/updated: ${inserted} of ${named.length}`);
- 
+
   // ── NEW: one efficient resync pass after all upserts ──────────
   // This rebuilds place_tag from vibes[] and vibes[] from place_tag
   // in two set-based SQL statements instead of N per-row triggers.
@@ -303,8 +302,10 @@ out tags center;
     await fullResync();
   } catch (resyncErr: any) {
     // Non-fatal — data is in the DB, just possibly not fully synced
-    console.error(`[OSM] fullResync after ingestion failed: ${resyncErr.message}`);
+    console.error(
+      `[OSM] fullResync after ingestion failed: ${resyncErr.message}`,
+    );
   }
- 
+
   return inserted;
 }

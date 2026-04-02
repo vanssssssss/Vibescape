@@ -1,5 +1,5 @@
 import logo from "./assets/logo.png";
-import SettingsPage from "./SettingsPage";// here we are importing the settings page component which we will create later
+import SettingsPage from "./SettingsPage"; // here we are importing the settings page component which we will create later
 import FeaturesPage from "./FeaturesPage";
 
 import { useState, useRef, useEffect } from "react";
@@ -89,7 +89,8 @@ function App() {
 
   const params = new URLSearchParams(location.search);
   const resetToken = params.get("token");
-  const verifyToken = location.pathname === "/verify-email" ? params.get("token") : null;
+  const verifyToken =
+    location.pathname === "/verify-email" ? params.get("token") : null;
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState("login");
@@ -114,10 +115,10 @@ function App() {
   const [userLocation, setUserLocation] = useState(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [area, setArea] = useState("");
-  const [activeAction, setActiveAction] = useState(null);// values: "manual" | "gps"
+  const [activeAction, setActiveAction] = useState(null); // values: "manual" | "gps"
   const [suggestions, setSuggestions] = useState([]);
 
-  const [confirmPassword, setConfirmPassword] = useState("");// added for the usestate of confirm password in registration form
+  const [confirmPassword, setConfirmPassword] = useState(""); // added for the usestate of confirm password in registration form
   const [error, setError] = useState(""); //set
   const [message, setMessage] = useState("");
   const [loadingAuth, setLoadingAuth] = useState(false);
@@ -138,17 +139,15 @@ function App() {
   const [savingNote, setSavingNote] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
 
-
-
   useEffect(() => {
     if (!verifyToken) return;
-    if (verifyCalledRef.current) return;  // ← ADD
-    verifyCalledRef.current = true;        // ← ADD
+    if (verifyCalledRef.current) return; // ← ADD
+    verifyCalledRef.current = true; // ← ADD
     console.log(verifyToken);
     const verifyEmail = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3000/api/v1/auth/verify-email?token=${verifyToken}`
+          `http://localhost:3000/api/v1/auth/verify-email?token=${verifyToken}`,
         );
         const data = await res.json();
         console.log(data);
@@ -183,9 +182,11 @@ function App() {
             style={{
               fontSize: isInteractive ? "36px" : "18px",
               cursor: isInteractive ? "pointer" : "default",
-              color: star <= (hoverRating || (isInteractive ? userRating : rating))
-                ? "#FBBF24" : "#D1D5DB",
-              transition: "0.1s"
+              color:
+                star <= (hoverRating || (isInteractive ? userRating : rating))
+                  ? "#FBBF24"
+                  : "#D1D5DB",
+              transition: "0.1s",
             }}
             onClick={() => isInteractive && setUserRating(star)}
             onMouseEnter={() => isInteractive && setHoverRating(star)}
@@ -195,7 +196,14 @@ function App() {
           </span>
         ))}
         {!isInteractive && (
-          <span style={{ fontSize: "13px", fontWeight: "900", marginLeft: "5px", color: "#4B5563" }}>
+          <span
+            style={{
+              fontSize: "13px",
+              fontWeight: "900",
+              marginLeft: "5px",
+              color: "#4B5563",
+            }}
+          >
             {rating || "0.0"}
           </span>
         )}
@@ -207,7 +215,6 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     //const guest = localStorage.getItem("guest"); // ✅ ADD
-
 
     if (token) {
       setIsAuthenticated(true);
@@ -274,7 +281,6 @@ function App() {
       if (!res.ok) {
         localStorage.removeItem("token");
 
-
         setIsAuthenticated(false); // 🔥 Adding this one tooo
         setUser(null);
         return;
@@ -288,7 +294,6 @@ function App() {
         nickname: data.nickname,
         profile_pic: data.profile_pic,
       });
-
     } catch (err) {
       console.log("Failed to fetch user");
     }
@@ -317,7 +322,7 @@ function App() {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/geocode/autocomplete?q=${encodeURIComponent(query)}`
+        `http://localhost:3000/api/v1/geocode/autocomplete?q=${encodeURIComponent(query)}`,
       );
 
       const data = await res.json();
@@ -330,7 +335,7 @@ function App() {
   };
 
   const debouncedFetch = useRef(
-    debounce((q) => fetchSuggestions(q), 300)
+    debounce((q) => fetchSuggestions(q), 300),
   ).current;
 
   const handleSelectSuggestion = (place) => {
@@ -551,29 +556,41 @@ function App() {
     setSavingNote(true);
     try {
       const token = localStorage.getItem("token");
-      const memRes = await fetch("http://localhost:3000/api/v1/memories", { headers: { Authorization: `Bearer ${token}` } });
+      const memRes = await fetch("http://localhost:3000/api/v1/memories", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const memories = await memRes.json();
       let memory = memories.find((m) => m.place_id === selectedPlace.id);
 
       if (!memory) {
         const createRes = await fetch("http://localhost:3000/api/v1/memories", {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ place_id: selectedPlace.id, title: selectedPlace.name }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            place_id: selectedPlace.id,
+            title: selectedPlace.name,
+          }),
         });
         memory = await createRes.json();
       }
 
       await fetch(`http://localhost:3000/api/v1/memories/${memory.memory_id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ notes: noteText }),
       });
       setActionMessage("Notes saved!");
       setShowNoteModal(false);
       setNoteText("");
-    } catch (err) { setActionMessage("Failed to save notes"); }
-    finally {
+    } catch (err) {
+      setActionMessage("Failed to save notes");
+    } finally {
       setSavingNote(false);
     }
   };
@@ -584,28 +601,25 @@ function App() {
 
     const token = localStorage.getItem("token");
 
-    await fetch(
-      "http://localhost:3000/api/v1/saved-places/visited",
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          place_id: p.id
-        })
-      }
-    );
+    await fetch("http://localhost:3000/api/v1/saved-places/visited", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        place_id: p.id,
+      }),
+    });
     setActionMessage("Marked as visited.");
-    setPlaceState(prev => ({
+    setPlaceState((prev) => ({
       ...prev,
       [p.id]: {
         status: "VISITED",
         favorite: prev[p.id]?.favorite || false,
-        rated: prev[p.id]?.rated || false
-      }
-    }))
+        rated: prev[p.id]?.rated || false,
+      },
+    }));
 
     setSelectedPlace(p);
     setShowRatingModal(true);
@@ -628,27 +642,25 @@ function App() {
       const data = await res.json();
 
       if (res.ok) {
-
-        setPlaceState(prev => ({
+        setPlaceState((prev) => ({
           ...prev,
           [selectedPlace.id]: {
             ...prev[selectedPlace.id],
-            rated: true
-          }
+            rated: true,
+          },
         }));
 
-        setPlaces(prev =>
-          prev.map(p =>
+        setPlaces((prev) =>
+          prev.map((p) =>
             p.id === selectedPlace.id
               ? {
-                ...p,
-                average_rating: data.average_rating,
-                total_ratings: data.total_ratings
-              }
-              : p
-          )
+                  ...p,
+                  average_rating: data.average_rating,
+                  total_ratings: data.total_ratings,
+                }
+              : p,
+          ),
         );
-
       }
     } catch (err) {
       console.error("Rating failed");
@@ -664,35 +676,31 @@ function App() {
     if (placeState[p.id]?.status === "TO_VISIT") return;
     const token = localStorage.getItem("token");
 
-    const res = await fetch(
-      "http://localhost:3000/api/v1/saved-places",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          place_id: p.id,
-        }),
-      }
-    );
+    const res = await fetch("http://localhost:3000/api/v1/saved-places", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        place_id: p.id,
+      }),
+    });
 
     if (res.ok) {
       setActionMessage("Added to your To Visit list.");
-      setPlaceState(prev => ({
+      setPlaceState((prev) => ({
         ...prev,
         [p.id]: {
           status: "TO_VISIT",
           favorite: false,
-          rated: false
-        }
-      }))
+          rated: false,
+        },
+      }));
     }
   };
 
   const toggleFavorite = async (p) => {
-
     const token = localStorage.getItem("token");
 
     const res = await fetch(
@@ -701,30 +709,28 @@ function App() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          place_id: p.id
-        })
-      }
+          place_id: p.id,
+        }),
+      },
     );
 
     if (res.ok) {
       setActionMessage(
         placeState[p.id]?.favorite
           ? "Removed from favorites."
-          : "Added to favorites."
+          : "Added to favorites.",
       );
-      setPlaceState(prev => ({
+      setPlaceState((prev) => ({
         ...prev,
         [p.id]: {
           ...prev[p.id],
-          favorite: !prev[p.id]?.favorite
-        }
+          favorite: !prev[p.id]?.favorite,
+        },
       }));
-
     }
-
   };
 
   /* ---------- AUTH HANDLERS ---------- */
@@ -742,21 +748,19 @@ function App() {
 
       //if (!res.ok) throw new Error(data.message);
       if (!res.ok) {
-
-        if (data.message?.toLowerCase().includes("verify") ||
-          data.message?.toLowerCase().includes("verified")) {
+        if (
+          data.message?.toLowerCase().includes("verify") ||
+          data.message?.toLowerCase().includes("verified")
+        ) {
           setAuthStep("unverified");
           return;
         }
         throw new Error(data.message);
-
       }
-
 
       // here adding the token to local storage and setting the user state with the user id and email returned from the backend, which will be used in the settings page to display user details and allow updates.
       localStorage.setItem("token", data.token);
       await fetchUser(); // 🔥 IMPORTANT
-
 
       setIsAuthenticated(true);
       setIsGuest(false);
@@ -803,7 +807,7 @@ function App() {
       let data = {};
       try {
         data = await res.json();
-      } catch { }
+      } catch {}
 
       console.log("REGISTER RESPONSE:", data);
 
@@ -812,7 +816,9 @@ function App() {
       }
 
       // ✅ SUCCESS
-      setMessage("Verification link sent! Please check your email before logging in.");
+      setMessage(
+        "Verification link sent! Please check your email before logging in.",
+      );
 
       // clear form
       setName("");
@@ -822,7 +828,6 @@ function App() {
 
       // move to login screen
       // setAuthMode("login");
-
     } catch (err) {
       console.error(err);
       setError(err.message || "Something went wrong");
@@ -835,11 +840,14 @@ function App() {
     setMessage("");
     setError("");
     try {
-      const res = await fetch("http://localhost:3000/api/v1/auth/resend-verification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const res = await fetch(
+        "http://localhost:3000/api/v1/auth/resend-verification",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        },
+      );
       const data = await res.json();
       setMessage(data.msg || "Verification email sent!");
     } catch {
@@ -874,9 +882,9 @@ function App() {
           body: JSON.stringify({
             token,
             newPassword: password,
-            confirmPassword: confirmPassword
+            confirmPassword: confirmPassword,
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -955,7 +963,11 @@ function App() {
 
                       <div className="auth-tabs">
                         <button
-                          className={authMode === "login" ? "auth-tab active" : "auth-tab"}
+                          className={
+                            authMode === "login"
+                              ? "auth-tab active"
+                              : "auth-tab"
+                          }
                           onClick={() => {
                             setAuthMode("login");
                             setEmail("");
@@ -966,7 +978,11 @@ function App() {
                         </button>
 
                         <button
-                          className={authMode === "register" ? "auth-tab active" : "auth-tab"}
+                          className={
+                            authMode === "register"
+                              ? "auth-tab active"
+                              : "auth-tab"
+                          }
                           onClick={() => {
                             setAuthMode("register");
                             setEmail("");
@@ -993,7 +1009,13 @@ function App() {
                             onChange={(e) => setPassword(e.target.value)}
                           />
                           {error && (
-                            <p style={{ color: "red", fontSize: "14px", marginBottom: "10px" }}>
+                            <p
+                              style={{
+                                color: "red",
+                                fontSize: "14px",
+                                marginBottom: "10px",
+                              }}
+                            >
                               {error}
                             </p>
                           )}
@@ -1051,16 +1073,27 @@ function App() {
                             }}
                           />
                           {error && (
-                            <p style={{ color: "red", fontSize: "14px", marginBottom: "10px" }}>
+                            <p
+                              style={{
+                                color: "red",
+                                fontSize: "14px",
+                                marginBottom: "10px",
+                              }}
+                            >
                               {error}
                             </p>
                           )}
                           {message && (
-                            <p style={{ color: "green", fontSize: "14px", marginBottom: "10px" }}>
+                            <p
+                              style={{
+                                color: "green",
+                                fontSize: "14px",
+                                marginBottom: "10px",
+                              }}
+                            >
                               {message}
                             </p>
                           )}
-
 
                           <button
                             className="auth-btn"
@@ -1097,7 +1130,13 @@ function App() {
                         onChange={(e) => setEmail(e.target.value)}
                       />
                       {message && (
-                        <p style={{ color: "green", fontSize: "14px", marginBottom: "10px" }}>
+                        <p
+                          style={{
+                            color: "green",
+                            fontSize: "14px",
+                            marginBottom: "10px",
+                          }}
+                        >
                           {message}
                         </p>
                       )}
@@ -1118,10 +1157,14 @@ function App() {
                   {authStep === "unverified" && (
                     <>
                       <h2 className="auth-title">Email Not Verified</h2>
-                      <p style={{
-                        textAlign: "center", fontSize: "14px",
-                        color: "#6B7280", marginBottom: "16px"
-                      }}>
+                      <p
+                        style={{
+                          textAlign: "center",
+                          fontSize: "14px",
+                          color: "#6B7280",
+                          marginBottom: "16px",
+                        }}
+                      >
                         Please verify your email before logging in.
                       </p>
                       <input
@@ -1131,20 +1174,37 @@ function App() {
                         onChange={(e) => setEmail(e.target.value)}
                       />
                       {message && (
-                        <p style={{ color: "green", fontSize: "14px", marginBottom: "10px" }}>
+                        <p
+                          style={{
+                            color: "green",
+                            fontSize: "14px",
+                            marginBottom: "10px",
+                          }}
+                        >
                           {message}
                         </p>
-
                       )}
                       {error && (
-                        <p style={{ color: "red", fontSize: "14px", marginBottom: "10px" }}>
+                        <p
+                          style={{
+                            color: "red",
+                            fontSize: "14px",
+                            marginBottom: "10px",
+                          }}
+                        >
                           {error}
                         </p>
                       )}
-                      <button className="auth-btn" onClick={handleResendVerification}>
+                      <button
+                        className="auth-btn"
+                        onClick={handleResendVerification}
+                      >
                         Resend Verification Email
                       </button>
-                      <p className="auth-link" onClick={() => setAuthStep("auth")}>
+                      <p
+                        className="auth-link"
+                        onClick={() => setAuthStep("auth")}
+                      >
                         Back to login
                       </p>
                     </>
@@ -1167,7 +1227,13 @@ function App() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                       />
                       {message && (
-                        <p style={{ color: "green", fontSize: "14px", marginBottom: "10px" }}>
+                        <p
+                          style={{
+                            color: "green",
+                            fontSize: "14px",
+                            marginBottom: "10px",
+                          }}
+                        >
                           {message}
                         </p>
                       )}
@@ -1257,8 +1323,9 @@ function App() {
       {/* SIDEBAR */}
       <div className="sidebar">
         <div
-          className={`sidebar-icon ${location.pathname === "/" ? "active purple" : ""
-            }`}
+          className={`sidebar-icon ${
+            location.pathname === "/" ? "active purple" : ""
+          }`}
           onClick={() => navigate("/")}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -1269,19 +1336,14 @@ function App() {
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <circle
-              cx="12"
-              cy="9"
-              r="2.5"
-              stroke="white"
-              strokeWidth="2"
-            />
+            <circle cx="12" cy="9" r="2.5" stroke="white" strokeWidth="2" />
           </svg>
         </div>
 
         <div
-          className={`sidebar-icon ${location.pathname === "/photos" ? "active purple" : ""
-            }`}
+          className={`sidebar-icon ${
+            location.pathname === "/photos" ? "active purple" : ""
+          }`}
           onClick={() => navigate("/photos")}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -1299,8 +1361,9 @@ function App() {
         </div>
 
         <div
-          className={`sidebar-icon ${location.pathname === "/favorites" ? "active purple" : ""
-            }`}
+          className={`sidebar-icon ${
+            location.pathname === "/favorites" ? "active purple" : ""
+          }`}
           onClick={() => navigate("/favorites")}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -1313,8 +1376,9 @@ function App() {
         </div>
 
         <div
-          className={`sidebar-icon ${location.pathname === "/places" ? "active purple" : ""
-            }`}
+          className={`sidebar-icon ${
+            location.pathname === "/places" ? "active purple" : ""
+          }`}
           onClick={() => navigate("/places")}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -1342,13 +1406,11 @@ function App() {
           </svg>
         </div>
 
-
-
-
         <div
           //sidebar new one added for the settings page with the profile image and the first letter of the nickname if the profile image is not available
-          className={`sidebar-icon sidebar-bottom ${location.pathname === "/settings" ? "active purple" : ""
-            }`}
+          className={`sidebar-icon sidebar-bottom ${
+            location.pathname === "/settings" ? "active purple" : ""
+          }`}
           onClick={() => navigate("/settings")}
         >
           {user?.profile_pic ? (
@@ -1479,7 +1541,7 @@ function App() {
                 setUser={setUser}
                 navigate={navigate}
                 setIsGuest={setIsGuest}
-              //fetchUser={fetchUser}// here i have added the fetchUser function as a prop to the settings page so that after updating the user details in the settings page we can fetch the updated user details and update the user state in the app component which will reflect in the sidebar with the updated profile picture and nickname without needing to refresh the page 
+                //fetchUser={fetchUser}// here i have added the fetchUser function as a prop to the settings page so that after updating the user details in the settings page we can fetch the updated user details and update the user state in the app component which will reflect in the sidebar with the updated profile picture and nickname without needing to refresh the page
               />
             }
           />
@@ -1514,7 +1576,6 @@ function App() {
                     </Marker>
                   )}
                   {places.map((p, index) => {
-
                     const sameLocation =
                       userLocation &&
                       Math.abs(userLocation.lat - p.latitude) < 0.00005 &&
@@ -1527,8 +1588,7 @@ function App() {
 
                     if (index === 0) {
                       iconToUse = bigPurpleMarker;
-                    }
-                    else if (index <= 4) {
+                    } else if (index <= 4) {
                       iconToUse = bigPurpleMarker;
                     }
                     // else if (index <= 10) {
@@ -1559,13 +1619,38 @@ function App() {
                           </div>
                         </Tooltip>
                         <Popup maxWidth={220}>
-                          <div style={{ minWidth: "165px", padding: "8px 10px", borderRadius: "14px", background: "rgba(255, 255, 255, 0.70)", backdropFilter: "blur(14px)" }}>
-                            <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>{p.name}</div>
+                          <div
+                            style={{
+                              minWidth: "165px",
+                              padding: "8px 10px",
+                              borderRadius: "14px",
+                              background: "rgba(255, 255, 255, 0.70)",
+                              backdropFilter: "blur(14px)",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontWeight: 800,
+                                fontSize: "14px",
+                                marginBottom: "2px",
+                              }}
+                            >
+                              {p.name}
+                            </div>
 
                             {/* STAR DISPLAY IN POPUP */}
-                            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                marginBottom: "8px",
+                              }}
+                            >
                               {renderStars(p.average_rating || 0)}
-                              <span style={{ fontSize: "12px", color: "#6B7280" }}>
+                              <span
+                                style={{ fontSize: "12px", color: "#6B7280" }}
+                              >
                                 ({p.total_ratings || 0})
                               </span>
                             </div>
@@ -1579,7 +1664,7 @@ function App() {
                                 fontWeight: 700,
                                 textAlign: "center",
                                 cursor: "pointer",
-                                marginBottom: "10px"
+                                marginBottom: "10px",
                               }}
                               onClick={() => handleGoHere(p)}
                             >
@@ -1587,19 +1672,54 @@ function App() {
                             </div>
 
                             <details>
-                              <summary style={{ cursor: "pointer", fontSize: "13px", fontWeight: 700, color: "#4c1d95", listStyle: "none" }}>▼ Options</summary>
-                              <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                                <div style={{ padding: "8px 10px", borderRadius: "12px", background: "rgba(255,255,255,0.55)", border: "1px solid rgba(0,0,0,0.06)" }}>
-                                  <div style={{ fontWeight: 800, marginBottom: "6px" }}>Add to Memories</div>
+                              <summary
+                                style={{
+                                  cursor: "pointer",
+                                  fontSize: "13px",
+                                  fontWeight: 700,
+                                  color: "#4c1d95",
+                                  listStyle: "none",
+                                }}
+                              >
+                                ▼ Options
+                              </summary>
+                              <div
+                                style={{
+                                  marginTop: "10px",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: "6px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    padding: "8px 10px",
+                                    borderRadius: "12px",
+                                    background: "rgba(255,255,255,0.55)",
+                                    border: "1px solid rgba(0,0,0,0.06)",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      fontWeight: 800,
+                                      marginBottom: "6px",
+                                    }}
+                                  >
+                                    Add to Memories
+                                  </div>
                                   <div
                                     style={{
                                       padding: "6px",
-                                      cursor: isGuest ? "not-allowed" : "pointer",
-                                      opacity: isGuest ? 0.5 : 1
+                                      cursor: isGuest
+                                        ? "not-allowed"
+                                        : "pointer",
+                                      opacity: isGuest ? 0.5 : 1,
                                     }}
                                     onClick={() => {
                                       if (isGuest) {
-                                        setActionMessage("Login required to save memories.");
+                                        setActionMessage(
+                                          "Login required to save memories.",
+                                        );
                                         return;
                                       }
                                       handleAddNotes(p);
@@ -1610,19 +1730,26 @@ function App() {
                                   <div
                                     style={{
                                       padding: "6px",
-                                      cursor: isGuest || addingPhoto ? "not-allowed" : "pointer",
-                                      opacity: isGuest || addingPhoto ? 0.5 : 1
+                                      cursor:
+                                        isGuest || addingPhoto
+                                          ? "not-allowed"
+                                          : "pointer",
+                                      opacity: isGuest || addingPhoto ? 0.5 : 1,
                                     }}
                                     onClick={() => {
                                       if (isGuest) {
-                                        setActionMessage("Login required to upload photos.");
+                                        setActionMessage(
+                                          "Login required to upload photos.",
+                                        );
                                         return;
                                       }
                                       if (addingPhoto) return;
                                       handleAddPhoto(p);
                                     }}
                                   >
-                                    {addingPhoto ? "Adding..." : "📷 Add Photos"}
+                                    {addingPhoto
+                                      ? "Adding..."
+                                      : "📷 Add Photos"}
                                   </div>
                                 </div>
                                 <div
@@ -1631,26 +1758,29 @@ function App() {
                                     fontWeight: 700,
                                     cursor:
                                       isGuest ||
-                                        placeState[p.id]?.status === "TO_VISIT" ||
-                                        placeState[p.id]?.status === "VISITED"
+                                      placeState[p.id]?.status === "TO_VISIT" ||
+                                      placeState[p.id]?.status === "VISITED"
                                         ? "not-allowed"
                                         : "pointer",
                                     opacity:
                                       isGuest ||
-                                        placeState[p.id]?.status === "TO_VISIT" ||
-                                        placeState[p.id]?.status === "VISITED"
+                                      placeState[p.id]?.status === "TO_VISIT" ||
+                                      placeState[p.id]?.status === "VISITED"
                                         ? 0.5
-                                        : 1
+                                        : 1,
                                   }}
                                   onClick={() => {
                                     if (isGuest) {
-                                      setActionMessage("Login required to save places.");
+                                      setActionMessage(
+                                        "Login required to save places.",
+                                      );
                                       return;
                                     }
                                     if (
                                       placeState[p.id]?.status === "TO_VISIT" ||
                                       placeState[p.id]?.status === "VISITED"
-                                    ) return;
+                                    )
+                                      return;
 
                                     handleAddToVisit(p);
                                   }}
@@ -1666,35 +1796,56 @@ function App() {
                                     padding: "10px",
                                     fontWeight: 700,
                                     cursor:
-                                      isGuest || placeState[p.id]?.status === "VISITED"
+                                      isGuest ||
+                                      placeState[p.id]?.status === "VISITED"
                                         ? "not-allowed"
                                         : "pointer",
                                     opacity:
-                                      isGuest || placeState[p.id]?.status === "VISITED"
+                                      isGuest ||
+                                      placeState[p.id]?.status === "VISITED"
                                         ? 0.5
-                                        : 1
+                                        : 1,
                                   }}
                                   onClick={() => {
                                     if (isGuest) {
-                                      setActionMessage("Login required to mark places visited.");
+                                      setActionMessage(
+                                        "Login required to mark places visited.",
+                                      );
                                       return;
                                     }
-                                    if (placeState[p.id]?.status === "VISITED") return;
+                                    if (placeState[p.id]?.status === "VISITED")
+                                      return;
                                     handleMarkVisitedClick(p);
                                   }}
                                 >
                                   {placeState[p.id]?.status === "VISITED" ? (
-                                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        gap: "8px",
+                                        alignItems: "center",
+                                      }}
+                                    >
                                       <span>✅ Visited!</span>
 
                                       <span
                                         style={{
-                                          cursor: isGuest || placeState[p.id]?.rated ? "not-allowed" : "pointer",
-                                          opacity: isGuest || placeState[p.id]?.rated ? 0.5 : 1
+                                          cursor:
+                                            isGuest || placeState[p.id]?.rated
+                                              ? "not-allowed"
+                                              : "pointer",
+                                          opacity:
+                                            isGuest || placeState[p.id]?.rated
+                                              ? 0.5
+                                              : 1,
                                         }}
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          if (isGuest || placeState[p.id]?.rated) return;
+                                          if (
+                                            isGuest ||
+                                            placeState[p.id]?.rated
+                                          )
+                                            return;
 
                                           setSelectedPlace(p);
                                           setShowRatingModal(true);
@@ -1705,8 +1856,10 @@ function App() {
 
                                       <span
                                         style={{
-                                          cursor: isGuest ? "not-allowed" : "pointer",
-                                          opacity: isGuest ? 0.5 : 1
+                                          cursor: isGuest
+                                            ? "not-allowed"
+                                            : "pointer",
+                                          opacity: isGuest ? 0.5 : 1,
                                         }}
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -1714,7 +1867,9 @@ function App() {
                                           toggleFavorite(p);
                                         }}
                                       >
-                                        {placeState[p.id]?.favorite ? "❤️" : "🤍"}
+                                        {placeState[p.id]?.favorite
+                                          ? "❤️"
+                                          : "🤍"}
                                       </span>
                                     </div>
                                   ) : (
@@ -1745,9 +1900,8 @@ function App() {
               </div>
             }
           />
-         // <Route path="/favorites" element={<Favourites user={user} />} />
+          // <Route path="/favorites" element={<Favourites user={user} />} />
           <Route path="/photos" element={<MemoriesPage user={user} />} />
-
           <Route path="/places" element={<FeaturesPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
@@ -1758,10 +1912,26 @@ function App() {
         <div className="note-modal-overlay">
           <div className="note-modal-card">
             <h3>Create a Memory</h3>
-            <p>Capture your thoughts about <strong>{selectedPlace?.name}</strong></p>
-            <textarea className="note-textarea" value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="How was the vibe here?..." autoFocus />
+            <p>
+              Capture your thoughts about <strong>{selectedPlace?.name}</strong>
+            </p>
+            <textarea
+              className="note-textarea"
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="How was the vibe here?..."
+              autoFocus
+            />
             <div className="modal-buttons">
-              <button className="cancel-btn" onClick={() => { setShowNoteModal(false); setNoteText(""); }}>Cancel</button>
+              <button
+                className="cancel-btn"
+                onClick={() => {
+                  setShowNoteModal(false);
+                  setNoteText("");
+                }}
+              >
+                Cancel
+              </button>
               <button
                 className="save-btn"
                 onClick={handleSaveNote}
@@ -1774,22 +1944,36 @@ function App() {
         </div>
       )}
 
-
-
       {/* RATING MODAL (TRIGGERED BY VISITED) */}
       {showRatingModal && (
         <div className="note-modal-overlay">
           <div className="note-modal-card">
             <div style={{ fontSize: "40px", marginBottom: "10px" }}>⭐</div>
             <h3>Rate your visit</h3>
-            <p>How was the vibe at <strong>{selectedPlace?.name}</strong>?</p>
+            <p>
+              How was the vibe at <strong>{selectedPlace?.name}</strong>?
+            </p>
 
-            <div style={{ margin: "20px 0", display: "flex", justifyContent: "center" }}>
+            <div
+              style={{
+                margin: "20px 0",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
               {renderStars(0, true)}
             </div>
 
             <div className="modal-buttons">
-              <button className="cancel-btn" onClick={() => { setShowRatingModal(false); setUserRating(0); }}>Skip</button>
+              <button
+                className="cancel-btn"
+                onClick={() => {
+                  setShowRatingModal(false);
+                  setUserRating(0);
+                }}
+              >
+                Skip
+              </button>
               <button
                 className="save-btn"
                 disabled={userRating === 0}
@@ -1817,7 +2001,7 @@ function App() {
             fontWeight: "700",
             fontSize: "14px",
             zIndex: 9999,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.2)"
+            boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
           }}
           onClick={() => setActionMessage("")}
         >
@@ -1828,6 +2012,3 @@ function App() {
   );
 }
 export default App;
-
-
-

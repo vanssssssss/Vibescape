@@ -8,8 +8,15 @@ import { pool } from "../db/db.js";
  * Returns up to 10 places within `radius` metres of the coordinates.
  * Uses PostGIS ST_DWithin on the `places` table.
  */
-export const getNearbyPlaces = async (req: Request, res: Response): Promise<void> => {
-  const { lat, lng, radius = "500" } = req.query as {
+export const getNearbyPlaces = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const {
+    lat,
+    lng,
+    radius = "500",
+  } = req.query as {
     lat?: string;
     lng?: string;
     radius?: string;
@@ -25,7 +32,9 @@ export const getNearbyPlaces = async (req: Request, res: Response): Promise<void
   const radiusNum = parseFloat(radius);
 
   if (isNaN(latNum) || isNaN(lngNum) || isNaN(radiusNum)) {
-    res.status(400).json({ error: "lat, lng and radius must be valid numbers" });
+    res
+      .status(400)
+      .json({ error: "lat, lng and radius must be valid numbers" });
     return;
   }
 
@@ -42,7 +51,7 @@ export const getNearbyPlaces = async (req: Request, res: Response): Promise<void
       ORDER BY distance_m
       LIMIT 10
       `,
-      [lngNum, latNum, radiusNum]
+      [lngNum, latNum, radiusNum],
     );
 
     res.json({ places: result.rows });
@@ -59,7 +68,10 @@ export const getNearbyPlaces = async (req: Request, res: Response): Promise<void
  * Converts a text location to lat/lng via Nominatim (no API key required).
  * Uses native fetch (Node 18+) — no axios dependency needed.
  */
-export const geocodeLocation = async (req: Request, res: Response): Promise<void> => {
+export const geocodeLocation = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const { query } = req.body as { query?: string };
 
   if (!query) {
@@ -69,7 +81,7 @@ export const geocodeLocation = async (req: Request, res: Response): Promise<void
 
   try {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      query
+      query,
     )}&format=json&limit=1`;
 
     const response = await fetch(url, {
