@@ -1,4 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
+import API_BASE_URL from "./config/api";
+
 
 /**
  * useProximityWatch
@@ -26,7 +28,7 @@ export function useProximityWatch({
       const { latitude, longitude } = coords;
       try {
         const res = await fetch(
-          `http://localhost:3000/api/location/nearby?lat=${latitude}&lng=${longitude}&radius=${radius}`,
+          `${API_BASE_URL}/api/location/nearby?lat=${latitude}&lng=${longitude}&radius=${radius}`,
         );
         if (!res.ok) return;
         const data = await res.json();

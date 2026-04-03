@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import "./Favourite.css";
+import API_BASE_URL from "./config/api";
 
-const API = "http://localhost:3000/api/v1/saved-places";
+const API = `${API_BASE_URL}/api/v1/saved-places`;
 
 export default function Favourites({ user }) {
   const [places, setPlaces] = useState([]);
@@ -17,7 +18,7 @@ export default function Favourites({ user }) {
       return;
     }
 
-    let url = "http://localhost:3000/api/v1/saved-places";
+    let url = `${API_BASE_URL}/api/v1/saved-places`;
 
     if (filter === "tovisit") {
       url += "?status=TO_VISIT";

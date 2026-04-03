@@ -1,6 +1,7 @@
 import logo from "./assets/logo.png";
 import SettingsPage from "./SettingsPage"; // here we are importing the settings page component which we will create later
 import FeaturesPage from "./FeaturesPage";
+import API_BASE_URL from "./config/api";// api import
 
 import { useState, useRef, useEffect } from "react";
 import {
@@ -147,7 +148,7 @@ function App() {
     const verifyEmail = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3000/api/v1/auth/verify-email?token=${verifyToken}`,
+          `${API_BASE_URL}/api/v1/auth/verify-email?token=${verifyToken}`,
         );
         const data = await res.json();
         console.log(data);
@@ -271,7 +272,7 @@ function App() {
     if (!token) return;
 
     try {
-      const res = await fetch("http://localhost:3000/api/v1/users/me", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -322,7 +323,7 @@ function App() {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/geocode/autocomplete?q=${encodeURIComponent(query)}`,
+        `${API_BASE_URL}/api/v1/geocode/autocomplete?q=${encodeURIComponent(query)}`,
       );
 
       const data = await res.json();
@@ -412,7 +413,7 @@ function App() {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/search?vibe=${query}&lat=${loc.lat}&lon=${loc.lon}&radius=200000000`,
+        `${API_BASE_URL}/api/v1/search?vibe=${query}&lat=${loc.lat}&lon=${loc.lon}&radius=200000000`,
       );
 
       const data = await res.json();
@@ -474,7 +475,7 @@ function App() {
       const token = localStorage.getItem("token");
 
       const authRes = await fetch(
-        "http://localhost:3000/api/v1/memories/imagekit-auth",
+        `${API_BASE_URL}/api/v1/memories/imagekit-auth`,
       );
       const authData = await authRes.json();
 
@@ -498,7 +499,7 @@ function App() {
       const imageUrl = uploadData.url;
       // console.log(imageUrl);
 
-      const memRes = await fetch("http://localhost:3000/api/v1/memories", {
+      const memRes = await fetch(`${API_BASE_URL}/api/v1/memories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -507,7 +508,7 @@ function App() {
       let memory = memories.find((m) => m.place_id === selectedPlace.id);
 
       if (!memory) {
-        const createRes = await fetch("http://localhost:3000/api/v1/memories", {
+        const createRes = await fetch(`${API_BASE_URL}/api/v1/memories`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -523,7 +524,7 @@ function App() {
       }
 
       await fetch(
-        `http://localhost:3000/api/v1/memories/${memory.memory_id}/images`,
+        `${API_BASE_URL}/api/v1/memories/${memory.memory_id}/images`,
         {
           method: "PATCH",
           headers: {
@@ -556,14 +557,14 @@ function App() {
     setSavingNote(true);
     try {
       const token = localStorage.getItem("token");
-      const memRes = await fetch("http://localhost:3000/api/v1/memories", {
+      const memRes = await fetch(`${API_BASE_URL}/api/v1/memories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const memories = await memRes.json();
       let memory = memories.find((m) => m.place_id === selectedPlace.id);
 
       if (!memory) {
-        const createRes = await fetch("http://localhost:3000/api/v1/memories", {
+        const createRes = await fetch(`${API_BASE_URL}/api/v1/memories`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -577,7 +578,7 @@ function App() {
         memory = await createRes.json();
       }
 
-      await fetch(`http://localhost:3000/api/v1/memories/${memory.memory_id}`, {
+      await fetch(`${API_BASE_URL}/api/v1/memories/${memory.memory_id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -601,7 +602,7 @@ function App() {
 
     const token = localStorage.getItem("token");
 
-    await fetch("http://localhost:3000/api/v1/saved-places/visited", {
+    await fetch(`${API_BASE_URL}/api/v1/saved-places/visited`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -628,7 +629,7 @@ function App() {
   const submitRating = async () => {
     // 1. Update UI locally (Mock logic for average)
     try {
-      const res = await fetch("http://localhost:3000/api/v1/rating/rate", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/rating/rate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -654,10 +655,10 @@ function App() {
           prev.map((p) =>
             p.id === selectedPlace.id
               ? {
-                  ...p,
-                  average_rating: data.average_rating,
-                  total_ratings: data.total_ratings,
-                }
+                ...p,
+                average_rating: data.average_rating,
+                total_ratings: data.total_ratings,
+              }
               : p,
           ),
         );
@@ -676,7 +677,7 @@ function App() {
     if (placeState[p.id]?.status === "TO_VISIT") return;
     const token = localStorage.getItem("token");
 
-    const res = await fetch("http://localhost:3000/api/v1/saved-places", {
+    const res = await fetch(`${API_BASE_URL}/api/v1/saved-places`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -704,7 +705,7 @@ function App() {
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      "http://localhost:3000/api/v1/saved-places/favorites",
+      `${API_BASE_URL}/api/v1/saved-places/favorites`,
       {
         method: "PATCH",
         headers: {
@@ -738,7 +739,7 @@ function App() {
   const handleLogin = async () => {
     setError(""); // ✅ add here
     try {
-      const res = await fetch("http://localhost:3000/api/v1/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -770,6 +771,11 @@ function App() {
       navigate("/places"); // from login go to the features page
       //const from = location.state?.from || "/";  // ✅ NEW
       //navigate(from);                            // ✅ NEW
+
+      // check for the admin added here
+      // ✅ THIS IS THE MAIN FIX
+
+     //navigate("/amin");//temp fix
     } catch (err) {
       setError(err.message || "Invalid email or password");
     }
@@ -793,7 +799,7 @@ function App() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/v1/auth/register", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -841,7 +847,7 @@ function App() {
     setError("");
     try {
       const res = await fetch(
-        "http://localhost:3000/api/v1/auth/resend-verification",
+        `${API_BASE_URL}/api/v1/auth/resend-verification`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -858,7 +864,7 @@ function App() {
   const handleForgotPassword = async () => {
     setError(""); // ✅ ADD THIS
     try {
-      await fetch("http://localhost:3000/api/v1/auth/forgot-password", {
+      await fetch(`${API_BASE_URL}/api/v1/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -875,7 +881,7 @@ function App() {
     setError(""); // ✅ ADD THIS
     try {
       const res = await fetch(
-        "http://localhost:3000/api/v1/auth/reset-password",
+        `${API_BASE_URL}/api/v1/auth/reset-password`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1323,9 +1329,8 @@ function App() {
       {/* SIDEBAR */}
       <div className="sidebar">
         <div
-          className={`sidebar-icon ${
-            location.pathname === "/" ? "active purple" : ""
-          }`}
+          className={`sidebar-icon ${location.pathname === "/" ? "active purple" : ""
+            }`}
           onClick={() => navigate("/")}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -1341,9 +1346,8 @@ function App() {
         </div>
 
         <div
-          className={`sidebar-icon ${
-            location.pathname === "/photos" ? "active purple" : ""
-          }`}
+          className={`sidebar-icon ${location.pathname === "/photos" ? "active purple" : ""
+            }`}
           onClick={() => navigate("/photos")}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -1361,9 +1365,8 @@ function App() {
         </div>
 
         <div
-          className={`sidebar-icon ${
-            location.pathname === "/favorites" ? "active purple" : ""
-          }`}
+          className={`sidebar-icon ${location.pathname === "/favorites" ? "active purple" : ""
+            }`}
           onClick={() => navigate("/favorites")}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -1376,9 +1379,8 @@ function App() {
         </div>
 
         <div
-          className={`sidebar-icon ${
-            location.pathname === "/places" ? "active purple" : ""
-          }`}
+          className={`sidebar-icon ${location.pathname === "/places" ? "active purple" : ""
+            }`}
           onClick={() => navigate("/places")}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -1408,9 +1410,8 @@ function App() {
 
         <div
           //sidebar new one added for the settings page with the profile image and the first letter of the nickname if the profile image is not available
-          className={`sidebar-icon sidebar-bottom ${
-            location.pathname === "/settings" ? "active purple" : ""
-          }`}
+          className={`sidebar-icon sidebar-bottom ${location.pathname === "/settings" ? "active purple" : ""
+            }`}
           onClick={() => navigate("/settings")}
         >
           {user?.profile_pic ? (
@@ -1541,7 +1542,7 @@ function App() {
                 setUser={setUser}
                 navigate={navigate}
                 setIsGuest={setIsGuest}
-                //fetchUser={fetchUser}// here i have added the fetchUser function as a prop to the settings page so that after updating the user details in the settings page we can fetch the updated user details and update the user state in the app component which will reflect in the sidebar with the updated profile picture and nickname without needing to refresh the page
+              //fetchUser={fetchUser}// here i have added the fetchUser function as a prop to the settings page so that after updating the user details in the settings page we can fetch the updated user details and update the user state in the app component which will reflect in the sidebar with the updated profile picture and nickname without needing to refresh the page
               />
             }
           />
@@ -1758,14 +1759,14 @@ function App() {
                                     fontWeight: 700,
                                     cursor:
                                       isGuest ||
-                                      placeState[p.id]?.status === "TO_VISIT" ||
-                                      placeState[p.id]?.status === "VISITED"
+                                        placeState[p.id]?.status === "TO_VISIT" ||
+                                        placeState[p.id]?.status === "VISITED"
                                         ? "not-allowed"
                                         : "pointer",
                                     opacity:
                                       isGuest ||
-                                      placeState[p.id]?.status === "TO_VISIT" ||
-                                      placeState[p.id]?.status === "VISITED"
+                                        placeState[p.id]?.status === "TO_VISIT" ||
+                                        placeState[p.id]?.status === "VISITED"
                                         ? 0.5
                                         : 1,
                                   }}
@@ -1797,12 +1798,12 @@ function App() {
                                     fontWeight: 700,
                                     cursor:
                                       isGuest ||
-                                      placeState[p.id]?.status === "VISITED"
+                                        placeState[p.id]?.status === "VISITED"
                                         ? "not-allowed"
                                         : "pointer",
                                     opacity:
                                       isGuest ||
-                                      placeState[p.id]?.status === "VISITED"
+                                        placeState[p.id]?.status === "VISITED"
                                         ? 0.5
                                         : 1,
                                   }}
@@ -1903,6 +1904,8 @@ function App() {
           // <Route path="/favorites" element={<Favourites user={user} />} />
           <Route path="/photos" element={<MemoriesPage user={user} />} />
           <Route path="/places" element={<FeaturesPage />} />
+        
+          
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
