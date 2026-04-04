@@ -30,7 +30,8 @@ export async function sendResetMail(email: string, resetUrl: string) {
 }
 
 export async function sendMailVerification(email: string, Url: string) {
-  const info = await transporter.sendMail({
+  try{
+    const info = await transporter.sendMail({
     from: `"Vibescape" <${process.env.SMTP_USER}>`,
     to: email,
     subject: "Verify your email address",
@@ -42,4 +43,9 @@ export async function sendMailVerification(email: string, Url: string) {
         If you did not request this, ignore this email.
         Vibescape`,
   });
+   console.log("Email sent:", info.response);
+  }catch (error:any) {
+    console.error("Mail error:", error);
+  }
+  
 }
