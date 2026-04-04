@@ -24,7 +24,7 @@ app.use(cors({ origin: frontend_url }));
 app.use(express.json());
 await initTagVectors();
 app.set("trust proxy", 1);
-// startScheduler();
+startScheduler();
 
 app.use("/api/v1/search", searchPlaceRouter);
 app.use("/api/v1/rating", ratingRouter);
