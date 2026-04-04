@@ -747,7 +747,7 @@ function App() {
         body: JSON.stringify({ email, password }),
       });
 
-      
+
       const data = await res.json();
 
       //if (!res.ok) throw new Error(data.message);
@@ -762,23 +762,32 @@ function App() {
         throw new Error(data.message);
       }
 
-      // here adding the token to local storage and setting the user state with the user id and email returned from the backend, which will be used in the settings page to display user details and allow updates.
+      /* localStorage.setItem("token", data.token);
+       await fetchUser(); 
+       setIsAuthenticated(true);
+       setIsGuest(false);
+       localStorage.removeItem("guest"); 
+       navigate("/places"); */
+
       localStorage.setItem("token", data.token);
-      await fetchUser(); // 🔥 IMPORTANT
+
+      //decode role from JWT
+      const payload = JSON.parse(atob(data.token.split(".")[1]));
+      const role = payload.role;
+
+      await fetchUser();
 
       setIsAuthenticated(true);
       setIsGuest(false);
       localStorage.removeItem("guest");
 
-      // await fetchUser(); // ✅ fetch user details after login
-      navigate("/places"); // from login go to the features page
-      //const from = location.state?.from || "/";  // ✅ NEW
-      //navigate(from);                            // ✅ NEW
+      // ✅ role-based navigation
+      if (role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/places");
+      }
 
-      // check for the admin added here
-      // ✅ THIS IS THE MAIN FIX
-
-     //navigate("/amin");//temp fix
     } catch (err) {
       setError(err.message || "Invalid email or password");
     }
@@ -816,7 +825,7 @@ function App() {
       let data = {};
       try {
         data = await res.json();
-      } catch {}
+      } catch { }
 
       console.log("REGISTER RESPONSE:", data);
 
@@ -911,8 +920,16 @@ function App() {
     }
   };
 
+  // function to check if user is admin based on JWT role
+  const isAdmin = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return false;
+
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.role === "admin";
+  };
+
   /* ---------- AUTH GUARD ---------- */
-  // ✅ ADD THIS FIRST
   if (loadingUser) return null;
   if (!isAuthenticated && !user && !isGuest) {
     return (
@@ -1907,8 +1924,8 @@ function App() {
           // <Route path="/favorites" element={<Favourites user={user} />} />
           <Route path="/photos" element={<MemoriesPage user={user} />} />
           <Route path="/places" element={<FeaturesPage />} />
-        
-          
+
+
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
