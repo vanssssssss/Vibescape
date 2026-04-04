@@ -29,7 +29,7 @@ export async function markEmailVerified(userId: string) {
 
 export async function findUserByEmail(email: string) {
   const result = await pool.query(
-    `SELECT user_id, password, is_verified FROM users WHERE email = $1`,
+    `SELECT user_id, password, is_verified, role FROM users WHERE email = $1`,
     [email],
   );
 

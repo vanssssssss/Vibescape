@@ -2,6 +2,7 @@ import logo from "./assets/logo.png";
 import SettingsPage from "./SettingsPage"; // here we are importing the settings page component which we will create later
 import FeaturesPage from "./FeaturesPage";
 import API_BASE_URL from "./config/api";// api import
+import AdminPage from "./AdminPage";// import for the admins
 
 import { useState, useRef, useEffect } from "react";
 import {
@@ -747,7 +748,7 @@ function App() {
         body: JSON.stringify({ email, password }),
       });
 
-      
+
       const data = await res.json();
 
       //if (!res.ok) throw new Error(data.message);
@@ -762,23 +763,32 @@ function App() {
         throw new Error(data.message);
       }
 
-      // here adding the token to local storage and setting the user state with the user id and email returned from the backend, which will be used in the settings page to display user details and allow updates.
+      /* localStorage.setItem("token", data.token);
+       await fetchUser(); 
+       setIsAuthenticated(true);
+       setIsGuest(false);
+       localStorage.removeItem("guest"); 
+       navigate("/places"); */
+
       localStorage.setItem("token", data.token);
-      await fetchUser(); // 🔥 IMPORTANT
+
+      //decode role from JWT
+      const payload = JSON.parse(atob(data.token.split(".")[1]));
+      const role = payload.role;
+
+      await fetchUser();
 
       setIsAuthenticated(true);
       setIsGuest(false);
       localStorage.removeItem("guest");
 
-      // await fetchUser(); // ✅ fetch user details after login
-      navigate("/places"); // from login go to the features page
-      //const from = location.state?.from || "/";  // ✅ NEW
-      //navigate(from);                            // ✅ NEW
+      // ✅ role-based navigation
+      if (role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/places");
+      }
 
-      // check for the admin added here
-      // ✅ THIS IS THE MAIN FIX
-
-     //navigate("/amin");//temp fix
     } catch (err) {
       setError(err.message || "Invalid email or password");
     }
@@ -816,7 +826,7 @@ function App() {
       let data = {};
       try {
         data = await res.json();
-      } catch {}
+      } catch { }
 
       console.log("REGISTER RESPONSE:", data);
 
@@ -911,8 +921,16 @@ function App() {
     }
   };
 
+  // function to check if user is admin based on JWT role
+  const isAdmin = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return false;
+
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.role === "admin";
+  };
+
   /* ---------- AUTH GUARD ---------- */
-  // ✅ ADD THIS FIRST
   if (loadingUser) return null;
   if (!isAuthenticated && !user && !isGuest) {
     return (
@@ -1410,6 +1428,30 @@ function App() {
             />
           </svg>
         </div>
+        {/* 🔥 ADMIN ICON (PASTE THIS EXACTLY HERE) */}
+        {isAdmin() && (
+          <div
+            className={`sidebar-icon ${location.pathname === "/admin" ? "active purple" : ""
+              }`}
+            onClick={() => navigate("/admin")}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2L4 6v6c0 5 3.8 9.7 8 10 4.2-.3 8-5 8-10V6l-8-4z"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M9 12l2 2 4-4"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        )}
 
         <div
           //sidebar new one added for the settings page with the profile image and the first letter of the nickname if the profile image is not available
@@ -1534,6 +1576,8 @@ function App() {
             VibeScape
           </span>
         </div>
+
+
 
         {/* here removed the old ui page and made changes to the settings page  added the new route below*/}
         <Routes>
@@ -1907,8 +1951,12 @@ function App() {
           // <Route path="/favorites" element={<Favourites user={user} />} />
           <Route path="/photos" element={<MemoriesPage user={user} />} />
           <Route path="/places" element={<FeaturesPage />} />
-        
-          
+          {/* 🔥 ADD THIS */}
+          <Route
+            path="/admin"
+            element={isAdmin() ? <AdminPage /> : <Navigate to="/places" />}
+          />
+
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

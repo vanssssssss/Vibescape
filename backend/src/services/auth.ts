@@ -46,7 +46,7 @@ export async function loginUser(email: string, password: string) {
     throw new Error("INVALID_CREDENTIALS");
   }
 
-  return user.user_id;
+  return user;
 }
 
 export async function resetPasswordWithToken(
