@@ -2,6 +2,7 @@ import logo from "./assets/logo.png";
 import SettingsPage from "./SettingsPage"; // here we are importing the settings page component which we will create later
 import FeaturesPage from "./FeaturesPage";
 import API_BASE_URL from "./config/api";// api import
+import AdminPage from "./AdminPage";// import for the admins
 
 import { useState, useRef, useEffect } from "react";
 import {
@@ -1427,6 +1428,30 @@ function App() {
             />
           </svg>
         </div>
+        {/* 🔥 ADMIN ICON (PASTE THIS EXACTLY HERE) */}
+        {isAdmin() && (
+          <div
+            className={`sidebar-icon ${location.pathname === "/admin" ? "active purple" : ""
+              }`}
+            onClick={() => navigate("/admin")}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2L4 6v6c0 5 3.8 9.7 8 10 4.2-.3 8-5 8-10V6l-8-4z"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M9 12l2 2 4-4"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        )}
 
         <div
           //sidebar new one added for the settings page with the profile image and the first letter of the nickname if the profile image is not available
@@ -1551,6 +1576,8 @@ function App() {
             VibeScape
           </span>
         </div>
+
+
 
         {/* here removed the old ui page and made changes to the settings page  added the new route below*/}
         <Routes>
@@ -1924,7 +1951,11 @@ function App() {
           // <Route path="/favorites" element={<Favourites user={user} />} />
           <Route path="/photos" element={<MemoriesPage user={user} />} />
           <Route path="/places" element={<FeaturesPage />} />
-
+          {/* 🔥 ADD THIS */}
+          <Route
+            path="/admin"
+            element={isAdmin() ? <AdminPage /> : <Navigate to="/places" />}
+          />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
