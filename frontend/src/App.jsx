@@ -741,7 +741,7 @@ function App() {
     setError(""); // ✅ add here
     console.log(`${API_BASE_URL}/api/v1/auth/login`);
     try {
-      const res = await fetch(`${API_BASE_URL}api/v1/auth/login`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
