@@ -737,7 +737,9 @@ function App() {
   /* ---------- AUTH HANDLERS ---------- */
 
   const handleLogin = async () => {
+    console.log(API_BASE_URL);
     setError(""); // ✅ add here
+    console.log(`${API_BASE_URL}/api/v1/auth/login`);
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
         method: "POST",
@@ -745,6 +747,7 @@ function App() {
         body: JSON.stringify({ email, password }),
       });
 
+      
       const data = await res.json();
 
       //if (!res.ok) throw new Error(data.message);
