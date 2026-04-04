@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import "./SettingsPage.css";
+import API_BASE_URL from "./config/api";
 
 export default function SettingsPage({ user, setUser, navigate, setIsGuest }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -52,7 +53,7 @@ export default function SettingsPage({ user, setUser, navigate, setIsGuest }) {
       }
       console.log("Uploading with token:", token);
       const authRes = await fetch(
-        "http://localhost:3000/api/v1/memories/imagekit-auth",
+        `${API_BASE_URL}/api/v1/memories/imagekit-auth`,
       );
       const authData = await authRes.json();
 
@@ -72,7 +73,7 @@ export default function SettingsPage({ user, setUser, navigate, setIsGuest }) {
       const uploadData = await uploadRes.json();
 
       const res = await fetch(
-        "http://localhost:3000/api/v1/users/me/profile-pic",
+        `${API_BASE_URL}/api/v1/users/me/profile-pic`,
         {
           method: "PATCH",
           headers: {
@@ -112,7 +113,7 @@ export default function SettingsPage({ user, setUser, navigate, setIsGuest }) {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:3000/api/v1/users/me/name", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/users/me/name`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -157,7 +158,7 @@ export default function SettingsPage({ user, setUser, navigate, setIsGuest }) {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        "http://localhost:3000/api/v1/auth/change-password",
+        `${API_BASE_URL}/api/v1/auth/change-password`,
         {
           method: "PATCH",
           headers: {
@@ -194,7 +195,7 @@ export default function SettingsPage({ user, setUser, navigate, setIsGuest }) {
     const token = localStorage.getItem("token");
 
     try {
-      await fetch("http://localhost:3000/api/v1/auth/logout", {
+      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -211,7 +212,7 @@ export default function SettingsPage({ user, setUser, navigate, setIsGuest }) {
     const token = localStorage.getItem("token");
 
     try {
-      await fetch("http://localhost:3000/api/v1/users/me", {
+      await fetch(`${API_BASE_URL}/api/v1/users/me`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

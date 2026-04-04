@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./MemoriesPage.css";
+import API_BASE_URL from "./config/api";
 
 export default function MemoriesPage({ user }) {
   const [selected, setSelected] = useState(null);
@@ -29,7 +30,7 @@ export default function MemoriesPage({ user }) {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:3000/api/v1/memories", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/memories`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -60,7 +61,7 @@ export default function MemoriesPage({ user }) {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `http://localhost:3000/api/v1/memories/${memoryId}`,
+       `${API_BASE_URL}/api/v1/memories/${memoryId}`,
         {
           method: "DELETE",
           headers: {
@@ -210,7 +211,7 @@ export default function MemoriesPage({ user }) {
                           const token = localStorage.getItem("token");
 
                           await fetch(
-                            `http://localhost:3000/api/v1/memories/${selected.memory_id}`,
+                           `${API_BASE_URL}/api/v1/memories/${selected.memory_id}`,
                             {
                               method: "PATCH",
                               headers: {
