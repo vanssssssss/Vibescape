@@ -75,11 +75,12 @@ export const register = async (req: Request, res: Response) => {
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     await sendVerificationToken(hashedToken, userId);
-    console.log(token);
 
+    console.log("before sending mail");
     const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
 
     await sendMailVerification(email, verificationUrl);
+    console.log("after sending mail");
 
     return res
       .status(201)
