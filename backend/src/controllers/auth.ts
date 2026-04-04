@@ -49,6 +49,16 @@ export const register = async (req: Request, res: Response) => {
       .json({ message: "Password should atleast be of 8 characters" });
   }
 
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({
+      message:
+        "Password must include uppercase, lowercase, number and special character",
+    });
+  }
+
   if (!validateEmail(email)) {
     return res.status(400).json({
       message: "Invalid email format",
@@ -184,11 +194,20 @@ export const resetPassword = async (req: Request, res: Response) => {
       .status(400)
       .json({ message: "Password do not match! Try again" });
   }
-
   if (newPassword.length < 8) {
     return res
       .status(400)
       .json({ message: "Password should atleast be of 8 characters" });
+  }
+
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  if (!passwordRegex.test(newPassword)) {
+    return res.status(400).json({
+      message:
+        "Password must include uppercase, lowercase, number and special character",
+    });
   }
 
   const success = await resetPasswordWithToken(token, newPassword);
@@ -290,10 +309,25 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
       .json({ message: "Password do not match! Try again" });
   }
 
+  if (newPassword != confirmPassword) {
+    return res
+      .status(400)
+      .json({ message: "Password do not match! Try again" });
+  }
   if (newPassword.length < 8) {
     return res
       .status(400)
       .json({ message: "Password should atleast be of 8 characters" });
+  }
+
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  if (!passwordRegex.test(newPassword)) {
+    return res.status(400).json({
+      message:
+        "Password must include uppercase, lowercase, number and special character",
+    });
   }
 
   try {
