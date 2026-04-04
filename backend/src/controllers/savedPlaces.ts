@@ -6,12 +6,13 @@ import {
   removeFavorite,
 } from "../db/queries/favorites.js";
 import { pool } from "../db/db.js";
-
 interface AuthRequest extends Request {
   user?: {
     id: string;
+    role: string;
   };
 }
+
 
 // // POST /api/v1/favorites/add
 // // Body: { user_id, place_id, place_name, city }

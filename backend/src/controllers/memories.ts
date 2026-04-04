@@ -5,6 +5,7 @@ import { pool } from "../db/db.js";
 interface AuthRequest extends Request {
   user?: {
     id: string;
+    role: string;
   };
 }
 

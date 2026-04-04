@@ -22,8 +22,10 @@ import { updateUserPassword } from "../db/queries/user.js";
 interface AuthRequest extends Request {
   user?: {
     id: string;
+    role: string;
   };
 }
+
 
 export const register = async (req: Request, res: Response) => {
   const name = req.body.name;
@@ -114,10 +116,12 @@ export const login = async (req: Request, res: Response) => {
     });
   }
   try {
-    const userId = await loginUser(email, password);
-
+    const user = await loginUser(email, password);
+    // console.log(user);
     const token = jwt.sign(
-      { id: userId },
+      { id: user.user_id,
+        role: user.role
+       },
       process.env.JWT_SECRET_KEY as string,
       { expiresIn: "2h" },
     );
@@ -126,8 +130,9 @@ export const login = async (req: Request, res: Response) => {
       .status(200)
       .json({
         message: "User logged in successfully!",
-        user_id: userId,
+        user_id: user.user_id,
         token,
+        role: user.role
       });
   } catch (err: any) {
     if (err.message == "INVALID_CREDENTIALS") {

@@ -5,6 +5,7 @@ import type { JwtPayload } from "../interfaces/jwt.js";
 interface AuthRequest extends Request {
   user?: {
     id: string;
+    role: string;
   };
 }
 
@@ -36,8 +37,9 @@ export const verifyToken = (
     }
     req.user = {
       id: decoded.id,
+      role: decoded.role,
     };
-
+    // console.log(req.user);
     console.log("middleware check done");
 
     next();
