@@ -16,6 +16,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+transporter.verify((err, success) => {
+  if (err) {
+    console.log("SMTP connection error:", err);
+  } else {
+    console.log("SMTP server ready");
+  }
+});
+
 export async function sendResetMail(email: string, resetUrl: string) {
   const info = await transporter.sendMail({
     from: `"Vibescape" <${process.env.SMTP_USER}>`,
