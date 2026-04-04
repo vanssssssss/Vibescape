@@ -263,7 +263,7 @@ function App() {
         });
         setShowLocationModal(false);
       },
-      () => setAction("Location permission denied"),
+      () => setActionMessage("Location permission denied"),
     );
   };
   const fetchUser = async () => {
