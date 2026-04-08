@@ -1,6 +1,6 @@
 # 🌍 VibeScape
 
-## ✨ Introduction
+## Introduction
 
 **VibeScape** is an NLP-driven travel discovery platform designed to help users explore locations based on their personal "vibe". Instead of relying on rigid itineraries, VibeScape focuses on **personalized and intuitive travel discovery**.
 
@@ -8,7 +8,7 @@ It allows users to interact with locations through natural language, visualize p
 
 ---
 
-## 🎯 Purpose
+## Purpose
 
 The purpose of this project is to define and implement the functional and technical requirements of **VibeScape**, a smart travel companion platform.
 
@@ -22,25 +22,25 @@ This serves as a complete system for both users and developers to interact with 
 
 ---
 
-## 🌐 Scope
+## Scope
 
 VibeScape is a **web-based, location-aware travel platform** designed to enhance exploration through personalization rather than predefined travel plans.
 
 ---
 
-## 🚀 Core Features
+##  Core Features
 
-### 🔍 NLP Discovery
+###  NLP Discovery
 
 * Interpret user "vibe" inputs using Natural Language Processing
 * Provide intelligent place recommendations
 
-### 🗺️ Interactive Mapping
+### Interactive Mapping
 
 * Map-centric interface using GPS-based live location
 * Manual search with autocomplete
 
-### 📍 Place Engagement
+###  Place Engagement
 
 * View ratings of locations
 * Add personal notes
@@ -52,19 +52,19 @@ Manage saved places through stages:
 
 * To-Visit → Visited → Favorite
 
-### 🧠 Memory Management
+###  Memory Management
 
 * Create, update, and delete **Memory Cards**
 * Store travel experiences with photos and notes
 
-### 👤 Account Customization
+###  Account Customization
 
 * Secure token-based authentication
 * Profile management (username, profile picture)
 
 ---
 
-## ❌ System Limitations
+##  System Limitations
 
 The system does **not** include:
 
@@ -74,7 +74,7 @@ The system does **not** include:
 
 ---
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```bash
 project-root/
@@ -86,16 +86,14 @@ project-root/
 
 ---
 
-## ⚙️ Prerequisites
+##  Prerequisites
 
 * Node.js (>= 18)
-* npm or yarn
-* PostgreSQL
-* Git
-
+* PostgreSQL(Hosted on Supabase)
+  
 ---
 
-## 🔧 Backend Setup
+##  Backend Setup
 
 ```bash
 cd backend
@@ -125,7 +123,7 @@ npm run dev
 
 ---
 
-## 💻 Frontend Setup
+##  Frontend Setup
 
 ```bash
 cd frontend
@@ -146,7 +144,7 @@ npm run dev
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 
@@ -167,7 +165,7 @@ npm run dev
 
 ---
 
-## 📌 Notes
+##  Notes
 
 * Ensure backend runs before frontend
 * Keep `.env` files secure
