@@ -1,4 +1,4 @@
-# 🌍 VibeScape
+#  VibeScape
 
 ## Introduction
 
@@ -46,7 +46,7 @@ VibeScape is a **web-based, location-aware travel platform** designed to enhance
 * Add personal notes
 * Upload photos linked to map locations
 
-### 🔄 Travel Lifecycle
+###  Travel Lifecycle
 
 Manage saved places through stages:
 
