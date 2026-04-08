@@ -2,27 +2,81 @@
 
 ## ✨ Introduction
 
-**VibeScape** is a full-stack web application designed to help users explore, share, and experience locations based on their *vibes*. Whether it's a peaceful getaway, a lively hangout spot, or a hidden gem, VibeScape allows users to discover places, interact with content, and contribute their own experiences.
+**VibeScape** is an NLP-driven travel discovery platform designed to help users explore locations based on their personal "vibe". Instead of relying on rigid itineraries, VibeScape focuses on **personalized and intuitive travel discovery**.
 
-The platform combines an interactive map interface with modern web technologies to deliver a seamless and engaging user experience.
+It allows users to interact with locations through natural language, visualize places on an interactive map, and manage their travel experiences through a structured lifecycle.
 
 ---
 
-## 🚀 Features
+## 🎯 Purpose
 
-* 🔐 User Authentication (JWT-based login/signup)
-* 📍 Location-based exploration with maps
-* 📝 Create and manage posts/places
-* 📷 Image upload support
-* 📧 Email notifications
-* ⚡ Fast and responsive UI
-* 🛡️ Secure backend with validation & rate limiting
+The purpose of this project is to define and implement the functional and technical requirements of **VibeScape**, a smart travel companion platform.
+
+It provides:
+
+* Token-based, email-verified authentication
+* NLP-powered vibe-based place recommendations
+* Travel memory and location management system
+
+This serves as a complete system for both users and developers to interact with and extend.
+
+---
+
+## 🌐 Scope
+
+VibeScape is a **web-based, location-aware travel platform** designed to enhance exploration through personalization rather than predefined travel plans.
+
+---
+
+## 🚀 Core Features
+
+### 🔍 NLP Discovery
+
+* Interpret user "vibe" inputs using Natural Language Processing
+* Provide intelligent place recommendations
+
+### 🗺️ Interactive Mapping
+
+* Map-centric interface using GPS-based live location
+* Manual search with autocomplete
+
+### 📍 Place Engagement
+
+* View ratings of locations
+* Add personal notes
+* Upload photos linked to map locations
+
+### 🔄 Travel Lifecycle
+
+Manage saved places through stages:
+
+* To-Visit → Visited → Favorite
+
+### 🧠 Memory Management
+
+* Create, update, and delete **Memory Cards**
+* Store travel experiences with photos and notes
+
+### 👤 Account Customization
+
+* Secure token-based authentication
+* Profile management (username, profile picture)
+
+---
+
+## ❌ System Limitations
+
+The system does **not** include:
+
+* Offline map functionality
+* Real-time traffic or transit updates
+* Administrative dashboards for end-users
 
 ---
 
 ## 🏗️ Project Structure
 
-```
+```bash
 project-root/
 │
 ├── backend/        # Node.js + Express + TypeScript API
@@ -34,8 +88,6 @@ project-root/
 
 ## ⚙️ Prerequisites
 
-Make sure you have:
-
 * Node.js (>= 18)
 * npm or yarn
 * PostgreSQL
@@ -45,110 +97,52 @@ Make sure you have:
 
 ## 🔧 Backend Setup
 
-### 1. Navigate to backend
-
 ```bash
 cd backend
-```
-
-### 2. Install dependencies
-
-```bash
 npm install
 ```
 
-### 3. Setup environment variables
-
-Create a `.env` file in the backend folder:
+Create `.env` file:
 
 ```env
 PORT=5000
-DATABASE_URL=your_postgresql_connection_string
-JWT_SECRET=your_jwt_secret
+DATABASE_URL=your_postgresql_connection
+JWT_SECRET=your_secret
 
 EMAIL_USER=your_email
-EMAIL_PASS=your_email_password
+EMAIL_PASS=your_password
 
 IMAGEKIT_PUBLIC_KEY=your_key
 IMAGEKIT_PRIVATE_KEY=your_key
 IMAGEKIT_URL_ENDPOINT=your_url
 ```
 
-### 4. Run backend (development)
+Run backend:
 
 ```bash
 npm run dev
-```
-
-### 5. Build backend
-
-```bash
-npm run build
-```
-
-### 6. Start backend
-
-```bash
-npm start
 ```
 
 ---
 
 ## 💻 Frontend Setup
 
-### 1. Navigate to frontend
-
 ```bash
 cd frontend
-```
-
-### 2. Install dependencies
-
-```bash
 npm install
 ```
 
-### 3. Setup environment variables
-
-Create a `.env` file:
+Create `.env`:
 
 ```env
 VITE_API_URL=http://localhost:5000
 ```
 
-### 4. Run frontend
+Run frontend:
 
 ```bash
 npm run dev
 ```
-
-### 5. Build frontend
-
-```bash
-npm run build
-```
-
-### 6. Preview build
-
-```bash
-npm run preview
-```
-
----
-
-## 🧪 Scripts
-
-### Backend
-
-* `npm run dev` → Run in development mode
-* `npm run build` → Compile TypeScript
-* `npm start` → Start production server
-
-### Frontend
-
-* `npm run dev` → Start development server
-* `npm run build` → Production build
-* `npm run preview` → Preview production build
 
 ---
 
@@ -156,11 +150,10 @@ npm run preview
 
 ### Frontend
 
-* React
-* Vite
+* React (Vite)
 * React Router
 * Axios
-* React Leaflet (Maps)
+* React Leaflet
 
 ### Backend
 
@@ -169,48 +162,13 @@ npm run preview
 * TypeScript
 * PostgreSQL
 * JWT Authentication
-* Multer (File Uploads)
-* Nodemailer (Emails)
-
----
-
-## 🌐 Deployment
-
-### Backend
-
-```bash
-npm run build
-npm start
-```
-
-### Frontend
-
-```bash
-npm run build
-```
-
-Deploy the `dist/` folder using:
-
-* Vercel
-* Netlify
-* Render
+* Multer
+* Nodemailer
 
 ---
 
 ## 📌 Notes
 
-* Ensure backend is running before frontend
-* Keep `.env` files private
-* Update API URL in frontend before deployment
-
----
-
-## 👨‍💻 Author
-
-Your Name
-
----
-
-## 📜 License
-
-ISC License
+* Ensure backend runs before frontend
+* Keep `.env` files secure
+* Update API URLs before deployment
